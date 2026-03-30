@@ -1,0 +1,47 @@
+{
+  "name": "@sdkwork/notes-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:tauri": "vite --host 127.0.0.1 --port 1421 --strictPort",
+    "build": "vite build --mode production",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "tauri:dev": "tauri icon src-tauri/app-icon.svg && tauri dev",
+    "tauri:build": "tauri icon src-tauri/app-icon.svg && tauri build",
+    "tauri:icon": "tauri icon src-tauri/app-icon.svg",
+    "tauri:info": "tauri info"
+  },
+  "dependencies": {
+    "@sdkwork/notes-core": "workspace:*",
+    "@sdkwork/notes-i18n": "workspace:*",
+    "@sdkwork/notes-shell": "workspace:*",
+    "@tauri-apps/api": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
+    "@tauri-apps/cli": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "^26.1.0",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "name": "@sdkwork/notes-notes",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sdkwork/app-sdk": "workspace:*",
+    "@sdkwork/notes-commons": "workspace:*",
+    "@sdkwork/notes-core": "workspace:*",
+    "@sdkwork/notes-i18n": "workspace:*",
+    "@sdkwork/notes-types": "workspace:*",
+    "@tiptap/core": "catalog:",
+    "@tiptap/extension-character-count": "catalog:",
+    "@tiptap/extension-gapcursor": "catalog:",
+    "@tiptap/extension-highlight": "catalog:",
+    "@tiptap/extension-image": "catalog:",
+    "@tiptap/extension-link": "catalog:",
+    "@tiptap/extension-placeholder": "catalog:",
+    "@tiptap/extension-task-item": "catalog:",
+    "@tiptap/extension-task-list": "catalog:",
+    "@tiptap/extension-typography": "catalog:",
+    "@tiptap/extension-underline": "catalog:",
+    "@tiptap/react": "catalog:",
+    "@tiptap/starter-kit": "catalog:",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
+    "react-router-dom": "catalog:",
+    "zustand": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-dts": "catalog:",
+    "vitest": "^3.2.4"
+  }
+}

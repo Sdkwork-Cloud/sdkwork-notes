@@ -1,0 +1,28 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# JavaScript workspace artifacts
+**/node_modules/
+**/.turbo/
+**/dist/
+**/coverage/
+**/*.tsbuildinfo
+
+# Rust / Tauri build artifacts
+**/src-tauri/target/
+
+# Local environment files
+**/.env.local
+**/.env.*.local
