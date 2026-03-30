@@ -96,7 +96,7 @@ export function AuthOAuthCallbackPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 sm:p-8">
+    <div className="relative flex min-h-full items-center justify-center p-4 sm:p-8">
       <div className="panel-surface relative z-10 w-full max-w-lg overflow-hidden rounded-3xl">
         <div className="border-b border-[var(--line-soft)] bg-[var(--theme-primary-950)] px-8 py-6 text-white">
           <div className="flex items-center gap-3">

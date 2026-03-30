@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { applyDesktopToolchainEnv } from './desktop-toolchain-env.mjs';
+import { isDirectCliExecution } from './script-entry.mjs';
 
 const VALID_SHARED_SDK_MODES = new Set(['source', 'git']);
 
@@ -69,7 +70,7 @@ export function runSharedSdkModeCommand(plan) {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replaceAll('\\', '/')}`) {
+if (isDirectCliExecution({ importMetaUrl: import.meta.url })) {
   const cliOptions = parseSharedSdkModeCliArgs(process.argv.slice(2));
   runSharedSdkModeCommand(createSharedSdkModeCommandPlan(cliOptions));
 }

@@ -69,7 +69,7 @@ function ToolbarButton({
       onClick={onClick}
       className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition ${
         active
-          ? 'border-primary-400 bg-primary-50 text-primary-700'
+          ? 'border-[var(--accent-soft-border)] bg-[var(--accent-soft-bg)] text-[var(--accent-soft-text)]'
           : 'border-[var(--line-soft)] bg-[var(--panel-muted)] text-[var(--text-secondary)] hover:bg-[var(--panel-bg)]'
       } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
       aria-label={label}
@@ -149,7 +149,7 @@ export function NoteEditorPane({
       editorProps: {
         attributes: {
           class:
-            'prose prose-slate max-w-none min-h-[420px] px-8 py-6 font-[var(--font-editor)] text-[1.02rem] leading-8 text-[var(--text-primary)] outline-none',
+            'prose notes-editor-prose max-w-none min-h-[420px] px-8 py-6 font-[var(--font-editor)] text-[1.02rem] leading-8 text-[var(--text-primary)] outline-none',
         },
       },
       onUpdate: ({ editor: nextEditor }) => {
@@ -237,7 +237,7 @@ export function NoteEditorPane({
     return (
       <div className="flex h-full flex-col rounded-[32px] border border-[var(--line-soft)] bg-[var(--canvas-bg)] shadow-[var(--shadow-lg)]">
         <div className="border-b border-[var(--line-soft)] px-8 py-6">
-          <div className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-600">
+          <div className="inline-flex rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-rose-600 dark:text-rose-200">
             {t('notes.editor.trashBadge')}
           </div>
           <h2 className="mt-4 text-3xl font-black tracking-tight text-[var(--text-primary)]">
@@ -477,7 +477,7 @@ export function NoteEditorPane({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="custom-scrollbar flex-1 overflow-y-auto">
         <EditorContent editor={editor} />
       </div>
 

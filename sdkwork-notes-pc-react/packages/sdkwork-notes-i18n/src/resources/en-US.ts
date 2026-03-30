@@ -23,6 +23,12 @@ export const enUS = {
       notes: 'Notes',
       account: 'Account',
       accountHint: 'Manage theme and language preferences here',
+      windowControls: {
+        minimize: 'Minimize window',
+        maximize: 'Maximize window',
+        restore: 'Restore window',
+        close: 'Hide to tray',
+      },
     },
   },
   auth: {

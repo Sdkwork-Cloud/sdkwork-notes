@@ -4,6 +4,7 @@ import {
   buildDesktopReleaseEnv,
   resolveDesktopReleaseTarget,
 } from './release/desktop-targets.mjs';
+import { isDirectCliExecution } from './script-entry.mjs';
 
 export function createDesktopReleaseBuildPlan({
   phase = 'bundle',
@@ -125,7 +126,7 @@ function parseCliArgs(argv) {
   return values;
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replaceAll('\\', '/')}`) {
+if (isDirectCliExecution({ importMetaUrl: import.meta.url })) {
   const options = parseCliArgs(process.argv.slice(2));
   runPlan(createDesktopReleaseBuildPlan(options));
 }

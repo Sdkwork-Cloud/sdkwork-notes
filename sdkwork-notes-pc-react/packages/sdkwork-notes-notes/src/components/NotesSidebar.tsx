@@ -70,7 +70,7 @@ function QuickViewButton({
       onClick={onClick}
       className={`flex w-full items-center justify-between rounded-2xl border px-3 py-2.5 text-left transition ${
         active
-          ? 'border-primary-400 bg-primary-50 text-primary-700'
+          ? 'border-[var(--accent-soft-border)] bg-[var(--accent-soft-bg)] text-[var(--accent-soft-text)]'
           : 'border-[var(--line-soft)] bg-[var(--panel-muted)] text-[var(--text-secondary)] hover:bg-[var(--panel-bg)]'
       }`}
     >
@@ -78,7 +78,7 @@ function QuickViewButton({
         <Icon className="h-4 w-4" />
         {label}
       </span>
-      <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-bold">
+      <span className="rounded-full bg-[var(--surface-scrim)] px-2 py-0.5 text-xs font-bold text-[var(--text-secondary)]">
         {count}
       </span>
     </button>
@@ -98,7 +98,7 @@ function FolderActionButton({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--line-soft)] bg-[var(--panel-bg)] text-[var(--text-secondary)] transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-[var(--line-soft)] bg-[var(--panel-bg)] text-[var(--text-secondary)] transition hover:border-[var(--accent-soft-border)] hover:bg-[var(--accent-soft-bg)] hover:text-[var(--accent-soft-text)]"
       aria-label={label}
       title={label}
     >
@@ -227,7 +227,7 @@ export function NotesSidebar({
                 }
               }}
               placeholder={t('notes.sidebar.createFolderPlaceholder')}
-              className="w-full rounded-2xl border border-[var(--line-soft)] bg-white px-3 py-2 text-sm outline-none focus:border-primary-400 dark:bg-transparent"
+              className="w-full rounded-2xl border border-[var(--line-soft)] bg-[var(--surface-raised)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] focus:border-primary-400"
             />
             <div className="mt-2 flex items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
               <span>{selectedFolderId ? t('notes.sidebar.createInCurrentFolder') : t('notes.sidebar.createTopLevelFolder')}</span>
@@ -257,7 +257,7 @@ export function NotesSidebar({
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="custom-scrollbar flex-1 overflow-y-auto px-4 py-4">
         <div className="space-y-2">
           <QuickViewButton
             active={activeView === 'all'}
@@ -306,7 +306,9 @@ export function NotesSidebar({
                 type="button"
                 onClick={() => onSelectFolder(null)}
                 className={`text-xs font-semibold transition ${
-                  selectedFolderId === null ? 'text-primary-600' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+                  selectedFolderId === null
+                    ? 'text-[var(--accent-soft-text)]'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
               >
                 {t('notes.sidebar.allFolders')}
@@ -331,13 +333,13 @@ export function NotesSidebar({
                         onDoubleClick={() => startFolderRename(folder)}
                         className={`flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-left transition ${
                           isSelected
-                            ? 'bg-primary-50 text-primary-700'
+                            ? 'bg-[var(--accent-soft-bg)] text-[var(--accent-soft-text)]'
                             : 'text-[var(--text-secondary)] hover:bg-[var(--panel-muted)]'
                         }`}
                         style={{ paddingLeft: `${12 + (depth * 16)}px` }}
                       >
                         <span
-                          className="inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-black/5"
+                          className="inline-flex h-5 w-5 items-center justify-center rounded-full hover:bg-[var(--surface-scrim)]"
                           onClick={(event) => {
                             event.stopPropagation();
                             if (hasChildren) {
@@ -444,7 +446,7 @@ export function NotesSidebar({
                     onClick={() => onSelectNote(note.id)}
                     className={`w-full rounded-2xl border px-3 py-3 text-left transition ${
                       activeNoteId === note.id
-                        ? 'border-primary-400 bg-primary-50 shadow-[0_10px_24px_rgba(51,103,246,0.12)]'
+                        ? 'border-[var(--accent-soft-border)] bg-[var(--accent-soft-bg)] shadow-[0_10px_24px_rgba(51,103,246,0.12)]'
                         : 'border-[var(--line-soft)] bg-[var(--panel-muted)] hover:bg-[var(--panel-bg)]'
                     }`}
                   >
@@ -452,7 +454,7 @@ export function NotesSidebar({
                       <div className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-2xl ${
                         activeNoteId === note.id
                           ? 'bg-primary-600 text-white'
-                          : 'bg-white text-[var(--text-secondary)] dark:bg-black/10'
+                          : 'bg-[var(--surface-raised)] text-[var(--text-secondary)]'
                       }`}>
                         <Icon className="h-4 w-4" />
                       </div>
@@ -469,11 +471,11 @@ export function NotesSidebar({
                           {note.snippet || t('notes.editor.emptyPreview')}
                         </p>
                         <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-medium text-[var(--text-muted)]">
-                          <span className="rounded-full border border-[var(--line-soft)] bg-white/70 px-2 py-1 dark:bg-black/10">
+                          <span className="rounded-full border border-[var(--line-soft)] bg-[var(--surface-soft)] px-2 py-1">
                             {t(`notes.types.${note.type}`)}
                           </span>
                           {formatRelativeNoteTime(note.updatedAt, i18n.language) ? (
-                            <span className="rounded-full border border-[var(--line-soft)] bg-white/70 px-2 py-1 dark:bg-black/10">
+                            <span className="rounded-full border border-[var(--line-soft)] bg-[var(--surface-soft)] px-2 py-1">
                               {formatRelativeNoteTime(note.updatedAt, i18n.language)}
                             </span>
                           ) : null}

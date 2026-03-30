@@ -85,7 +85,7 @@ export default defineConfig(({ command }) => {
     },
     server: {
       host: '127.0.0.1',
-      port: 1421,
+      port: 1430,
       strictPort: true,
       fs: {
         allow: [monorepoRoot],

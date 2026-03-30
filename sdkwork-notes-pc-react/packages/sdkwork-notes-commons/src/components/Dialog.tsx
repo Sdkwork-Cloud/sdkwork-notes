@@ -50,7 +50,7 @@ export function Dialog({
       <button
         type="button"
         aria-label="Close dialog"
-        className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--dialog-backdrop)] backdrop-blur-sm"
         onClick={onClose}
       />
       <div

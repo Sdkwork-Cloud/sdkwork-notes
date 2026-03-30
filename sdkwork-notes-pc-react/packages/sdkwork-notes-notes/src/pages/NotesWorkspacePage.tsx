@@ -295,8 +295,8 @@ export function NotesWorkspacePage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-[var(--app-bg)] text-[var(--text-primary)]">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-4 px-4 py-4 lg:px-6">
+    <main className="flex h-full min-h-0 flex-col overflow-hidden bg-transparent text-[var(--text-primary)]">
+      <div className="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 flex-col gap-4 px-4 py-4 lg:px-6">
         <section className="rounded-[32px] border border-[var(--line-soft)] bg-[var(--panel-bg)] px-6 py-5 shadow-[var(--shadow-md)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-3">
@@ -365,7 +365,7 @@ export function NotesWorkspacePage() {
           </div>
 
           {errorMessage ? (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
               <span>{errorMessage}</span>
               <Button appearance="ghost" onClick={clearError}>
                 {t('notes.actions.dismissError')}

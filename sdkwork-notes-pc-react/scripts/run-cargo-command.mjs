@@ -1,5 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { applyDesktopToolchainEnv } from './desktop-toolchain-env.mjs';
+import { isDirectCliExecution } from './script-entry.mjs';
 
 export function createCargoCommandPlan({
   args = [],
@@ -39,6 +40,6 @@ export function runCargoCommand(plan) {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replaceAll('\\', '/')}`) {
+if (isDirectCliExecution({ importMetaUrl: import.meta.url })) {
   runCargoCommand(createCargoCommandPlan({ args: process.argv.slice(2) }));
 }

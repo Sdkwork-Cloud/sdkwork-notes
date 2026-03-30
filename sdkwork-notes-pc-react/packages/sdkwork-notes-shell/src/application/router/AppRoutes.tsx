@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@sdkwork/notes-core';
 import { useNotesTranslation } from '@sdkwork/notes-i18n';
-import { ShellLayout } from '../layouts/ShellLayout';
 
 const AuthPage = lazy(async () => ({
   default: (await import('@sdkwork/notes-auth')).AuthPage,
@@ -54,32 +53,76 @@ function PublicOnlyRoute() {
   return <Outlet />;
 }
 
-export function AppRoutes() {
+function RouteFallback() {
   const { t } = useNotesTranslation();
 
   return (
-    <Suspense
-      fallback={<div className="px-6 py-8 text-sm text-[var(--text-muted)]">{t('common.loading')}</div>}
-    >
-      <Routes>
-        <Route path="/" element={<IndexRedirect />} />
+    <div className="flex h-full min-h-0 items-center justify-center bg-[var(--app-bg)]/35 px-6 py-8 text-sm text-[var(--text-muted)]">
+      {t('common.loading')}
+    </div>
+  );
+}
 
-        <Route element={<PublicOnlyRoute />}>
-          <Route path="/login" element={<AuthPage />} />
-          <Route path="/register" element={<AuthPage />} />
-          <Route path="/forgot-password" element={<AuthPage />} />
-          <Route path="/login/oauth/callback/:provider" element={<AuthOAuthCallbackPage />} />
-        </Route>
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<IndexRedirect />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route element={<ShellLayout />}>
-            <Route path="/notes" element={<NotesWorkspacePage />} />
-            <Route path="/account" element={<AccountPage />} />
-          </Route>
-        </Route>
+      <Route element={<PublicOnlyRoute />}>
+        <Route
+          path="/login"
+          element={(
+            <Suspense fallback={<RouteFallback />}>
+              <AuthPage />
+            </Suspense>
+          )}
+        />
+        <Route
+          path="/register"
+          element={(
+            <Suspense fallback={<RouteFallback />}>
+              <AuthPage />
+            </Suspense>
+          )}
+        />
+        <Route
+          path="/forgot-password"
+          element={(
+            <Suspense fallback={<RouteFallback />}>
+              <AuthPage />
+            </Suspense>
+          )}
+        />
+        <Route
+          path="/login/oauth/callback/:provider"
+          element={(
+            <Suspense fallback={<RouteFallback />}>
+              <AuthOAuthCallbackPage />
+            </Suspense>
+          )}
+        />
+      </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+      <Route element={<ProtectedRoute />}>
+        <Route
+          path="/notes"
+          element={(
+            <Suspense fallback={<RouteFallback />}>
+              <NotesWorkspacePage />
+            </Suspense>
+          )}
+        />
+        <Route
+          path="/account"
+          element={(
+            <Suspense fallback={<RouteFallback />}>
+              <AccountPage />
+            </Suspense>
+          )}
+        />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

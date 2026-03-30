@@ -11,11 +11,17 @@ export {
 } from './desktop/runtime';
 export {
   configureDesktopPlatformBridge,
+  closeWindow,
   desktopNotesApi,
   getAppInfo,
   getRuntimeInfo,
+  isWindowMaximized,
+  maximizeWindow,
+  minimizeWindow,
   requestExplicitQuit,
+  restoreWindow,
   setAppLanguage,
   showMainWindow,
+  subscribeWindowMaximized,
   subscribeTrayNavigation,
 } from './desktop/tauriBridge';

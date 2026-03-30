@@ -105,7 +105,7 @@ function FieldInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full rounded-2xl border border-[var(--line-soft)] bg-[var(--panel-muted)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition focus:border-primary-400 focus:bg-white ${props.className || ''}`}
+      className={`w-full rounded-2xl border border-[var(--line-soft)] bg-[var(--panel-muted)] px-4 py-3 text-sm text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-primary-400 focus:bg-[var(--surface-raised-strong)] ${props.className || ''}`}
     />
   );
 }
@@ -328,26 +328,26 @@ export function AuthPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 sm:p-8">
+    <div className="relative flex min-h-full items-center justify-center p-4 sm:p-8">
       <div className="panel-surface relative z-10 flex w-full max-w-5xl overflow-hidden rounded-[32px]">
         <div className="relative hidden w-[42%] overflow-hidden bg-[var(--theme-primary-950)] p-8 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(90,139,255,0.26),_transparent_58%)]" />
 
           <div className="relative z-10 space-y-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/12 backdrop-blur-sm">
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-[var(--surface-overlay-subtle)] backdrop-blur-sm">
               <QrCode className="h-8 w-8" />
             </div>
             <div className="space-y-3">
               <h2 className="text-3xl font-black tracking-tight">{t('auth.qrLogin')}</h2>
-              <p className="max-w-xs text-sm leading-7 text-white/74">
+              <p className="max-w-xs text-sm leading-7 text-[var(--text-inverse-secondary)]">
                 {qrCode?.description || t('auth.qrDesc')}
               </p>
             </div>
           </div>
 
           <div className="relative z-10 mt-8">
-            <div className="rounded-[28px] bg-white/92 p-4 text-zinc-900 shadow-2xl">
-              <div className="relative overflow-hidden rounded-2xl bg-white">
+            <div className="rounded-[28px] bg-[var(--surface-overlay-strong)] p-4 text-[var(--text-primary)] shadow-2xl">
+              <div className="relative overflow-hidden rounded-2xl bg-[var(--surface-raised-strong)]">
                 {qrImageSrc ? (
                   <img
                     src={qrImageSrc}
@@ -357,13 +357,13 @@ export function AuthPage() {
                     }`}
                   />
                 ) : (
-                  <div className="flex h-60 items-center justify-center bg-zinc-100">
-                    <LoaderCircle className="h-8 w-8 animate-spin text-zinc-400" />
+                  <div className="flex h-60 items-center justify-center bg-[var(--panel-muted)]">
+                    <LoaderCircle className="h-8 w-8 animate-spin text-[var(--text-muted)]" />
                   </div>
                 )}
 
                 {qrState === 'expired' || qrState === 'error' ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/10">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[var(--surface-scrim)]">
                     <Button
                       type="button"
                       onClick={() => setQrReloadNonce((value) => value + 1)}
@@ -380,14 +380,14 @@ export function AuthPage() {
             <div className={`mt-5 text-sm font-semibold ${resolveQrStatusAccent(qrState)}`}>
               {resolveQrStatusCopy(t, qrState)}
             </div>
-            <p className="mt-2 text-sm leading-6 text-white/72">
+            <p className="mt-2 text-sm leading-6 text-[var(--text-inverse-secondary)]">
               {qrState === 'error'
                 ? qrErrorMessage
                 : qrState === 'scanned'
                   ? t('auth.qrScannedHint')
                   : t('auth.openApp')}
             </p>
-            <div className="mt-5 flex items-center gap-2 text-sm text-white/58">
+            <div className="mt-5 flex items-center gap-2 text-sm text-[var(--text-inverse-muted)]">
               <Smartphone className="h-4 w-4" />
               <span>{t('auth.qrWeChatHint')}</span>
             </div>

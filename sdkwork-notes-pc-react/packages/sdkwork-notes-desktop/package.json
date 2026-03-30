@@ -14,11 +14,11 @@
   },
   "scripts": {
     "dev": "vite",
-    "dev:tauri": "vite --host 127.0.0.1 --port 1421 --strictPort",
+    "dev:tauri": "vite --host 127.0.0.1 --port 1430 --strictPort",
     "build": "vite build --mode production",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "tauri:dev": "tauri icon src-tauri/app-icon.svg && tauri dev",
+    "tauri:dev": "node ../../scripts/run-desktop-tauri-dev.mjs",
     "tauri:build": "tauri icon src-tauri/app-icon.svg && tauri build",
     "tauri:icon": "tauri icon src-tauri/app-icon.svg",
     "tauri:info": "tauri info"
