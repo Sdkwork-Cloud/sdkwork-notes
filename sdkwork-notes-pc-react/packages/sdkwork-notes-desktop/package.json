@@ -15,6 +15,7 @@
   "scripts": {
     "dev": "vite",
     "dev:tauri": "vite --host 127.0.0.1 --port 1430 --strictPort",
+    "dev:tauri:test": "node ../../scripts/run-with-app-mode.mjs test -- pnpm exec vite --host 127.0.0.1 --port 1430 --strictPort --mode test",
     "build": "vite build --mode production",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -38,10 +39,10 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "jsdom": "^26.1.0",
+    "jsdom": "^29.0.1",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.2"
   }
 }

@@ -1,15 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@sdkwork/notes-core';
+import { AuthOAuthCallbackPage, AuthPage, useAuthStore } from '@sdkwork/notes-auth';
 import { useNotesTranslation } from '@sdkwork/notes-i18n';
-
-const AuthPage = lazy(async () => ({
-  default: (await import('@sdkwork/notes-auth')).AuthPage,
-}));
-
-const AuthOAuthCallbackPage = lazy(async () => ({
-  default: (await import('@sdkwork/notes-auth')).AuthOAuthCallbackPage,
-}));
 
 const NotesWorkspacePage = lazy(async () => ({
   default: (await import('@sdkwork/notes-notes')).NotesWorkspacePage,
@@ -26,7 +18,7 @@ function buildRedirectParam(pathname: string, search: string) {
 
 function IndexRedirect() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return <Navigate to={isAuthenticated ? '/notes' : '/login'} replace />;
+  return <Navigate to={isAuthenticated ? '/notes' : '/auth/login'} replace />;
 }
 
 function ProtectedRoute() {
@@ -36,7 +28,7 @@ function ProtectedRoute() {
   if (!isAuthenticated) {
     return (
       <Navigate
-        to={`/login?redirect=${buildRedirectParam(location.pathname, location.search)}`}
+        to={`/auth/login?redirect=${buildRedirectParam(location.pathname, location.search)}`}
         replace
       />
     );
@@ -64,42 +56,32 @@ function RouteFallback() {
 }
 
 export function AppRoutes() {
+  const isSessionReady = useAuthStore((state) => state.isSessionReady);
+
+  if (!isSessionReady) {
+    return <RouteFallback />;
+  }
+
   return (
     <Routes>
       <Route path="/" element={<IndexRedirect />} />
 
       <Route element={<PublicOnlyRoute />}>
         <Route
-          path="/login"
-          element={(
-            <Suspense fallback={<RouteFallback />}>
-              <AuthPage />
-            </Suspense>
-          )}
+          path="/auth/login"
+          element={<AuthPage />}
         />
         <Route
-          path="/register"
-          element={(
-            <Suspense fallback={<RouteFallback />}>
-              <AuthPage />
-            </Suspense>
-          )}
+          path="/auth/register"
+          element={<AuthPage />}
         />
         <Route
-          path="/forgot-password"
-          element={(
-            <Suspense fallback={<RouteFallback />}>
-              <AuthPage />
-            </Suspense>
-          )}
+          path="/auth/forgot-password"
+          element={<AuthPage />}
         />
         <Route
-          path="/login/oauth/callback/:provider"
-          element={(
-            <Suspense fallback={<RouteFallback />}>
-              <AuthOAuthCallbackPage />
-            </Suspense>
-          )}
+          path="/auth/oauth/callback/:provider"
+          element={<AuthOAuthCallbackPage />}
         />
       </Route>
 

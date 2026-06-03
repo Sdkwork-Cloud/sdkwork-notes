@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 import { applyDesktopToolchainEnv } from './desktop-toolchain-env.mjs';
 import { resolveWorkspaceRootDir } from './prepare-shared-sdk-packages.mjs';
+import { normalizeAppMode } from './run-with-app-mode.mjs';
 import { isDirectCliExecution } from './script-entry.mjs';
 
 const DEV_HOST = '127.0.0.1';
@@ -93,14 +94,17 @@ function runCommand(command, args, { cwd, env, label }) {
 export function createDesktopTauriDevPlan({
   currentWorkingDir = process.cwd(),
   env = process.env,
+  mode,
   runtimePlatform = process.platform,
   windowsCargoBinDir = '',
 } = {}) {
   const workspaceRoot = resolveWorkspaceRootDir(currentWorkingDir) || defaultWorkspaceRoot;
   const desktopDir = path.join(workspaceRoot, 'packages', 'sdkwork-notes-desktop');
+  const resolvedMode = normalizeAppMode(mode ?? env.SDKWORK_NOTES_APP_MODE, 'development');
   const sharedEnv = applyDesktopToolchainEnv({
     env: {
       ...env,
+      SDKWORK_NOTES_APP_MODE: resolvedMode,
       SDKWORK_SHARED_SDK_MODE: 'source',
     },
     platform: runtimePlatform,
@@ -143,8 +147,28 @@ export async function runDesktopTauriDev(options = {}) {
   });
 }
 
+export function parseDesktopTauriDevCliArgs(argv = []) {
+  const args = Array.isArray(argv) ? [...argv] : [];
+  let mode;
+
+  for (let index = 0; index < args.length; index += 1) {
+    const token = args[index];
+    if (token === '--mode') {
+      mode = args[index + 1];
+      index += 1;
+      continue;
+    }
+
+    throw new Error(`Unsupported argument "${token}". Expected only --mode <value>.`);
+  }
+
+  return {
+    mode: normalizeAppMode(mode, 'development'),
+  };
+}
+
 if (isDirectCliExecution({ importMetaUrl: import.meta.url })) {
-  runDesktopTauriDev().catch((error) => {
+  runDesktopTauriDev(parseDesktopTauriDevCliArgs(process.argv.slice(2))).catch((error) => {
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
   });

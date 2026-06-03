@@ -1,0 +1,41 @@
+{
+  "owner": {
+    "family": "app-sdk-contract-closure",
+    "appApiRepository": "spring-ai-plus-app-api",
+    "controllerFile": "src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/NotesAppApiController.java",
+    "sdkReadme": "sdkwork-sdk-app/README.md",
+    "sdkOpenApiSnapshot": "sdkwork-sdk-app/app-openapi-8080.json",
+    "sdkUpgradeDirectory": "sdkwork-sdk-app/upgrade",
+    "sdkPackageDirectory": "sdkwork-sdk-app/sdkwork-app-sdk-typescript"
+  },
+  "target": {
+    "controllerMethod": "remoteApply",
+    "sdkModule": "note",
+    "sdkMethod": "remoteApply",
+    "routeAliases": [
+      "POST /app/v3/api/notes/{noteId}:remoteApply",
+      "POST /app/v3/api/notes/{noteId}/remote-apply"
+    ]
+  },
+  "generatedOutputs": {
+    "sdkEntrypoint": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/sdk.ts",
+    "sdkApiFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts",
+    "requestTypeFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-remote-apply-request.ts",
+    "responseTypeFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-remote-apply-result-vo.ts"
+  },
+  "regenWorkflow": {
+    "baseSnapshotCommand": "curl http://localhost:8080/v3/api-docs/app -o spring-ai-plus-app-api/sdkwork-sdk-app/app-openapi-8080.json",
+    "prepareSourceScript": "sdkwork-sdk-app/bin/prepare-openapi-source.mjs",
+    "upgradeOverlayDirectory": "sdkwork-sdk-app/upgrade"
+  },
+  "blockingFacts": [
+    "NotesAppApiController currently has no remoteApply method",
+    "TypeScript SDK currently has no note.remoteApply surface",
+    "generated remote apply request/result types do not exist yet"
+  ],
+  "forbidden": [
+    "app-local handwritten remote apply HTTP client",
+    "shared-wrapper fake success fallback",
+    "direct-write API remapping as replay transport"
+  ]
+}

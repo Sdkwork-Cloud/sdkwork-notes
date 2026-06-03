@@ -23,10 +23,18 @@ export function createPackageViteConfig() {
   return defineConfig({
     plugins: [
       dts({
+        // Package declaration builds should resolve shared SDK imports through package boundaries,
+        // not the workspace source aliases used by app-level typechecking.
+        compilerOptions: {
+          baseUrl: process.cwd(),
+          paths: {},
+        },
+        exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
         include: ['src'],
       }),
     ],
     build: {
+      cssMinify: 'esbuild',
       lib: {
         entry: resolve(process.cwd(), 'src/index.ts'),
         formats: ['es'],

@@ -1,9 +1,13 @@
 import { MainLayout } from './layouts/MainLayout';
-import { AppProviders } from './providers/AppProviders';
+import { AppProviders, type AppProvidersProps } from './providers/AppProviders';
 
-export function AppRoot() {
+export interface AppRootProps {
+  notesWorkspaceBootstrapOptions?: AppProvidersProps['notesWorkspaceBootstrapOptions'];
+}
+
+export function AppRoot(props: AppRootProps) {
   return (
-    <AppProviders>
+    <AppProviders {...props}>
       <MainLayout />
     </AppProviders>
   );

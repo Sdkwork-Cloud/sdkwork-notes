@@ -2,15 +2,42 @@ import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import {
   isSharedSdkSourceMode,
   resolvePnpmPackageDistEntry,
 } from './scripts/shared-sdk-mode';
 
-export default defineConfig(() => {
+function resolveAppMode(mode: string): 'development' | 'test' | 'production' {
+  const normalizedMode = String(process.env.SDKWORK_NOTES_APP_MODE ?? mode).trim().toLowerCase();
+  if (normalizedMode === 'test') {
+    return 'test';
+  }
+  if (normalizedMode === 'production') {
+    return 'production';
+  }
+  return 'development';
+}
+
+function createRuntimeEnv(
+  env: Record<string, string>,
+  appMode: 'development' | 'test' | 'production',
+  platform: 'web' | 'desktop',
+) {
+  return {
+    ...env,
+    MODE: appMode,
+    NODE_ENV: appMode === 'production' ? 'production' : 'development',
+    VITE_APP_ENV: env.VITE_APP_ENV || appMode,
+    VITE_APP_PLATFORM: env.VITE_APP_PLATFORM || platform,
+  };
+}
+
+export default defineConfig(({ mode }) => {
   const useSharedSdkSourceMode = isSharedSdkSourceMode(process.env);
   const workspaceRootDir = path.resolve(__dirname);
+  const appMode = resolveAppMode(mode);
+  const runtimeEnv = createRuntimeEnv(loadEnv(appMode, workspaceRootDir, ''), appMode, 'web');
   const monorepoRoot = path.resolve(__dirname, '../../..');
   const sharedAppSdkSourceEntry = path.resolve(
     __dirname,
@@ -19,6 +46,10 @@ export default defineConfig(() => {
   const sharedSdkCommonSourceEntry = path.resolve(
     __dirname,
     '../../../sdk/sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts',
+  );
+  const notesSearchSourceEntry = path.resolve(
+    __dirname,
+    './packages/sdkwork-notes-search/src/index.ts',
   );
   const sharedAppSdkDistEntry =
     resolvePnpmPackageDistEntry('@sdkwork/app-sdk', workspaceRootDir)
@@ -34,7 +65,11 @@ export default defineConfig(() => {
     );
 
   return {
+    envDir: workspaceRootDir,
     plugins: [react(), tailwindcss()],
+    define: {
+      __SDKWORK_NOTES_ENV__: JSON.stringify(runtimeEnv),
+    },
     build: {
       rollupOptions: {
         output: {
@@ -79,6 +114,7 @@ export default defineConfig(() => {
               { find: '@sdkwork/app-sdk', replacement: sharedAppSdkDistEntry },
               { find: '@sdkwork/sdk-common', replacement: sharedSdkCommonDistEntry },
             ]),
+        { find: '@sdkwork/notes-search', replacement: notesSearchSourceEntry },
       ],
       dedupe: ['react', 'react-dom', '@sdkwork/sdk-common'],
     },

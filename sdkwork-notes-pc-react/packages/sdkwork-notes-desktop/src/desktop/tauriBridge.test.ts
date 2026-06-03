@@ -13,6 +13,14 @@ describe('tauriBridge source contract', () => {
       'utf8',
     );
     const desktopIndexSource = fs.readFileSync(path.join(desktopRoot, '..', 'index.ts'), 'utf8');
+    const tauriBootstrapSource = fs.readFileSync(
+      path.join(desktopRoot, '..', '..', 'src-tauri', 'src', 'app', 'bootstrap.rs'),
+      'utf8',
+    );
+    const tauriCommandsSource = fs.readFileSync(
+      path.join(desktopRoot, '..', '..', 'src-tauri', 'src', 'commands', 'mod.rs'),
+      'utf8',
+    );
     const tauriConfigSource = fs.readFileSync(
       path.join(desktopRoot, '..', '..', 'src-tauri', 'tauri.conf.json'),
       'utf8',
@@ -27,6 +35,9 @@ describe('tauriBridge source contract', () => {
     expect(catalogSource).toMatch(/setAppLanguage:\s*'set_app_language'/);
     expect(catalogSource).toMatch(/showMainWindow:\s*'show_main_window'/);
     expect(catalogSource).toMatch(/requestExplicitQuit:\s*'request_explicit_quit'/);
+    expect(catalogSource).toMatch(/readSessionState:\s*'read_session_state'/);
+    expect(catalogSource).toMatch(/writeSessionState:\s*'write_session_state'/);
+    expect(catalogSource).toMatch(/clearSessionState:\s*'clear_session_state'/);
     expect(catalogSource).toMatch(/trayNavigate:\s*'tray:\/\/navigate'/);
 
     expect(tauriBridgeSource).toMatch(/export async function getAppInfo/);
@@ -34,6 +45,9 @@ describe('tauriBridge source contract', () => {
     expect(tauriBridgeSource).toMatch(/export async function setAppLanguage/);
     expect(tauriBridgeSource).toMatch(/export async function showMainWindow/);
     expect(tauriBridgeSource).toMatch(/export async function requestExplicitQuit/);
+    expect(tauriBridgeSource).toMatch(/export async function readDesktopSessionState/);
+    expect(tauriBridgeSource).toMatch(/export async function writeDesktopSessionState/);
+    expect(tauriBridgeSource).toMatch(/export async function clearDesktopSessionState/);
     expect(tauriBridgeSource).toMatch(/export async function minimizeWindow/);
     expect(tauriBridgeSource).toMatch(/export async function maximizeWindow/);
     expect(tauriBridgeSource).toMatch(/export async function restoreWindow/);
@@ -59,6 +73,14 @@ describe('tauriBridge source contract', () => {
     expect(desktopIndexSource).toMatch(/isWindowMaximized/);
     expect(desktopIndexSource).toMatch(/subscribeWindowMaximized/);
     expect(desktopIndexSource).toMatch(/closeWindow/);
+    expect(desktopIndexSource).toMatch(/readDesktopSessionState/);
+    expect(desktopIndexSource).toMatch(/writeDesktopSessionState/);
+    expect(desktopIndexSource).toMatch(/clearDesktopSessionState/);
+
+    expect(tauriCommandsSource).toMatch(/pub mod session_state;/);
+    expect(tauriBootstrapSource).toMatch(/commands::session_state::read_session_state/);
+    expect(tauriBootstrapSource).toMatch(/commands::session_state::write_session_state/);
+    expect(tauriBootstrapSource).toMatch(/commands::session_state::clear_session_state/);
 
     expect(tauriConfigSource).toMatch(/"decorations":\s*false/);
     expect(tauriConfigSource).toMatch(/"visible":\s*false/);

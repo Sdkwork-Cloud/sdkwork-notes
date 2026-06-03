@@ -1,3 +1,4 @@
 import './styles/index.css';
 
-export { AppRoot } from './application/AppRoot';
+export { AppRoot, type AppRootProps } from './application/AppRoot';
+export * from './application/packageBoundaries';

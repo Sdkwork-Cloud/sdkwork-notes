@@ -20,8 +20,6 @@
   },
   "dependencies": {
     "@sdkwork/app-sdk": "workspace:*",
-    "@sdkwork/notes-commons": "workspace:*",
-    "@sdkwork/notes-i18n": "workspace:*",
     "@sdkwork/notes-types": "workspace:*",
     "react": "catalog:",
     "zustand": "catalog:"
@@ -31,6 +29,6 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.2"
   }
 }

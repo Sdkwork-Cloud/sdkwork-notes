@@ -9,13 +9,15 @@ function read(relativePath: string) {
 }
 
 describe('desktop layout contracts', () => {
-  it('keeps auth pages aligned with the shell viewport instead of recreating full-screen pages', () => {
+  it('hosts shared auth pages inside the notes shell without recreating local full-screen wrappers', () => {
     const authPageSource = read('packages/sdkwork-notes-auth/src/pages/AuthPage.tsx');
     const oauthCallbackPageSource = read('packages/sdkwork-notes-auth/src/pages/AuthOAuthCallbackPage.tsx');
 
-    expect(authPageSource).toMatch(/className="relative flex min-h-full items-center justify-center p-4 sm:p-8"/);
+    expect(authPageSource).toMatch(/data-notes-iam-screen="auth"/);
+    expect(authPageSource).toMatch(/<SdkworkAuthPage/);
     expect(authPageSource).not.toMatch(/min-h-screen/);
-    expect(oauthCallbackPageSource).toMatch(/className="relative flex min-h-full items-center justify-center p-4 sm:p-8"/);
+    expect(oauthCallbackPageSource).toMatch(/data-notes-iam-screen="auth"/);
+    expect(oauthCallbackPageSource).toMatch(/<SdkworkAuthOAuthCallbackPage/);
     expect(oauthCallbackPageSource).not.toMatch(/min-h-screen/);
   });
 

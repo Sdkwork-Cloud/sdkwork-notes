@@ -1,8 +1,8 @@
 import { CircleUserRound, NotebookPen, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@sdkwork/notes-auth';
 import { useNotesTranslation } from '@sdkwork/notes-i18n';
-import { useAuthStore } from '@sdkwork/notes-core';
 import { DesktopWindowControls } from './DesktopWindowControls';
 
 function BrandMark() {
@@ -71,7 +71,7 @@ export function AppHeader({ mode = 'default' }: AppHeaderProps) {
     user?.initials || user?.displayName?.trim().slice(0, 1).toUpperCase() || null;
 
   return (
-    <div className="relative z-30 bg-[var(--panel-bg)]/88 backdrop-blur-xl">
+    <div className="relative z-30 bg-white/72 backdrop-blur-xl dark:bg-zinc-950/78">
       <header className="relative flex h-12 items-center px-3 sm:px-4">
         <div
           data-slot="app-header-leading"

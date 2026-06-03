@@ -23,6 +23,10 @@
     "@sdkwork/notes-commons": "workspace:*",
     "@sdkwork/notes-core": "workspace:*",
     "@sdkwork/notes-i18n": "workspace:*",
+    "@sdkwork/notes-local": "workspace:*",
+    "@sdkwork/notes-observability": "workspace:*",
+    "@sdkwork/notes-search": "workspace:*",
+    "@sdkwork/notes-sync": "workspace:*",
     "@sdkwork/notes-types": "workspace:*",
     "@tiptap/core": "catalog:",
     "@tiptap/extension-character-count": "catalog:",
@@ -47,6 +51,6 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.2"
   }
 }

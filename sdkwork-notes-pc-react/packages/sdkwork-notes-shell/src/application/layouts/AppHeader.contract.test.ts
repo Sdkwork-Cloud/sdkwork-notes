@@ -14,11 +14,16 @@ describe('desktop app header contracts', () => {
     const shellLayoutSource = read('packages/sdkwork-notes-shell/src/application/layouts/ShellLayout.tsx');
 
     expect(appHeaderSource).toMatch(/className="relative flex h-12 items-center px-3 sm:px-4"/);
+    expect(appHeaderSource).toMatch(/className="relative z-30 bg-white\/72 backdrop-blur-xl dark:bg-zinc-950\/78"/);
     expect(appHeaderSource).toMatch(/data-slot="app-header-leading"/);
     expect(appHeaderSource).toMatch(/data-slot="app-header-trailing"/);
     expect(appHeaderSource).toMatch(/DesktopWindowControls variant="header"/);
     expect(appHeaderSource).toMatch(/className="ml-auto flex h-full shrink-0 items-center justify-end gap-2"/);
     expect(appHeaderSource).toMatch(/className="flex h-7 w-7 items-center justify-center rounded-xl bg-primary-600/);
+    expect(appHeaderSource).toMatch(/const isAuthMode = mode === 'auth';/);
+    expect(appHeaderSource).toMatch(/!\s*isAuthMode \? \(/);
+    expect(appHeaderSource).toMatch(/data-slot="app-header-search"/);
+    expect(appHeaderSource).toMatch(/data-slot="app-header-center"/);
     expect(shellLayoutSource).toMatch(/<AppHeader mode=\{mode\} \/>/);
   });
 });

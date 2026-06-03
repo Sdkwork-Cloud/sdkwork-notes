@@ -1,0 +1,58 @@
+{
+  "sdk": {
+    "module": "note",
+    "method": "remoteApply",
+    "requestType": "NoteRemoteApplyRequest",
+    "responseType": "NoteRemoteApplyResultVO"
+  },
+  "controller": {
+    "className": "NotesAppApiController",
+    "operationId": "noteRemoteApply",
+    "paths": [
+      "POST /app/v3/api/notes/{noteId}:remoteApply",
+      "POST /app/v3/api/notes/{noteId}/remote-apply"
+    ]
+  },
+  "request": {
+    "pathParameter": "noteId",
+    "requiredFields": [
+      "idempotencyKey",
+      "taskId",
+      "entityType",
+      "entityId",
+      "operation",
+      "mutation"
+    ],
+    "optionalFields": [
+      "localRevision",
+      "baseRemoteCursor"
+    ],
+    "constraints": [
+      "path noteId must match body entityId",
+      "entityType must remain note",
+      "idempotencyKey must remain stable across retries"
+    ]
+  },
+  "response": {
+    "outcomeField": "outcome",
+    "transportFailures": "throw",
+    "outcomes": {
+      "applied": {
+        "requiredFields": [
+          "taskId",
+          "remoteCursor",
+          "appliedAt"
+        ]
+      },
+      "conflict": {
+        "requiredFields": [
+          "taskId",
+          "remoteCursor",
+          "conflict.code",
+          "conflict.message",
+          "conflict.occurredAt"
+        ]
+      }
+    }
+  }
+}

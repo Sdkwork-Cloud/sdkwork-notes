@@ -24,6 +24,16 @@ import type {
   PageRequest,
   ServiceResult,
 } from '@sdkwork/notes-types';
+import {
+  createRemoteAppSdkNoteWorkspaceDataSource,
+  type NoteWorkspaceReadStrategyKey,
+  type NoteWorkspaceSnapshot,
+} from '../types/notesWorkspace';
+import {
+  createWorkspaceSnapshotReadStrategy,
+  type NoteWorkspaceReadStrategy,
+} from './noteWorkspaceReadStrategy';
+import { createNoteWorkspaceReadStrategyRegistry } from './noteWorkspaceReadStrategyRegistry';
 
 const DEFAULT_PAGE_SIZE = 50;
 const MAX_LIST_PAGE_SIZE = 100;
@@ -32,12 +42,6 @@ const FALLBACK_NOTE_TITLE = 'Untitled';
 const FALLBACK_FOLDER_NAME = 'Untitled Folder';
 const NOTE_TYPE_TAG_PREFIX = '__note_type__:';
 const SUPPORTED_NOTE_TYPES = new Set<Note['type']>(['doc', 'article', 'novel', 'log', 'news', 'code']);
-
-interface NoteWorkspaceSnapshot {
-  notes: NoteSummary[];
-  trashedNotes: NoteSummary[];
-  folders: NoteFolder[];
-}
 
 export interface NoteRepository extends IBaseService<NoteSummary> {
   queryWorkspaceSnapshot(pageRequest?: PageRequest): Promise<ServiceResult<NoteWorkspaceSnapshot>>;
@@ -55,6 +59,12 @@ export interface NoteRepository extends IBaseService<NoteSummary> {
   moveFolder(id: string, newParentId: string | null): Promise<ServiceResult<void>>;
   moveNote(note: NoteSummary, newParentId: string | null): Promise<ServiceResult<void>>;
   delete(entity: NoteSummary): Promise<ServiceResult<void>>;
+}
+
+export interface AppSdkNoteRepositoryOptions {
+  workspaceReadStrategy?: NoteWorkspaceReadStrategy;
+  workspaceReadStrategies?: NoteWorkspaceReadStrategy[];
+  workspaceReadStrategyKey?: NoteWorkspaceReadStrategyKey;
 }
 
 function normalizeString(value: unknown): string {
@@ -148,6 +158,10 @@ function normalizeStatus(value: unknown) {
   return normalizeString(value).toUpperCase();
 }
 
+function normalizePublishStatus(value: unknown): Note['publishStatus'] {
+  return normalizeString(value) === 'archived' ? 'archived' : 'draft';
+}
+
 function isDeletedStatus(status: unknown) {
   return normalizeStatus(status) === 'DELETED';
 }
@@ -189,7 +203,7 @@ function mapNoteSummary(note: NoteVO): NoteSummary {
     isFavorite: Boolean(note.favorited),
     snippet: normalizeString(note.summary) || createSnippet(content),
     metadata: userTags.length > 0 ? { tags: userTags } : undefined,
-    publishStatus: isArchivedStatus(status) ? 'archived' : 'draft',
+    publishStatus: normalizePublishStatus(isArchivedStatus(status) ? 'archived' : 'draft'),
     createdAt,
     updatedAt,
     deletedAt: isDeletedStatus(status) ? updatedAt : undefined,
@@ -273,7 +287,7 @@ function buildListParams(
     sortField: 'updatedAt',
     sortOrder: 'desc',
     includeDeleted: Boolean(overrides.includeDeleted),
-    includeArchived: Boolean(overrides.includeArchived),
+    includeArchived: overrides.includeArchived ?? true,
     favoriteOnly: Boolean(overrides.favoriteOnly),
   };
   const keyword = normalizeString(pageRequest?.keyword);
@@ -342,6 +356,33 @@ function mergePage(page: PageNoteVO, content: NoteSummary[], pageRequest?: PageR
 }
 
 class AppSdkNoteRepository implements NoteRepository {
+  private readonly workspaceReadStrategy: NoteWorkspaceReadStrategy;
+
+  constructor(options: AppSdkNoteRepositoryOptions = {}) {
+    const defaultWorkspaceReadStrategy = options.workspaceReadStrategy ?? createWorkspaceSnapshotReadStrategy({
+      listActiveNoteSummaries: async () => {
+        const notes = await this.listActiveNoteVOs();
+        return notes.map((item) => mapNoteSummary(item));
+      },
+      listDeletedNoteSummaries: async (keyword) => {
+        const notes = await this.listDeletedNoteVOs(keyword);
+        return notes.map((item) => mapNoteSummary(item));
+      },
+      getFolders: async () => this.getFolders(),
+      createDataSource: () => createRemoteAppSdkNoteWorkspaceDataSource(),
+    });
+
+    const workspaceReadStrategyRegistry = createNoteWorkspaceReadStrategyRegistry({
+      strategies: [
+        defaultWorkspaceReadStrategy,
+        ...(options.workspaceReadStrategies ?? []),
+      ],
+      defaultKey: defaultWorkspaceReadStrategy.key,
+    });
+
+    this.workspaceReadStrategy = workspaceReadStrategyRegistry.resolve(options.workspaceReadStrategyKey);
+  }
+
   private getClient() {
     return getAppSdkClientWithSession();
   }
@@ -396,7 +437,7 @@ class AppSdkNoteRepository implements NoteRepository {
         sortField: 'updatedAt',
         sortOrder: 'desc',
         includeDeleted: false,
-        includeArchived: false,
+        includeArchived: true,
         favoriteOnly: false,
       });
       const content: NoteVO[] = Array.isArray(page.content) ? page.content : [];
@@ -455,30 +496,15 @@ class AppSdkNoteRepository implements NoteRepository {
   }
 
   async queryWorkspaceSnapshot(pageRequest?: PageRequest): Promise<ServiceResult<NoteWorkspaceSnapshot>> {
-    try {
-      const [activeNotes, deletedNotes, foldersResult] = await Promise.all([
-        this.listActiveNoteVOs(),
-        this.listDeletedNoteVOs(normalizeString(pageRequest?.keyword) || undefined),
-        this.getFolders(),
-      ]);
-
-      if (!foldersResult.success) {
-        return Result.error(foldersResult.message || 'Failed to query folders');
-      }
-
-      return Result.success({
-        notes: activeNotes.map((item) => mapNoteSummary(item)),
-        trashedNotes: deletedNotes.map((item) => mapNoteSummary(item)),
-        folders: foldersResult.data || [],
-      });
-    } catch (error) {
-      return Result.error(toErrorMessage(error, 'Failed to query workspace snapshot'));
-    }
+    return this.workspaceReadStrategy.loadWorkspaceSnapshot(pageRequest);
   }
 
   async findAll(pageRequest?: PageRequest): Promise<ServiceResult<Page<NoteSummary>>> {
     try {
-      const page = await this.listNotesPage(buildListParams(pageRequest, { includeDeleted: false }));
+      const page = await this.listNotesPage(buildListParams(pageRequest, {
+        includeDeleted: false,
+        includeArchived: true,
+      }));
       const content: NoteVO[] = Array.isArray(page.content) ? page.content : [];
       const mapped = content
         .filter((item: NoteVO) => !isDeletedStatus(item.status))
@@ -521,7 +547,8 @@ class AppSdkNoteRepository implements NoteRepository {
       );
 
       if (!detailData) {
-        return Result.success(null);
+        const deletedDetail = await this.findDeletedById(noteId);
+        return Result.success(deletedDetail ? mapNote(deletedDetail) : null);
       }
 
       let text = normalizeString(detailData.content);
@@ -531,9 +558,8 @@ class AppSdkNoteRepository implements NoteRepository {
           contentResponse,
           'Failed to load note content',
         );
-        const remoteText = normalizeString(contentData?.text);
-        if (remoteText) {
-          text = remoteText;
+        if (contentData && Object.prototype.hasOwnProperty.call(contentData, 'text')) {
+          text = typeof contentData.text === 'string' ? contentData.text : normalizeString(contentData.text);
         }
       } catch {
         // keep summary content
@@ -563,6 +589,9 @@ class AppSdkNoteRepository implements NoteRepository {
         }
         if (entity.isFavorite) {
           await this.toggleFavorite(createdId, true);
+        }
+        if (normalizePublishStatus(entity.publishStatus) === 'archived') {
+          await this.getClient().note.archive(createdId);
         }
         const summary = await this.loadSummaryById(createdId, false);
         return Result.success(summary);
@@ -601,6 +630,14 @@ class AppSdkNoteRepository implements NoteRepository {
 
       if (entity.isFavorite !== undefined) {
         await this.toggleFavorite(noteId, Boolean(entity.isFavorite));
+      }
+
+      if (entity.publishStatus !== undefined && entity.deletedAt === undefined) {
+        if (normalizePublishStatus(entity.publishStatus) === 'archived') {
+          await this.getClient().note.archive(noteId);
+        } else {
+          await this.getClient().note.restore(noteId);
+        }
       }
 
       if (entity.deletedAt !== undefined) {
@@ -712,8 +749,19 @@ class AppSdkNoteRepository implements NoteRepository {
     }
   }
 
-  async moveFolder(_id: string, _newParentId: string | null): Promise<ServiceResult<void>> {
-    return Result.error('Folder move is not available in the current SDK round.');
+  async moveFolder(id: string, newParentId: string | null): Promise<ServiceResult<void>> {
+    const folderId = normalizeString(id);
+    if (!folderId) {
+      return Result.error('Folder id is required');
+    }
+    try {
+      await this.getClient().filesystem.moveNode(folderId, {
+        targetParentId: normalizeString(newParentId) || undefined,
+      });
+      return Result.success(undefined);
+    } catch (error) {
+      return Result.error(toErrorMessage(error, 'Failed to move folder'));
+    }
   }
 
   async moveNote(note: NoteSummary, newParentId: string | null): Promise<ServiceResult<void>> {
@@ -778,7 +826,11 @@ class AppSdkNoteRepository implements NoteRepository {
   }
 }
 
-const localNoteRepository: NoteRepository = new AppSdkNoteRepository();
+export function createNoteRepository(options: AppSdkNoteRepositoryOptions = {}): NoteRepository {
+  return new AppSdkNoteRepository(options);
+}
+
+const localNoteRepository: NoteRepository = createNoteRepository();
 const controller = createServiceAdapterController<NoteRepository>(localNoteRepository);
 
 export const noteRepository: NoteRepository = controller.service;

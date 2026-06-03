@@ -1,0 +1,72 @@
+{
+  "owner": {
+    "family": "app-sdk-generated-output",
+    "appApiRepository": "spring-ai-plus-app-api",
+    "sdkPackageDirectory": "sdkwork-sdk-app/sdkwork-app-sdk-typescript",
+    "sdkApiFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts",
+    "typesIndexFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/index.ts"
+  },
+  "request": {
+    "file": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-remote-apply-request.ts",
+    "export": "NoteRemoteApplyRequest",
+    "requiredFields": [
+      "idempotencyKey",
+      "taskId",
+      "entityType",
+      "entityId",
+      "operation",
+      "mutation"
+    ],
+    "optionalFields": [
+      "localRevision",
+      "baseRemoteCursor"
+    ]
+  },
+  "response": {
+    "modelFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-remote-apply-result-vo.ts",
+    "modelExport": "NoteRemoteApplyResultVO",
+    "wrapperFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/plus-api-result-note-remote-apply-result-vo.ts",
+    "wrapperExport": "PlusApiResultNoteRemoteApplyResultVO",
+    "wrapperRequiredFields": [
+      "data",
+      "code",
+      "msg",
+      "requestId",
+      "errorName"
+    ],
+    "wrapperOptionalFields": [
+      "ip",
+      "hostname"
+    ],
+    "outcomeField": "outcome",
+    "appliedFields": [
+      "taskId",
+      "remoteCursor",
+      "appliedAt"
+    ],
+    "conflictFields": [
+      "taskId",
+      "remoteCursor",
+      "conflict.code",
+      "conflict.message",
+      "conflict.occurredAt"
+    ]
+  },
+  "barrel": {
+    "expectedExports": [
+      "NoteRemoteApplyRequest",
+      "NoteRemoteApplyResultVO",
+      "PlusApiResultNoteRemoteApplyResultVO"
+    ]
+  },
+  "apiBinding": {
+    "method": "remoteApply",
+    "parameterType": "NoteRemoteApplyRequest",
+    "returnType": "PlusApiResultNoteRemoteApplyResultVO"
+  },
+  "forbidden": [
+    "remote apply reuses note-batch-update-request.ts",
+    "remote apply reuses note-batch-update-result-vo.ts",
+    "remote apply omits PlusApiResult envelope export"
+  ]
+}

@@ -19,14 +19,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@sdkwork/notes-commons": "workspace:*",
+    "@sdkwork/auth-pc-react": "workspace:*",
     "@sdkwork/notes-core": "workspace:*",
     "@sdkwork/notes-i18n": "workspace:*",
-    "lucide-react": "catalog:",
-    "qrcode": "^1.5.4",
-    "react": "catalog:",
-    "react-router-dom": "catalog:",
-    "sonner": "catalog:"
+    "@sdkwork/ui-pc-react": "workspace:*",
+    "react": "catalog:"
   },
   "devDependencies": {
     "@types/qrcode": "^1.5.6",
@@ -34,6 +31,6 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plugin-dts": "catalog:",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.2"
   }
 }

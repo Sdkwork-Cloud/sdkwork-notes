@@ -10,6 +10,7 @@ export {
   waitForTauriRuntime,
 } from './desktop/runtime';
 export {
+  clearDesktopSessionState,
   configureDesktopPlatformBridge,
   closeWindow,
   desktopNotesApi,
@@ -18,10 +19,12 @@ export {
   isWindowMaximized,
   maximizeWindow,
   minimizeWindow,
+  readDesktopSessionState,
   requestExplicitQuit,
   restoreWindow,
   setAppLanguage,
   showMainWindow,
   subscribeWindowMaximized,
   subscribeTrayNavigation,
+  writeDesktopSessionState,
 } from './desktop/tauriBridge';

@@ -91,6 +91,9 @@ pub fn build() -> tauri::Builder<tauri::Wry> {
         .invoke_handler(tauri::generate_handler![
             commands::app_info::app_info,
             commands::runtime_info::desktop_runtime_info,
+            commands::session_state::read_session_state,
+            commands::session_state::write_session_state,
+            commands::session_state::clear_session_state,
             commands::set_app_language::set_app_language,
             commands::window_commands::show_main_window_command,
             commands::window_commands::request_explicit_quit_command,

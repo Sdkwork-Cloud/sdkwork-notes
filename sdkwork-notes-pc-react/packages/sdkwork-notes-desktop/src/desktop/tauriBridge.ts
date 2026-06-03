@@ -29,6 +29,7 @@ export interface DesktopPublicAppConfig {
 export interface DesktopAppPaths {
   appDataDir: string;
   appConfigFile: string;
+  appSessionFile: string;
 }
 
 export interface DesktopRuntimeInfo {
@@ -39,6 +40,12 @@ export interface DesktopRuntimeInfo {
 
 export interface TrayNavigatePayload {
   route: string;
+}
+
+export interface DesktopSessionState {
+  authToken?: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export async function getAppInfo(): Promise<DesktopAppInfo | null> {
@@ -99,6 +106,41 @@ export async function requestExplicitQuit(): Promise<void> {
     async () => {
       window.close();
     },
+  );
+}
+
+export async function readDesktopSessionState(): Promise<DesktopSessionState | null> {
+  return runDesktopOrFallback(
+    'session.read',
+    () =>
+      invokeDesktopCommand<DesktopSessionState | null>(DESKTOP_COMMANDS.readSessionState, undefined, {
+        operation: 'session.read',
+      }),
+    async () => null,
+  );
+}
+
+export async function writeDesktopSessionState(session: DesktopSessionState): Promise<void> {
+  await runDesktopOrFallback(
+    'session.write',
+    () =>
+      invokeDesktopCommand<void>(
+        DESKTOP_COMMANDS.writeSessionState,
+        { session },
+        { operation: 'session.write' },
+      ),
+    async () => {},
+  );
+}
+
+export async function clearDesktopSessionState(): Promise<void> {
+  await runDesktopOrFallback(
+    'session.clear',
+    () =>
+      invokeDesktopCommand<void>(DESKTOP_COMMANDS.clearSessionState, undefined, {
+        operation: 'session.clear',
+      }),
+    async () => {},
   );
 }
 
@@ -248,6 +290,11 @@ export const desktopNotesApi = {
     getInfo: getAppInfo,
     getRuntimeInfo,
     setLanguage: setAppLanguage,
+  },
+  session: {
+    read: readDesktopSessionState,
+    write: writeDesktopSessionState,
+    clear: clearDesktopSessionState,
   },
   window: {
     showMainWindow,

@@ -4,7 +4,9 @@ import {
   countNoteCharacters,
   countNoteWords,
   estimateReadingMinutes,
+  extractNoteOutline,
   formatRelativeNoteTime,
+  getNoteTaskProgress,
   getVisibleNotes,
 } from './noteWorkspaceSelectors';
 
@@ -120,5 +122,41 @@ describe('noteWorkspaceSelectors', () => {
 
     expect(formatRelativeNoteTime('2026-03-30T11:30:00Z', 'en-US', now)).toBe('30 minutes ago');
     expect(formatRelativeNoteTime('2026-03-30T12:00:30Z', 'en-US', now)).toBe('in 30 seconds');
+  });
+
+  it('extracts a clean document outline from heading blocks', () => {
+    const note = createNote({
+      content: [
+        '<h1>Launch plan</h1>',
+        '<p>Overview</p>',
+        '<h2>Goals <em>and metrics</em></h2>',
+        '<h3>Ship checklist</h3>',
+      ].join(''),
+    });
+
+    expect(extractNoteOutline(note)).toEqual([
+      { level: 1, text: 'Launch plan', anchor: 'launch-plan' },
+      { level: 2, text: 'Goals and metrics', anchor: 'goals-and-metrics' },
+      { level: 3, text: 'Ship checklist', anchor: 'ship-checklist' },
+    ]);
+  });
+
+  it('summarizes task progress from task list markup', () => {
+    const note = createNote({
+      content: [
+        '<ul data-type="taskList">',
+        '<li data-type="taskItem" data-checked="true"><p>Draft brief</p></li>',
+        '<li data-type="taskItem" data-checked="false"><p>Review final copy</p></li>',
+        '<li data-type="taskItem" data-checked="true"><p>Publish update</p></li>',
+        '</ul>',
+      ].join(''),
+    });
+
+    expect(getNoteTaskProgress(note)).toEqual({
+      total: 3,
+      completed: 2,
+      remaining: 1,
+      ratio: 2 / 3,
+    });
   });
 });

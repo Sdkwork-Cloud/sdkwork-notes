@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import type { DragEvent as ReactDragEvent, RefObject } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import {
   Check,
@@ -19,7 +19,15 @@ import {
 import { Button } from '@sdkwork/notes-commons';
 import { useNotesTranslation } from '@sdkwork/notes-i18n';
 import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-types';
-import { buildFlatFolderTree, formatRelativeNoteTime } from '../services';
+import {
+  buildFlatFolderTree,
+  decodeSidebarDragPayload,
+  encodeSidebarDragPayload,
+  formatRelativeNoteTime,
+  isValidSidebarDropTarget,
+  SIDEBAR_DRAG_MIME_TYPE,
+  type SidebarDragItem,
+} from '../services';
 import type { NotesCollectionView } from '../types/notesWorkspace';
 
 interface NotesSidebarProps {
@@ -36,6 +44,8 @@ interface NotesSidebarProps {
   onCreateFolder: (name: string, parentId: string | null) => void;
   onCreateNote: (type: Note['type']) => void;
   onDeleteFolder: (folderId: string) => void;
+  onMoveFolder: (folderId: string, newParentId: string | null) => void;
+  onMoveNote: (noteId: string, newParentId: string | null) => void;
   onRenameFolder: (folderId: string, name: string) => void;
   onSearchChange: (value: string) => void;
   onSelectFolder: (folderId: string | null) => void;
@@ -121,6 +131,8 @@ export function NotesSidebar({
   onCreateFolder,
   onCreateNote,
   onDeleteFolder,
+  onMoveFolder,
+  onMoveNote,
   onRenameFolder,
   onSearchChange,
   onSelectFolder,
@@ -133,10 +145,58 @@ export function NotesSidebar({
   const [folderDraft, setFolderDraft] = useState('');
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [editingFolderName, setEditingFolderName] = useState('');
+  const [dragItem, setDragItem] = useState<SidebarDragItem | null>(null);
+  const [dropTargetKey, setDropTargetKey] = useState<string | null>(null);
   const folderTree = useMemo(
     () => buildFlatFolderTree(folders, expandedFolderIds),
     [expandedFolderIds, folders],
   );
+
+  const getDropTargetKey = (targetFolderId: string | null) => targetFolderId ? `folder:${targetFolderId}` : 'root';
+
+  const clearDragState = () => {
+    setDragItem(null);
+    setDropTargetKey(null);
+  };
+
+  const readDragItem = (event: ReactDragEvent<HTMLElement>) => {
+    const payload = decodeSidebarDragPayload(event.dataTransfer.getData(SIDEBAR_DRAG_MIME_TYPE));
+    return payload || dragItem;
+  };
+
+  const handleDragStart = (event: ReactDragEvent<HTMLElement>, nextDragItem: SidebarDragItem) => {
+    setDragItem(nextDragItem);
+    setDropTargetKey(null);
+    event.dataTransfer.setData(SIDEBAR_DRAG_MIME_TYPE, encodeSidebarDragPayload(nextDragItem));
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDropTargetDragOver = (event: ReactDragEvent<HTMLElement>, targetFolderId: string | null) => {
+    const nextDragItem = readDragItem(event);
+    if (!nextDragItem || !isValidSidebarDropTarget({ dragItem: nextDragItem, targetFolderId, folders })) {
+      return;
+    }
+
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    setDropTargetKey(getDropTargetKey(targetFolderId));
+  };
+
+  const handleDropTargetDrop = (event: ReactDragEvent<HTMLElement>, targetFolderId: string | null) => {
+    const nextDragItem = readDragItem(event);
+    clearDragState();
+
+    if (!nextDragItem || !isValidSidebarDropTarget({ dragItem: nextDragItem, targetFolderId, folders })) {
+      return;
+    }
+
+    event.preventDefault();
+    if (nextDragItem.kind === 'folder') {
+      onMoveFolder(nextDragItem.id, targetFolderId);
+      return;
+    }
+    onMoveNote(nextDragItem.id, targetFolderId);
+  };
 
   const handleCreateFolder = () => {
     const nextName = folderDraft.trim();
@@ -305,8 +365,12 @@ export function NotesSidebar({
               <button
                 type="button"
                 onClick={() => onSelectFolder(null)}
-                className={`text-xs font-semibold transition ${
-                  selectedFolderId === null
+                onDragOver={(event) => handleDropTargetDragOver(event, null)}
+                onDrop={(event) => handleDropTargetDrop(event, null)}
+                className={`rounded-full px-2 py-1 text-xs font-semibold transition ${
+                  dropTargetKey === 'root'
+                    ? 'bg-[var(--accent-soft-bg)] text-[var(--accent-soft-text)]'
+                    : selectedFolderId === null
                     ? 'text-[var(--accent-soft-text)]'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
                 }`}
@@ -329,10 +393,17 @@ export function NotesSidebar({
                     <div key={folder.id} className="space-y-1">
                       <button
                         type="button"
+                        draggable={!isEditing}
+                        onDragStart={(event) => handleDragStart(event, { kind: 'folder', id: folder.id })}
+                        onDragEnd={clearDragState}
+                        onDragOver={(event) => handleDropTargetDragOver(event, folder.id)}
+                        onDrop={(event) => handleDropTargetDrop(event, folder.id)}
                         onClick={() => onSelectFolder(folder.id)}
                         onDoubleClick={() => startFolderRename(folder)}
                         className={`flex w-full items-center gap-2 rounded-2xl px-3 py-2 text-left transition ${
-                          isSelected
+                          dropTargetKey === getDropTargetKey(folder.id)
+                            ? 'bg-[var(--accent-soft-bg)] text-[var(--accent-soft-text)] ring-1 ring-[var(--accent-soft-border)]'
+                            : isSelected
                             ? 'bg-[var(--accent-soft-bg)] text-[var(--accent-soft-text)]'
                             : 'text-[var(--text-secondary)] hover:bg-[var(--panel-muted)]'
                         }`}
@@ -443,6 +514,9 @@ export function NotesSidebar({
                   <button
                     key={note.id}
                     type="button"
+                    draggable={activeView !== 'trash'}
+                    onDragStart={(event) => handleDragStart(event, { kind: 'note', id: note.id })}
+                    onDragEnd={clearDragState}
                     onClick={() => onSelectNote(note.id)}
                     className={`w-full rounded-2xl border px-3 py-3 text-left transition ${
                       activeNoteId === note.id
@@ -474,6 +548,11 @@ export function NotesSidebar({
                           <span className="rounded-full border border-[var(--line-soft)] bg-[var(--surface-soft)] px-2 py-1">
                             {t(`notes.types.${note.type}`)}
                           </span>
+                          {note.publishStatus === 'archived' ? (
+                            <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-amber-700 dark:text-amber-200">
+                              {t('notes.publishStatus.archived')}
+                            </span>
+                          ) : null}
                           {formatRelativeNoteTime(note.updatedAt, i18n.language) ? (
                             <span className="rounded-full border border-[var(--line-soft)] bg-[var(--surface-soft)] px-2 py-1">
                               {formatRelativeNoteTime(note.updatedAt, i18n.language)}

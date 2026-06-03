@@ -4,6 +4,9 @@ export const DESKTOP_COMMANDS = {
   setAppLanguage: 'set_app_language',
   showMainWindow: 'show_main_window',
   requestExplicitQuit: 'request_explicit_quit',
+  readSessionState: 'read_session_state',
+  writeSessionState: 'write_session_state',
+  clearSessionState: 'clear_session_state',
 } as const;
 
 export type DesktopCommandName =

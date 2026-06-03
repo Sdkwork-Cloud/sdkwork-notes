@@ -11,10 +11,12 @@ import {
   Link2,
   List,
   ListOrdered,
+  ListTodo,
   Quote,
   Redo2,
   Star,
   Strikethrough,
+  Tags,
   Trash2,
   Underline as UnderlineIcon,
   Undo2,
@@ -33,7 +35,14 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import { Button, Dialog } from '@sdkwork/notes-commons';
 import { useNotesTranslation } from '@sdkwork/notes-i18n';
 import type { Note } from '@sdkwork/notes-types';
-import { countNoteWords, formatRelativeNoteTime } from '../services';
+import {
+  buildNotesWorkspaceSaveFeedbackModel,
+  countNoteWords,
+  estimateReadingMinutes,
+  extractNoteOutline,
+  formatRelativeNoteTime,
+  getNoteTaskProgress,
+} from '../services';
 import type { NoteSaveState } from '../types/notesWorkspace';
 import { NotesEmptyState } from './NotesEmptyState';
 
@@ -80,20 +89,11 @@ function ToolbarButton({
   );
 }
 
-function resolveSaveCopy(t: (key: string) => string, saveState: NoteSaveState) {
-  if (saveState === 'saving') {
-    return t('notes.editor.status.saving');
+function resolveDocumentStatusBadgeClass(status: Note['publishStatus'] | undefined) {
+  if (status === 'archived') {
+    return 'border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-200';
   }
-  if (saveState === 'dirty') {
-    return t('notes.editor.status.dirty');
-  }
-  if (saveState === 'saved') {
-    return t('notes.editor.status.saved');
-  }
-  if (saveState === 'error') {
-    return t('notes.editor.status.error');
-  }
-  return t('notes.editor.status.idle');
+  return 'bg-[var(--panel-muted)] text-[var(--text-muted)]';
 }
 
 export function NoteEditorPane({
@@ -179,13 +179,21 @@ export function NoteEditorPane({
     }
     return countNoteWords(note);
   }, [editor, note]);
+  const outline = useMemo(() => extractNoteOutline(note), [note]);
+  const taskProgress = useMemo(() => getNoteTaskProgress(note), [note]);
+  const readingMinutes = useMemo(() => estimateReadingMinutes(note), [note]);
+  const saveFeedback = buildNotesWorkspaceSaveFeedbackModel({
+    saveState,
+    errorMessage: null,
+  });
 
   const updatedAtLabel = note
     ? formatRelativeNoteTime(note.updatedAt, i18n.language)
     : '';
-  const canSaveNow = saveState === 'dirty' || saveState === 'error';
   const canUndo = Boolean(editor?.can().chain().focus().undo().run());
   const canRedo = Boolean(editor?.can().chain().focus().redo().run());
+  const publishStatusLabel = t(`notes.publishStatus.${note?.publishStatus ?? 'draft'}`);
+  const documentStatusBadgeClass = resolveDocumentStatusBadgeClass(note?.publishStatus);
 
   const handleLinkAction = () => {
     if (!editor) {
@@ -271,7 +279,10 @@ export function NoteEditorPane({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="rounded-full bg-[var(--panel-muted)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
-              {resolveSaveCopy(t, saveState)}
+              {t(saveFeedback.statusKey)}
+            </div>
+            <div className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${documentStatusBadgeClass}`}>
+              {publishStatusLabel}
             </div>
             <div className="rounded-full bg-[var(--panel-muted)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
               {t(`notes.types.${note.type}`)}
@@ -288,11 +299,11 @@ export function NoteEditorPane({
 
           <div className="flex items-center gap-2">
             <Button
-              appearance={canSaveNow ? 'primary' : 'secondary'}
-              disabled={!canSaveNow}
+              appearance={saveFeedback.canManualSave ? 'primary' : 'secondary'}
+              disabled={!saveFeedback.canManualSave}
               onClick={onSave}
             >
-              {saveState === 'saving' ? t('common.loading') : t('common.save')}
+              {saveFeedback.isBusy ? t('common.loading') : t('common.save')}
             </Button>
             <Button onClick={() => onToggleFavorite(note.id)}>
               <Star className={`h-4 w-4 ${note.isFavorite ? 'fill-current text-amber-500' : ''}`} />
@@ -312,6 +323,61 @@ export function NoteEditorPane({
           placeholder={t('notes.editor.titlePlaceholder')}
           className="mt-5 w-full border-none bg-transparent px-0 text-4xl font-black tracking-tight text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
         />
+
+        <div
+          data-slot="editor-insight-strip"
+          className="mt-5 grid gap-3 xl:grid-cols-[minmax(0,1.3fr)_minmax(300px,0.9fr)]"
+        >
+          <div className="rounded-[24px] border border-[var(--line-soft)] bg-[var(--panel-muted)] px-4 py-4">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              <Tags className="h-4 w-4" />
+              {t('notes.editor.tagged')}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {note.tags.length > 0 ? note.tags.map((tag) => (
+                <span
+                  key={tag}
+                  data-slot="editor-tag-chip"
+                  className="rounded-full border border-[var(--line-soft)] bg-[var(--panel-bg)] px-3 py-1 text-xs font-semibold text-[var(--text-secondary)]"
+                >
+                  #{tag}
+                </span>
+              )) : (
+                <span className="text-sm text-[var(--text-muted)]">
+                  {t('notes.editor.noTags')}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+            <div className="rounded-[24px] border border-[var(--line-soft)] bg-[var(--panel-muted)] px-4 py-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                {t('notes.editor.structureHeadings')}
+              </div>
+              <div className="mt-2 text-lg font-black text-[var(--text-primary)]">
+                {outline.length}
+              </div>
+            </div>
+            <div className="rounded-[24px] border border-[var(--line-soft)] bg-[var(--panel-muted)] px-4 py-4">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                <ListTodo className="h-4 w-4" />
+                {t('notes.editor.taskProgress')}
+              </div>
+              <div className="mt-2 text-lg font-black text-[var(--text-primary)]">
+                {taskProgress.completed}/{taskProgress.total}
+              </div>
+            </div>
+            <div className="rounded-[24px] border border-[var(--line-soft)] bg-[var(--panel-muted)] px-4 py-4">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                {t('notes.inspector.readingTime')}
+              </div>
+              <div className="mt-2 text-sm font-semibold text-[var(--text-primary)]">
+                {readingMinutes} {t('notes.inspector.minutes')}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="border-b border-[var(--line-soft)] px-8 py-4">

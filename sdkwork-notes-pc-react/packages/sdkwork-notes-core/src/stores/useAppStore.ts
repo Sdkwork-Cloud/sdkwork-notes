@@ -3,6 +3,40 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import type { LanguagePreference, ThemeColor, ThemeMode } from '@sdkwork/notes-types';
 
 export const APP_STORE_STORAGE_KEY = 'sdkwork-notes-app-storage';
+const fallbackAppStoreStorage = createMemoryStorage();
+
+function createMemoryStorage(): Storage {
+  const store = new Map<string, string>();
+
+  return {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key) {
+      return store.get(key) ?? null;
+    },
+    key(index) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key) {
+      store.delete(key);
+    },
+    setItem(key, value) {
+      store.set(key, value);
+    },
+  };
+}
+
+function getAppStoreStorage() {
+  if (typeof globalThis.localStorage !== 'undefined') {
+    return globalThis.localStorage;
+  }
+
+  return fallbackAppStoreStorage;
+}
 
 export interface AppStoreState {
   themeMode: ThemeMode;
@@ -13,6 +47,10 @@ export interface AppStoreState {
   setThemeMode: (mode: ThemeMode) => void;
   setThemeColor: (color: ThemeColor) => void;
   setLanguagePreference: (language: LanguagePreference) => void;
+  hydratePreferences: (preferences: {
+    themeMode: ThemeMode;
+    languagePreference: LanguagePreference;
+  }) => void;
   toggleSidebar: () => void;
   setInspectorOpen: (open: boolean) => void;
 }
@@ -34,6 +72,12 @@ export const useAppStore = create<AppStoreState>()(
       setLanguagePreference(languagePreference) {
         set({ languagePreference });
       },
+      hydratePreferences(preferences) {
+        set({
+          themeMode: preferences.themeMode,
+          languagePreference: preferences.languagePreference,
+        });
+      },
       toggleSidebar() {
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
       },
@@ -43,7 +87,7 @@ export const useAppStore = create<AppStoreState>()(
     }),
     {
       name: APP_STORE_STORAGE_KEY,
-      storage: createJSONStorage(() => globalThis.localStorage),
+      storage: createJSONStorage(getAppStoreStorage),
       partialize: (state) => ({
         themeMode: state.themeMode,
         themeColor: state.themeColor,

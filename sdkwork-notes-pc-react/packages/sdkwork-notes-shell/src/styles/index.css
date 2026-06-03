@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @source "../../../../";
+@source "../../../../../../sdkwork-ui/sdkwork-ui-pc-react/src";
+@source "../../../../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-pc-react/src";
 
 @theme {
   --color-primary-50: var(--theme-primary-50);
@@ -218,6 +220,73 @@
 }
 
 @layer utilities {
+  [data-notes-iam-screen="auth"] {
+    min-height: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--sdk-color-surface-canvas, #f5f5f5);
+  }
+
+  .dark [data-notes-iam-screen="auth"] {
+    background: var(--sdk-color-surface-canvas, #09090b);
+  }
+
+  [data-notes-iam-screen="auth"] .notes-iam-theme {
+    min-height: 100%;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    color: inherit;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif,
+      "Apple Color Emoji",
+      "Segoe UI Emoji",
+      "Segoe UI Symbol",
+      "Noto Color Emoji";
+    font-feature-settings: normal;
+    font-variant-numeric: normal;
+  }
+
+  [data-notes-iam-screen="auth"] .notes-iam-theme > div {
+    min-height: 100%;
+  }
+
+  [data-notes-iam-screen="auth"] [data-sdk-ui="button"] {
+    box-shadow: none;
+  }
+
+  [data-notes-iam-screen="auth"] [data-sdk-ui="input"] {
+    border-color: var(--sdk-color-border-default);
+    background: color-mix(in srgb, var(--sdk-color-surface-panel) 92%, transparent);
+    box-shadow: none;
+  }
+
+  .dark [data-notes-iam-screen="auth"] [data-sdk-ui="input"] {
+    border-color: var(--sdk-color-border-default);
+    background: color-mix(in srgb, var(--sdk-color-surface-panel) 92%, transparent);
+    box-shadow: none;
+  }
+
+  [data-notes-iam-screen="auth"] [data-sdk-ui="status-notice"] {
+    border-radius: var(--sdk-radius-panel);
+  }
+
+  [data-notes-iam-screen="auth"] .sdk-btn--outline {
+    border-color: var(--sdk-color-border-default);
+    background: color-mix(in srgb, var(--sdk-color-surface-panel-muted) 96%, transparent);
+  }
+
+  .dark [data-notes-iam-screen="auth"] .sdk-btn--outline {
+    border-color: var(--sdk-color-border-default);
+    background: color-mix(in srgb, var(--sdk-color-surface-panel-muted) 92%, transparent);
+  }
+
   .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);

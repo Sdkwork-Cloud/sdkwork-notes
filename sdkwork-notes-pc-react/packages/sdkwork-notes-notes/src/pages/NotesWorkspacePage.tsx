@@ -1,53 +1,85 @@
 import { startTransition, useDeferredValue, useEffect, useEffectEvent, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { Columns3Cog, PanelLeftClose, PanelLeftOpen, UserCircle2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Button, Dialog } from '@sdkwork/notes-commons';
+import { useNavigate } from 'react-router-dom';
+import { Dialog } from '@sdkwork/notes-commons';
 import { useNotesTranslation } from '@sdkwork/notes-i18n';
 import { useAppStore } from '@sdkwork/notes-core';
-import type { Note } from '@sdkwork/notes-types';
-import { getVisibleNotes } from '../services';
-import { NoteEditorPane, NoteInspectorPanel, NotesSidebar } from '../components';
+import {
+  buildNoteWorkspaceCommandPaletteItems,
+  buildNotesWorkspacePagePresentationModel,
+  buildNotesWorkspaceSaveFeedbackModel,
+  bindNotesWorkspacePageHideAutosave,
+  bindNotesWorkspaceSyncConnectivityRuntime,
+  bindNotesWorkspaceVisibilityAutosave,
+  buildNotesWorkspaceViewModel,
+  createNotesWorkspaceAutosavePlan,
+  createNotesWorkspaceCreateNoteRuntime,
+  createNotesWorkspaceDialogRuntime,
+  createNotesWorkspacePageCommandRuntime,
+  buildNotesWorkspaceDialogState,
+  buildNotesWorkspacePageHeaderActions,
+  bindNotesWorkspaceHotkeys,
+  formatRelativeNoteTime,
+  resolveNotesWorkspaceHotkeyCommand,
+  scheduleNotesWorkspaceAutosave,
+  startNotesWorkspaceSidebarResize,
+  type NoteWorkspacePendingDialog,
+  type NotesWorkspacePageCommand,
+} from '../services';
+import {
+  NoteEditorPane,
+  NoteInspectorPanel,
+  NotesSidebar,
+  NotesWorkspaceCommandPalette,
+  NotesWorkspaceDialogFooter,
+  NotesWorkspaceErrorBanner,
+  NotesWorkspaceHeaderActions,
+  NotesWorkspaceInsightsPanel,
+  NotesWorkspaceRecoveryBanner,
+  NotesWorkspaceShortcutHints,
+} from '../components';
 import { useNotesWorkspaceStore } from '../store/useNotesWorkspaceStore';
 
-function clampSidebarWidth(value: number) {
-  return Math.max(220, Math.min(420, value));
-}
-
 export function NotesWorkspacePage() {
-  const { t } = useNotesTranslation();
+  const { t, i18n } = useNotesTranslation();
+  const navigate = useNavigate();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [pendingDialog, setPendingDialog] = useState<
-    | { kind: 'clearTrash' }
-    | { kind: 'deleteNote'; noteId: string }
-    | { kind: 'deleteFolder'; folderId: string }
-    | null
-  >(null);
+  const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [pendingDialog, setPendingDialog] = useState<NoteWorkspacePendingDialog | null>(null);
   const isLoading = useNotesWorkspaceStore((state) => state.isLoading);
   const saveState = useNotesWorkspaceStore((state) => state.saveState);
   const errorMessage = useNotesWorkspaceStore((state) => state.errorMessage);
   const notes = useNotesWorkspaceStore((state) => state.notes);
   const trashedNotes = useNotesWorkspaceStore((state) => state.trashedNotes);
   const folders = useNotesWorkspaceStore((state) => state.folders);
+  const syncQueueSnapshot = useNotesWorkspaceStore((state) => state.syncQueueSnapshot);
   const activeNoteId = useNotesWorkspaceStore((state) => state.activeNoteId);
   const activeNote = useNotesWorkspaceStore((state) => state.activeNote);
+  const recoveredDrafts = useNotesWorkspaceStore((state) => state.recoveredDrafts);
+  const activeRecoveredDraft = useNotesWorkspaceStore((state) => state.activeRecoveredDraft);
   const activeView = useNotesWorkspaceStore((state) => state.activeView);
   const searchQuery = useNotesWorkspaceStore((state) => state.searchQuery);
   const selectedFolderId = useNotesWorkspaceStore((state) => state.selectedFolderId);
   const sidebarWidth = useNotesWorkspaceStore((state) => state.sidebarWidth);
   const expandedFolderIds = useNotesWorkspaceStore((state) => state.expandedFolderIds);
   const initialize = useNotesWorkspaceStore((state) => state.initialize);
+  const captureActiveNoteExitRecovery = useNotesWorkspaceStore((state) => state.captureActiveNoteExitRecovery);
   const createNote = useNotesWorkspaceStore((state) => state.createNote);
   const createFolder = useNotesWorkspaceStore((state) => state.createFolder);
   const renameFolder = useNotesWorkspaceStore((state) => state.renameFolder);
+  const moveFolder = useNotesWorkspaceStore((state) => state.moveFolder);
   const deleteFolder = useNotesWorkspaceStore((state) => state.deleteFolder);
   const selectNote = useNotesWorkspaceStore((state) => state.selectNote);
   const updateActiveNoteDraft = useNotesWorkspaceStore((state) => state.updateActiveNoteDraft);
+  const restoreRecoveredDraft = useNotesWorkspaceStore((state) => state.restoreRecoveredDraft);
+  const dismissRecoveredDraft = useNotesWorkspaceStore((state) => state.dismissRecoveredDraft);
   const persistActiveNote = useNotesWorkspaceStore((state) => state.persistActiveNote);
+  const moveNote = useNotesWorkspaceStore((state) => state.moveNote);
   const moveNoteToTrash = useNotesWorkspaceStore((state) => state.moveNoteToTrash);
   const restoreNoteFromTrash = useNotesWorkspaceStore((state) => state.restoreNoteFromTrash);
   const deleteNotePermanently = useNotesWorkspaceStore((state) => state.deleteNotePermanently);
   const clearTrash = useNotesWorkspaceStore((state) => state.clearTrash);
   const toggleFavorite = useNotesWorkspaceStore((state) => state.toggleFavorite);
+  const requestSyncDrain = useNotesWorkspaceStore((state) => state.requestSyncDrain);
   const setActiveView = useNotesWorkspaceStore((state) => state.setActiveView);
   const setSearchQuery = useNotesWorkspaceStore((state) => state.setSearchQuery);
   const setSelectedFolderId = useNotesWorkspaceStore((state) => state.setSelectedFolderId);
@@ -58,30 +90,74 @@ export function NotesWorkspacePage() {
   const toggleSidebar = useAppStore((state) => state.toggleSidebar);
   const inspectorOpen = useAppStore((state) => state.inspectorOpen);
   const setInspectorOpen = useAppStore((state) => state.setInspectorOpen);
-  const modifierKey = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? 'Cmd' : 'Ctrl';
 
   useEffect(() => {
     void initialize();
   }, [initialize]);
 
-  const visibleNotes = useMemo(
-    () => getVisibleNotes({
+  const workspaceViewModel = useMemo(
+    () => buildNotesWorkspaceViewModel({
       notes,
       trashedNotes,
       folders,
       activeView,
       searchQuery,
       selectedFolderId,
+      activeNote,
+      locale: i18n.language,
+      syncTasks: syncQueueSnapshot.tasks,
     }),
-    [activeView, folders, notes, searchQuery, selectedFolderId, trashedNotes],
+    [
+      activeNote,
+      activeView,
+      folders,
+      i18n.language,
+      notes,
+      searchQuery,
+      selectedFolderId,
+      syncQueueSnapshot.tasks,
+      trashedNotes,
+    ],
   );
-
-  const counts = useMemo(() => ({
-    all: notes.length,
-    favorites: notes.filter((note) => note.isFavorite).length,
-    recent: Math.min(notes.length, 12),
-    trash: trashedNotes.length,
-  }), [notes, trashedNotes.length]);
+  const {
+    visibleNotes,
+    counts,
+    activeOutline,
+    activeTaskProgress,
+    activeWordCount,
+    activeNoteFolderName,
+    activeNoteUpdatedLabel,
+    syncSummary,
+  } = workspaceViewModel;
+  const pagePresentation = useMemo(
+    () => buildNotesWorkspacePagePresentationModel({
+      t,
+      activeView,
+      activeNote,
+      saveState,
+      counts,
+      activeTaskProgress,
+      activeOutline,
+      activeWordCount,
+      activeNoteFolderName,
+      activeNoteUpdatedLabel,
+      syncSummary,
+      platform: typeof navigator !== 'undefined' ? navigator.platform : undefined,
+    }),
+    [
+      activeNote,
+      activeNoteFolderName,
+      activeNoteUpdatedLabel,
+      activeOutline,
+      activeTaskProgress,
+      activeView,
+      activeWordCount,
+      counts,
+      saveState,
+      syncSummary,
+      t,
+    ],
+  );
 
   const deferredDraftKey = useDeferredValue(
     activeNote
@@ -96,202 +172,293 @@ export function NotesWorkspacePage() {
         ].join('::')
       : '',
   );
+  const autosavePlan = createNotesWorkspaceAutosavePlan({
+    activeNoteId: activeNote?.id ?? null,
+    activeNoteDeletedAt: activeNote?.deletedAt,
+    saveState,
+  });
+  const saveFeedback = buildNotesWorkspaceSaveFeedbackModel({
+    saveState,
+    errorMessage,
+  });
+  const primaryRecoveredDraft = activeRecoveredDraft ?? recoveredDrafts[0] ?? null;
+  const recoveryBanner = useMemo(() => {
+    if (!primaryRecoveredDraft) {
+      return null;
+    }
+
+    const capturedAtLabel = formatRelativeNoteTime(primaryRecoveredDraft.capturedAt, i18n.language)
+      || primaryRecoveredDraft.capturedAt;
+    const recoveredTitle = primaryRecoveredDraft.draft.title.trim() || primaryRecoveredDraft.remoteTitle;
+    const remainingCount = recoveredDrafts.length - 1;
+
+    return activeRecoveredDraft
+      ? {
+          title: t('notes.recovery.activeTitle'),
+          description: t('notes.recovery.activeDescription', {
+            capturedAt: capturedAtLabel,
+          }),
+          caption: remainingCount > 0 ? t('notes.recovery.morePending', { count: remainingCount }) : null,
+          primaryLabel: t('notes.recovery.restore'),
+          secondaryLabel: t('notes.recovery.discard'),
+          onPrimaryAction: () => {
+            void restoreRecoveredDraft(primaryRecoveredDraft.noteId);
+          },
+          onSecondaryAction: () => {
+            void dismissRecoveredDraft(primaryRecoveredDraft.noteId);
+          },
+        }
+      : {
+          title: t('notes.recovery.pendingTitle'),
+          description: t('notes.recovery.pendingDescription', {
+            title: recoveredTitle,
+            capturedAt: capturedAtLabel,
+          }),
+          caption: remainingCount > 0 ? t('notes.recovery.morePending', { count: remainingCount }) : null,
+          primaryLabel: t('notes.recovery.open'),
+          secondaryLabel: t('notes.recovery.discard'),
+          onPrimaryAction: () => {
+            void selectNote(primaryRecoveredDraft.noteId);
+          },
+          onSecondaryAction: () => {
+            void dismissRecoveredDraft(primaryRecoveredDraft.noteId);
+          },
+        };
+  }, [
+    activeRecoveredDraft,
+    dismissRecoveredDraft,
+    i18n.language,
+    primaryRecoveredDraft,
+    recoveredDrafts.length,
+    restoreRecoveredDraft,
+    selectNote,
+    t,
+  ]);
 
   const flushDraft = useEffectEvent(() => {
-    if (!activeNote || activeNote.deletedAt || saveState !== 'dirty') {
+    if (!autosavePlan.shouldFlush) {
       return;
     }
     void persistActiveNote();
   });
 
-  useEffect(() => {
-    if (!activeNote || activeNote.deletedAt || saveState !== 'dirty') {
-      return;
-    }
+  const capturePageHideRecoverySnapshot = useEffectEvent(() => {
+    void captureActiveNoteExitRecovery('pagehide');
+  });
 
-    const timer = window.setTimeout(() => {
-      flushDraft();
-    }, 700);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [activeNote?.deletedAt, activeNote?.id, deferredDraftKey, flushDraft, saveState]);
-
-  useEffect(() => {
-    const handlePageHide = () => {
-      flushDraft();
-    };
-
-    window.addEventListener('pagehide', handlePageHide);
-    return () => {
-      window.removeEventListener('pagehide', handlePageHide);
-    };
-  }, [flushDraft]);
-
-  const handleWorkspaceHotkey = useEffectEvent((event: KeyboardEvent) => {
-    const key = event.key.toLowerCase();
-    const hasModifier = event.metaKey || event.ctrlKey;
-
-    if (hasModifier && !event.altKey && !event.shiftKey && key === 'n') {
-      event.preventDefault();
-      void handleCreateNote('doc');
-      return;
-    }
-
-    if (hasModifier && !event.altKey && !event.shiftKey && event.key === 'Enter') {
-      event.preventDefault();
-      flushDraft();
-      return;
-    }
-
-    if (hasModifier && event.shiftKey && !event.altKey && key === 'f') {
-      event.preventDefault();
-      searchInputRef.current?.focus();
-      searchInputRef.current?.select();
-      return;
-    }
-
-    if (hasModifier && event.shiftKey && !event.altKey && key === 's') {
-      event.preventDefault();
-      toggleSidebar();
-      return;
-    }
-
-    if (hasModifier && event.shiftKey && !event.altKey && key === 'i') {
-      event.preventDefault();
-      setInspectorOpen(!inspectorOpen);
-      return;
-    }
-
-    if (event.key === 'Escape' && document.activeElement === searchInputRef.current) {
-      event.preventDefault();
-      setSearchQuery('');
-      searchInputRef.current?.blur();
-    }
+  const captureVisibilityHiddenRecoverySnapshot = useEffectEvent(() => {
+    void captureActiveNoteExitRecovery('visibility-hidden');
   });
 
   useEffect(() => {
-    const handleKeydown = (event: KeyboardEvent) => {
-      handleWorkspaceHotkey(event);
-    };
-
-    window.addEventListener('keydown', handleKeydown);
-    return () => {
-      window.removeEventListener('keydown', handleKeydown);
-    };
-  }, [handleWorkspaceHotkey]);
-
-  const handleCreateNote = async (type: Note['type']) => {
-    const createdId = await createNote({
-      type,
-      title:
-        type === 'article'
-          ? t('notes.defaults.articleTitle')
-          : type === 'code'
-            ? t('notes.defaults.codeTitle')
-            : t('notes.defaults.docTitle'),
-      parentId: selectedFolderId,
+    return scheduleNotesWorkspaceAutosave(autosavePlan, {
+      scheduleTimeout: (delayMs, callback) => {
+        const timer = window.setTimeout(callback, delayMs);
+        return () => {
+          window.clearTimeout(timer);
+        };
+      },
+      flushDraft,
     });
+  }, [autosavePlan.delayMs, autosavePlan.shouldSchedule, deferredDraftKey, flushDraft]);
 
-    if (!createdId) {
-      return;
+  useEffect(() => {
+    return bindNotesWorkspacePageHideAutosave(autosavePlan, {
+      bindPageHide: (callback) => {
+        window.addEventListener('pagehide', callback);
+        return () => {
+          window.removeEventListener('pagehide', callback);
+        };
+      },
+      captureRecoverySnapshot: capturePageHideRecoverySnapshot,
+      flushDraft,
+    });
+  }, [autosavePlan.shouldFlushOnPageHide, capturePageHideRecoverySnapshot, flushDraft]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return undefined;
     }
 
-    startTransition(() => {
-      setActiveView('all');
+    return bindNotesWorkspaceVisibilityAutosave(autosavePlan, {
+      bindVisibilityChange: (handler) => {
+        document.addEventListener('visibilitychange', handler);
+        return () => {
+          document.removeEventListener('visibilitychange', handler);
+        };
+      },
+      isDocumentHidden: () => document.visibilityState === 'hidden',
+      captureRecoverySnapshot: captureVisibilityHiddenRecoverySnapshot,
+      flushDraft,
+    });
+  }, [autosavePlan.shouldFlushOnPageHide, captureVisibilityHiddenRecoverySnapshot, flushDraft]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return undefined;
+    }
+
+    return bindNotesWorkspaceSyncConnectivityRuntime({
+      bindOnline: (handler) => {
+        window.addEventListener('online', handler);
+        return () => {
+          window.removeEventListener('online', handler);
+        };
+      },
+      bindOffline: (handler) => {
+        window.addEventListener('offline', handler);
+        return () => {
+          window.removeEventListener('offline', handler);
+        };
+      },
+      isOnline: () => navigator.onLine,
+      requestSyncDrain,
+    });
+  }, [requestSyncDrain]);
+
+  const createNoteRuntime = createNotesWorkspaceCreateNoteRuntime({
+    selectedFolderId,
+    resolveDefaultTitle: (type) =>
+      type === 'article'
+        ? t('notes.defaults.articleTitle')
+        : type === 'code'
+          ? t('notes.defaults.codeTitle')
+          : t('notes.defaults.docTitle'),
+    createNote,
+    runTransition: startTransition,
+    setActiveView,
+  });
+  const handleCreateNote = createNoteRuntime.createNote;
+
+  const focusWorkspaceSearch = () => {
+    window.requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+      searchInputRef.current?.select();
     });
   };
 
-  const handleClearTrash = () => {
-    setPendingDialog({ kind: 'clearTrash' });
-  };
-
-  const handleRestoreNote = async (id: string) => {
-    const restored = await restoreNoteFromTrash(id);
-    if (!restored) {
-      return;
-    }
-
-    startTransition(() => {
-      setActiveView('all');
-    });
-    await selectNote(id);
-  };
-
-  const handleDeletePermanently = (id: string) => {
-    setPendingDialog({ kind: 'deleteNote', noteId: id });
-  };
-
-  const handleDeleteFolder = (id: string) => {
-    setPendingDialog({ kind: 'deleteFolder', folderId: id });
-  };
-
-  const dialogNote = pendingDialog?.kind === 'deleteNote'
-    ? [...notes, ...trashedNotes].find((note) => note.id === pendingDialog.noteId) ?? null
-    : null;
-  const dialogFolder = pendingDialog?.kind === 'deleteFolder'
-    ? folders.find((folder) => folder.id === pendingDialog.folderId) ?? null
-    : null;
-  const dialogTitle =
-    pendingDialog?.kind === 'clearTrash'
-      ? t('notes.dialogs.clearTrash.title')
-      : pendingDialog?.kind === 'deleteNote'
-        ? t('notes.dialogs.deleteNote.title')
-        : pendingDialog?.kind === 'deleteFolder'
-          ? t('notes.dialogs.deleteFolder.title')
-          : '';
-  const dialogDescription =
-    pendingDialog?.kind === 'clearTrash'
-      ? t('notes.dialogs.clearTrash.description')
-      : pendingDialog?.kind === 'deleteNote'
-        ? t('notes.dialogs.deleteNote.description', {
-            title: dialogNote?.title || t('notes.defaults.docTitle'),
-          })
-        : pendingDialog?.kind === 'deleteFolder'
-          ? t('notes.dialogs.deleteFolder.description', {
-              name: dialogFolder?.name || t('notes.defaults.folderTitle'),
-            })
-          : '';
-
-  const confirmPendingDialog = async () => {
-    const dialog = pendingDialog;
-    setPendingDialog(null);
-
-    if (!dialog) {
-      return;
-    }
-
-    if (dialog.kind === 'clearTrash') {
+  const pageCommandRuntime = createNotesWorkspacePageCommandRuntime({
+    inspectorOpen,
+    runTransition: startTransition,
+    setCommandPaletteOpen,
+    createNote: handleCreateNote,
+    persistActiveNote: flushDraft,
+    focusSearch: focusWorkspaceSearch,
+    blurSearch: () => {
+      searchInputRef.current?.blur();
+    },
+    setSearchQuery,
+    toggleSidebar,
+    setInspectorOpen,
+    navigateAccount: () => {
+      navigate('/account');
+    },
+    setActiveView,
+    setSelectedFolderId,
+    selectNote,
+    clearTrash: async () => {
       await clearTrash();
-      return;
-    }
+    },
+    deleteNotePermanently: async (noteId) => {
+      await deleteNotePermanently(noteId);
+    },
+    deleteFolder: async (folderId) => {
+      await deleteFolder(folderId);
+    },
+  });
 
-    if (dialog.kind === 'deleteNote') {
-      await deleteNotePermanently(dialog.noteId);
-      return;
-    }
+  const handleWorkspacePageCommand = useEffectEvent(async (command: NotesWorkspacePageCommand) => {
+    await pageCommandRuntime.execute(command);
+  });
 
-    await deleteFolder(dialog.folderId);
-  };
+  const headerActions = useMemo(
+    () => buildNotesWorkspacePageHeaderActions({
+      t,
+      inspectorOpen,
+      sidebarCollapsed,
+    }),
+    [inspectorOpen, sidebarCollapsed, t],
+  );
+
+  const dialogRuntime = createNotesWorkspaceDialogRuntime({
+    setPendingDialog,
+    executeDialogCommand: async (dialog) => {
+      await pageCommandRuntime.executeDialogConfirm(dialog);
+    },
+    restoreNoteFromTrash,
+    runTransition: startTransition,
+    setActiveView,
+    selectNote,
+  });
+
+  useEffect(() => {
+    return bindNotesWorkspaceHotkeys({
+      isCommandPaletteOpen,
+      isSearchFocused: () => typeof document !== 'undefined' && document.activeElement === searchInputRef.current,
+      resolveCommand: resolveNotesWorkspaceHotkeyCommand,
+      executeCommand: handleWorkspacePageCommand,
+      bindKeydown: (handler) => {
+        window.addEventListener('keydown', handler);
+        return () => {
+          window.removeEventListener('keydown', handler);
+        };
+      },
+    });
+  }, [handleWorkspacePageCommand, isCommandPaletteOpen]);
+
+  const commandPaletteDescriptors = useMemo(
+    () => buildNoteWorkspaceCommandPaletteItems({
+      t,
+      notes,
+      trashedNotes,
+      folders,
+      searchQuery,
+      sidebarCollapsed,
+      inspectorOpen,
+    }),
+    [folders, inspectorOpen, notes, searchQuery, sidebarCollapsed, t, trashedNotes],
+  );
+
+  const handleCommandPaletteDescriptorSelect = useEffectEvent(async (
+    descriptor: (typeof commandPaletteDescriptors)[number],
+  ) => {
+    await pageCommandRuntime.executeCommandPaletteAction(descriptor.action);
+  });
+
+  const dialogState = useMemo(
+    () => buildNotesWorkspaceDialogState({
+      pendingDialog,
+      notes,
+      trashedNotes,
+      folders,
+      t,
+    }),
+    [folders, notes, pendingDialog, t, trashedNotes],
+  );
+
+  const handleDialogConfirm = useEffectEvent(() => {
+    void dialogRuntime.confirmDialog(pendingDialog);
+  });
 
   const handleSidebarResizeStart = (event: ReactPointerEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    const startX = event.clientX;
-    const startWidth = sidebarWidth;
-
-    const handlePointerMove = (moveEvent: PointerEvent) => {
-      const nextWidth = clampSidebarWidth(startWidth + (moveEvent.clientX - startX));
-      setSidebarWidth(nextWidth);
-    };
-
-    const handlePointerUp = () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
+    startNotesWorkspaceSidebarResize({
+      startX: event.clientX,
+      startWidth: sidebarWidth,
+      setSidebarWidth,
+      bindPointerMove: (handler) => {
+        window.addEventListener('pointermove', handler);
+        return () => {
+          window.removeEventListener('pointermove', handler);
+        };
+      },
+      bindPointerUp: (handler) => {
+        window.addEventListener('pointerup', handler);
+        return () => {
+          window.removeEventListener('pointerup', handler);
+        };
+      },
+    });
   };
 
   return (
@@ -313,65 +480,50 @@ export function NotesWorkspacePage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Button onClick={() => handleCreateNote('doc')}>
-                {t('notes.actions.newDoc')}
-              </Button>
-              <Button onClick={() => handleCreateNote('article')}>
-                {t('notes.actions.newArticle')}
-              </Button>
-              <Button onClick={() => handleCreateNote('code')}>
-                {t('notes.actions.newCode')}
-              </Button>
-              <Button onClick={() => setInspectorOpen(!inspectorOpen)}>
-                <Columns3Cog className="h-4 w-4" />
-                {inspectorOpen ? t('notes.actions.hideInspector') : t('notes.actions.showInspector')}
-              </Button>
-              <Button onClick={() => toggleSidebar()}>
-                {sidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-                {sidebarCollapsed ? t('notes.actions.showSidebar') : t('notes.actions.hideSidebar')}
-              </Button>
-              <Link
-                to="/account"
-                className="inline-flex items-center gap-2 rounded-2xl border border-[var(--line-strong)] bg-[var(--panel-bg)] px-4 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition hover:bg-[var(--panel-muted)]"
-              >
-                <UserCircle2 className="h-4 w-4" />
-                {t('notes.actions.account')}
-              </Link>
-            </div>
+            <NotesWorkspaceHeaderActions
+              actions={headerActions}
+              onCommandAction={handleWorkspacePageCommand}
+            />
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
-            <span>{t('notes.shortcuts.label')}</span>
-            <span className="rounded-full border border-[var(--line-soft)] bg-[var(--panel-muted)] px-2.5 py-1">
-              {modifierKey}+N
-            </span>
-            <span>{t('notes.shortcuts.newDoc')}</span>
-            <span className="rounded-full border border-[var(--line-soft)] bg-[var(--panel-muted)] px-2.5 py-1">
-              {modifierKey}+Shift+F
-            </span>
-            <span>{t('notes.shortcuts.focusSearch')}</span>
-            <span className="rounded-full border border-[var(--line-soft)] bg-[var(--panel-muted)] px-2.5 py-1">
-              {modifierKey}+Enter
-            </span>
-            <span>{t('notes.shortcuts.save')}</span>
-            <span className="rounded-full border border-[var(--line-soft)] bg-[var(--panel-muted)] px-2.5 py-1">
-              {modifierKey}+Shift+S
-            </span>
-            <span>{t('notes.shortcuts.toggleSidebar')}</span>
-            <span className="rounded-full border border-[var(--line-soft)] bg-[var(--panel-muted)] px-2.5 py-1">
-              {modifierKey}+Shift+I
-            </span>
-            <span>{t('notes.shortcuts.toggleInspector')}</span>
-          </div>
+          <NotesWorkspaceShortcutHints
+            label={t('notes.shortcuts.label')}
+            shortcutHints={pagePresentation.shortcutHints}
+          />
 
-          {errorMessage ? (
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
-              <span>{errorMessage}</span>
-              <Button appearance="ghost" onClick={clearError}>
-                {t('notes.actions.dismissError')}
-              </Button>
-            </div>
+          <NotesWorkspaceErrorBanner
+            message={saveFeedback.bannerMessage}
+            dismissLabel={t('notes.actions.dismissError')}
+            retryLabel={t('notes.actions.retrySave')}
+            onDismiss={clearError}
+            onRetry={saveFeedback.retryAvailable ? flushDraft : undefined}
+          />
+          {recoveryBanner ? (
+            <NotesWorkspaceRecoveryBanner
+              title={recoveryBanner.title}
+              description={recoveryBanner.description}
+              caption={recoveryBanner.caption}
+              primaryLabel={recoveryBanner.primaryLabel}
+              secondaryLabel={recoveryBanner.secondaryLabel}
+              onPrimaryAction={recoveryBanner.onPrimaryAction}
+              onSecondaryAction={recoveryBanner.onSecondaryAction}
+            />
           ) : null}
+          <NotesWorkspaceInsightsPanel
+            focusTitle={t('notes.workspace.focusTitle')}
+            pagePresentation={pagePresentation}
+            onSyncAction={
+              pagePresentation.syncCard.actionKind === 'retry-sync'
+                ? () => {
+                    void requestSyncDrain();
+                  }
+                : pagePresentation.syncCard.actionKind === 'review-note'
+                  && pagePresentation.syncCard.actionTargetNoteId
+                  ? () => {
+                      void selectNote(pagePresentation.syncCard.actionTargetNoteId);
+                    }
+                : undefined
+            }
+          />
         </section>
 
         <section className="flex min-h-0 flex-1 gap-4 overflow-hidden">
@@ -388,12 +540,18 @@ export function NotesWorkspacePage() {
                   searchQuery={searchQuery}
                   selectedFolderId={selectedFolderId}
                   searchInputRef={searchInputRef}
-                  onClearTrash={handleClearTrash}
+                  onClearTrash={dialogRuntime.openClearTrashDialog}
                   onCreateFolder={(name, parentId) => {
                     void createFolder(name, parentId);
                   }}
                   onCreateNote={handleCreateNote}
-                  onDeleteFolder={handleDeleteFolder}
+                  onDeleteFolder={dialogRuntime.openDeleteFolderDialog}
+                  onMoveFolder={(folderId, newParentId) => {
+                    void moveFolder(folderId, newParentId);
+                  }}
+                  onMoveNote={(noteId, newParentId) => {
+                    void moveNote(noteId, newParentId);
+                  }}
                   onRenameFolder={(folderId, name) => {
                     void renameFolder(folderId, name);
                   }}
@@ -427,9 +585,7 @@ export function NotesWorkspacePage() {
               onMoveToTrash={(id) => {
                 void moveNoteToTrash(id);
               }}
-              onSave={() => {
-                void persistActiveNote();
-              }}
+              onSave={flushDraft}
               onToggleFavorite={(id) => {
                 void toggleFavorite(id);
               }}
@@ -441,13 +597,13 @@ export function NotesWorkspacePage() {
               <NoteInspectorPanel
                 folders={folders}
                 note={activeNote}
-                onDeletePermanently={handleDeletePermanently}
+                onDeletePermanently={dialogRuntime.openDeleteNoteDialog}
                 onDraftChange={updateActiveNoteDraft}
                 onMoveToTrash={(id) => {
                   void moveNoteToTrash(id);
                 }}
                 onRestoreNote={(id) => {
-                  void handleRestoreNote(id);
+                  void dialogRuntime.restoreNote(id);
                 }}
               />
             </div>
@@ -461,24 +617,25 @@ export function NotesWorkspacePage() {
         ) : null}
       </div>
       <Dialog
-        open={pendingDialog !== null}
-        title={dialogTitle}
-        description={dialogDescription}
-        onClose={() => setPendingDialog(null)}
+        open={dialogState.open}
+        title={dialogState.title}
+        description={dialogState.description}
+        onClose={dialogRuntime.closeDialog}
         footer={(
-          <>
-            <Button appearance="ghost" onClick={() => setPendingDialog(null)}>
-              {t('common.cancel')}
-            </Button>
-            <Button appearance="danger" onClick={() => { void confirmPendingDialog(); }}>
-              {pendingDialog?.kind === 'clearTrash'
-                ? t('notes.dialogs.clearTrash.confirm')
-                : pendingDialog?.kind === 'deleteFolder'
-                  ? t('notes.dialogs.deleteFolder.confirm')
-                  : t('notes.dialogs.deleteNote.confirm')}
-            </Button>
-          </>
+          <NotesWorkspaceDialogFooter
+            cancelLabel={t('common.cancel')}
+            confirmLabel={dialogState.confirmLabel}
+            onCancel={dialogRuntime.closeDialog}
+            onConfirm={handleDialogConfirm}
+          />
         )}
+      />
+      <NotesWorkspaceCommandPalette
+        open={isCommandPaletteOpen}
+        descriptors={commandPaletteDescriptors}
+        modifierKey={pagePresentation.modifierKey}
+        onSelectDescriptor={handleCommandPaletteDescriptorSelect}
+        onClose={() => setCommandPaletteOpen(false)}
       />
     </main>
   );

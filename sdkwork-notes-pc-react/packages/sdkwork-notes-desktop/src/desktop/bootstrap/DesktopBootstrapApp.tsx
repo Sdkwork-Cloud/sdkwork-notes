@@ -1,5 +1,5 @@
 import { startTransition, useEffect, useState } from 'react';
-import { AppRoot } from '@sdkwork/notes-shell';
+import { AppRoot, type AppRootProps } from '@sdkwork/notes-shell';
 import { getDesktopWindow, isTauriRuntime } from '../runtime';
 import { DesktopProviders } from '../providers/DesktopProviders';
 import { DesktopTrayRouteBridge } from './DesktopTrayRouteBridge';
@@ -32,6 +32,7 @@ function waitForNextPaint() {
 export interface DesktopBootstrapAppProps {
   initialAppearance: StartupAppearanceSnapshot;
   hasNativeRuntime?: boolean;
+  appRootProps?: AppRootProps;
 }
 
 async function prepareDesktopWindowForStartup() {
@@ -63,6 +64,7 @@ async function prepareDesktopWindowForStartup() {
 export function DesktopBootstrapApp({
   initialAppearance,
   hasNativeRuntime,
+  appRootProps = {},
 }: DesktopBootstrapAppProps) {
   const [shouldRenderShell, setShouldRenderShell] = useState(false);
   const [isStartupVisible, setIsStartupVisible] = useState(true);
@@ -122,7 +124,7 @@ export function DesktopBootstrapApp({
         <div className="h-full w-full">
           <DesktopProviders>
             <DesktopTrayRouteBridge />
-            <AppRoot />
+            <AppRoot {...appRootProps} />
           </DesktopProviders>
         </div>
       ) : null}

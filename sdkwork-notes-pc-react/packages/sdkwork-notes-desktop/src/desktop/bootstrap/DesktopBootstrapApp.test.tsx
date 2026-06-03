@@ -4,6 +4,10 @@ import { act, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DesktopBootstrapApp } from './DesktopBootstrapApp';
 
+const shellMocks = vi.hoisted(() => ({
+  appRoot: vi.fn((_props: unknown) => <div data-testid="notes-app-root">notes-app-root</div>),
+}));
+
 const runtimeMocks = vi.hoisted(() => ({
   showWindow: vi.fn(async () => {}),
   focusWindow: vi.fn(async () => {}),
@@ -12,7 +16,7 @@ const runtimeMocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@sdkwork/notes-shell', () => ({
-  AppRoot: () => <div data-testid="notes-app-root">notes-app-root</div>,
+  AppRoot: shellMocks.appRoot,
 }));
 
 vi.mock('../providers/DesktopProviders', () => ({
@@ -53,6 +57,7 @@ describe('DesktopBootstrapApp', () => {
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
     vi.useFakeTimers();
     queuedAnimationFrames.length = 0;
+    shellMocks.appRoot.mockClear();
     runtimeMocks.showWindow.mockClear();
     runtimeMocks.focusWindow.mockClear();
     runtimeMocks.getDesktopWindow.mockReset();
@@ -120,5 +125,39 @@ describe('DesktopBootstrapApp', () => {
     expect(runtimeMocks.focusWindow).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('desktop-startup-screen').getAttribute('data-visible')).toBe('false');
     expect(screen.getByTestId('desktop-startup-screen').getAttribute('data-status')).toBe('ready');
+  });
+
+  it('forwards optional app root props into the shell once the startup handoff finishes', async () => {
+    const appRootProps = {
+      notesWorkspaceBootstrapOptions: {
+        apply: vi.fn(async () => ({
+          type: 'completed' as const,
+          at: '2026-04-14T14:10:00.000Z',
+        })),
+      },
+    };
+
+    render(
+      <DesktopBootstrapApp
+        initialAppearance={{
+          language: 'zh-CN',
+          themeMode: 'system',
+          themeColor: 'default',
+          resolvedColorScheme: 'light',
+          backgroundColor: '#f3f5f9',
+          foregroundColor: '#122033',
+        }}
+        appRootProps={appRootProps}
+      />,
+    );
+
+    await settleAnimationFrames(3);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+    await settleAnimationFrames(2);
+
+    expect(shellMocks.appRoot).toHaveBeenCalled();
+    expect(shellMocks.appRoot.mock.calls.at(-1)?.[0]).toMatchObject(appRootProps);
   });
 });

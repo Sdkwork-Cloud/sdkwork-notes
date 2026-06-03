@@ -1,0 +1,48 @@
+{
+  "owner": {
+    "family": "notes-core-service",
+    "sharedWrapperPackage": "@sdkwork/notes-core",
+    "serviceFile": "packages/sdkwork-notes-core/src/services/appNoteSyncService.ts",
+    "serviceExport": "appNoteSyncService",
+    "serviceInterface": "IAppNoteSyncService",
+    "serviceMethod": "remoteApply",
+    "clientAccessor": "getAppSdkClientWithSession",
+    "responseUnwrapper": "unwrapAppSdkResponse"
+  },
+  "input": {
+    "requestType": "NotesSyncRemoteApplyRequest",
+    "noteIdSource": "request.entityId",
+    "bodySource": "request",
+    "constraints": [
+      "request.entityType must remain note",
+      "path noteId must match request.entityId"
+    ]
+  },
+  "output": {
+    "resultType": "NotesSyncTaskExecutionResult",
+    "transportFailures": "throw",
+    "semanticOutcomes": [
+      "completed",
+      "conflict"
+    ]
+  },
+  "sdkInvocation": {
+    "module": "note",
+    "method": "remoteApply",
+    "requestType": "NoteRemoteApplyRequest",
+    "responseType": "NoteRemoteApplyResultVO",
+    "callShape": "client.note.remoteApply(request.entityId, request)"
+  },
+  "mapping": {
+    "delegateToResultAdapterContract": "notes-remote-apply-app-sdk-result-adapter.contract.json"
+  },
+  "publicExports": {
+    "rootIndex": "packages/sdkwork-notes-core/src/index.ts",
+    "servicesIndex": "packages/sdkwork-notes-core/src/services/index.ts"
+  },
+  "forbidden": [
+    "wrapper-level direct-write fallback",
+    "transport error swallowing",
+    "request noteId/body entityId drift"
+  ]
+}

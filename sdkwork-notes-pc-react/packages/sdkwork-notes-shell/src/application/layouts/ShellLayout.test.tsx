@@ -4,7 +4,6 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import { useAuthStore } from '@sdkwork/notes-core';
 import { ShellLayout } from './ShellLayout';
 
 vi.mock('@sdkwork/notes-i18n', () => ({
@@ -13,18 +12,15 @@ vi.mock('@sdkwork/notes-i18n', () => ({
   }),
 }));
 
-vi.mock('./DesktopWindowControls', () => ({
-  DesktopWindowControls: () => <div data-testid="desktop-window-controls" />,
+vi.mock('./AppHeader', () => ({
+  AppHeader: ({ mode }: { mode?: 'default' | 'auth' }) => (
+    <div data-mode={mode ?? 'default'} data-testid="app-header" />
+  ),
 }));
 
 describe('ShellLayout', () => {
-  beforeEach(() => {
-    useAuthStore.getState().reset();
-  });
-
   afterEach(() => {
     cleanup();
-    useAuthStore.getState().reset();
   });
 
   it('uses a fixed-height desktop shell with shared background chrome and a custom header', () => {
@@ -38,11 +34,11 @@ describe('ShellLayout', () => {
 
     const root = container.firstElementChild as HTMLElement | null;
     const content = screen.getByTestId('shell-content');
-    const headerControls = screen.getByTestId('desktop-window-controls');
+    const header = screen.getByTestId('app-header');
 
     expect(root).toHaveClass('relative', 'flex', 'h-screen', 'flex-col', 'overflow-hidden');
     expect(content).toBeInTheDocument();
-    expect(headerControls).toBeInTheDocument();
+    expect(header).toHaveAttribute('data-mode', 'default');
   });
 
   it('passes auth mode through to the shared shell without owning the page viewport', () => {
@@ -56,8 +52,10 @@ describe('ShellLayout', () => {
 
     const root = container.firstElementChild as HTMLElement | null;
     const content = screen.getByTestId('auth-content');
+    const header = screen.getByTestId('app-header');
 
     expect(root).toHaveClass('relative', 'flex', 'h-screen', 'flex-col', 'overflow-hidden');
     expect(content).toBeInTheDocument();
+    expect(header).toHaveAttribute('data-mode', 'auth');
   });
 });

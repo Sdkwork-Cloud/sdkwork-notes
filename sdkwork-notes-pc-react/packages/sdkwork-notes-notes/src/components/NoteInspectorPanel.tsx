@@ -6,8 +6,10 @@ import {
   countNoteCharacters,
   countNoteWords,
   estimateReadingMinutes,
+  extractNoteOutline,
   formatNoteDateTime,
   formatRelativeNoteTime,
+  getNoteTaskProgress,
 } from '../services';
 
 interface NoteInspectorPanelProps {
@@ -30,6 +32,8 @@ export function NoteInspectorPanel({
   onRestoreNote,
 }: NoteInspectorPanelProps) {
   const { t, i18n } = useNotesTranslation();
+  const outline = extractNoteOutline(note);
+  const taskProgress = getNoteTaskProgress(note);
 
   if (!note) {
     return (
@@ -69,6 +73,21 @@ export function NoteInspectorPanel({
         </div>
 
         <div className="mt-5 grid gap-3">
+          <label className="space-y-2" data-slot="inspector-publish-status">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {t('notes.inspector.publishStatus')}
+            </span>
+            <select
+              value={note.publishStatus ?? 'draft'}
+              disabled={Boolean(note.deletedAt)}
+              onChange={(event) => onDraftChange({ publishStatus: event.target.value as Note['publishStatus'] })}
+              className="w-full rounded-2xl border border-[var(--line-soft)] bg-[var(--panel-muted)] px-3 py-2.5 text-sm outline-none focus:border-primary-400"
+            >
+              <option value="draft">{t('notes.publishStatus.draft')}</option>
+              <option value="archived">{t('notes.publishStatus.archived')}</option>
+            </select>
+          </label>
+
           <label className="space-y-2">
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
               {t('notes.inspector.type')}
@@ -213,6 +232,77 @@ export function NoteInspectorPanel({
               {formatNoteDateTime(note.createdAt, i18n.language)}
             </div>
           </div>
+        </div>
+      </SurfaceCard>
+
+      <SurfaceCard className="space-y-4" data-slot="inspector-structure-card">
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+          {t('notes.inspector.structure')}
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-2xl bg-[var(--panel-muted)] p-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {t('notes.inspector.headings')}
+            </div>
+            <div className="mt-2 text-2xl font-black text-[var(--text-primary)]">
+              {outline.length}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-[var(--panel-muted)] p-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {t('notes.inspector.taskProgress')}
+            </div>
+            <div className="mt-2 text-2xl font-black text-[var(--text-primary)]">
+              {taskProgress.completed}/{taskProgress.total}
+            </div>
+          </div>
+          <div className="rounded-2xl bg-[var(--panel-muted)] p-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {t('notes.inspector.taggedCount')}
+            </div>
+            <div className="mt-2 text-2xl font-black text-[var(--text-primary)]">
+              {note.tags.length}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--text-muted)]">
+              {t('notes.inspector.outline')}
+            </div>
+            <div className="text-xs font-semibold text-[var(--text-secondary)]">
+              {taskProgress.total > 0 ? `${Math.round(taskProgress.ratio * 100)}%` : '0%'}
+            </div>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-[var(--panel-muted)]">
+            <div
+              className="h-full rounded-full bg-primary-500 transition-[width]"
+              style={{ width: `${taskProgress.total > 0 ? Math.max(6, Math.round(taskProgress.ratio * 100)) : 0}%` }}
+            />
+          </div>
+
+          {outline.length > 0 ? (
+            <div data-slot="inspector-outline-list" className="space-y-2">
+              {outline.map((item) => (
+                <div
+                  key={`${item.anchor}-${item.level}`}
+                  className="rounded-2xl border border-[var(--line-soft)] bg-[var(--panel-muted)] px-3 py-2 text-sm text-[var(--text-secondary)]"
+                  style={{ paddingLeft: `${12 + ((item.level - 1) * 14)}px` }}
+                >
+                  {item.text}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              data-slot="inspector-outline-list"
+              className="rounded-2xl border border-dashed border-[var(--line-soft)] bg-[var(--panel-muted)] px-3 py-4 text-sm leading-7 text-[var(--text-muted)]"
+            >
+              {t('notes.inspector.outlineEmpty')}
+            </div>
+          )}
         </div>
       </SurfaceCard>
 

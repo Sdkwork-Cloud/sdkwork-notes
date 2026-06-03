@@ -2,8 +2,12 @@ import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@sdkwork/notes-core';
 import { AppRoutes } from './AppRoutes';
+
+const authStoreState = {
+  isAuthenticated: false,
+  isSessionReady: true,
+};
 
 vi.mock('@sdkwork/notes-i18n', () => ({
   ensureI18n: vi.fn(async () => undefined),
@@ -17,8 +21,15 @@ vi.mock('@sdkwork/notes-i18n', () => ({
 }));
 
 vi.mock('@sdkwork/notes-auth', () => ({
+  useAuthStore: <T,>(selector: (state: typeof authStoreState) => T) => selector(authStoreState),
   AuthPage: () => <div>Mock Auth Page</div>,
   AuthOAuthCallbackPage: () => <div>Mock OAuth Callback Page</div>,
+}));
+
+vi.mock('@sdkwork/notes-core', () => ({
+  useAuthStore: () => {
+    throw new Error('AppRoutes should read auth state from @sdkwork/notes-auth.');
+  },
 }));
 
 vi.mock('@sdkwork/notes-notes', () => ({
@@ -46,19 +57,32 @@ function renderRoutes(initialEntry: string) {
 describe('AppRoutes', () => {
   beforeEach(() => {
     localStorage.clear();
-    useAuthStore.getState().reset();
+    authStoreState.isAuthenticated = false;
+    authStoreState.isSessionReady = true;
   });
 
   afterEach(() => {
     cleanup();
     localStorage.clear();
-    useAuthStore.getState().reset();
+    authStoreState.isAuthenticated = false;
+    authStoreState.isSessionReady = true;
   });
 
-  it('renders the translated suspense fallback while lazy routes are resolving', () => {
-    renderRoutes('/login');
+  it('renders shared auth routes immediately instead of routing them through a lazy suspense boundary', () => {
+    renderRoutes('/auth/login');
+
+    expect(screen.getByText('Mock Auth Page')).toBeInTheDocument();
+    expect(screen.queryByText('common.loading')).not.toBeInTheDocument();
+  });
+
+  it('keeps showing the loading fallback while auth session restoration is still in flight', () => {
+    authStoreState.isAuthenticated = false;
+    authStoreState.isSessionReady = false;
+
+    renderRoutes('/notes');
 
     expect(screen.getByText('common.loading')).toBeInTheDocument();
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/notes');
   });
 
   it('redirects unauthenticated notes routes to login and preserves redirect target', async () => {
@@ -68,22 +92,13 @@ describe('AppRoutes', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('location-probe')).toHaveTextContent(
-        '/login?redirect=%2Fnotes%3Fview%3Dfavorites',
+        '/auth/login?redirect=%2Fnotes%3Fview%3Dfavorites',
       );
     });
   });
 
   it('redirects the index route to notes for authenticated users', async () => {
-    useAuthStore.setState({
-      isAuthenticated: true,
-      user: {
-        firstName: 'Notes',
-        lastName: 'User',
-        email: 'notes@example.com',
-        displayName: 'Notes User',
-        initials: 'NU',
-      },
-    });
+    authStoreState.isAuthenticated = true;
 
     renderRoutes('/');
 
@@ -95,18 +110,9 @@ describe('AppRoutes', () => {
   });
 
   it('redirects authenticated login requests back to the notes workspace', async () => {
-    useAuthStore.setState({
-      isAuthenticated: true,
-      user: {
-        firstName: 'Notes',
-        lastName: 'User',
-        email: 'notes@example.com',
-        displayName: 'Notes User',
-        initials: 'NU',
-      },
-    });
+    authStoreState.isAuthenticated = true;
 
-    renderRoutes('/login');
+    renderRoutes('/auth/login');
 
     await screen.findByText('Mock Notes Workspace');
 

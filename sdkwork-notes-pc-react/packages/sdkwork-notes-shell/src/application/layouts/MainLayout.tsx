@@ -4,10 +4,10 @@ import { ShellLayout } from './ShellLayout';
 
 function isAuthRoute(pathname: string) {
   return (
-    pathname === '/login' ||
-    pathname === '/register' ||
-    pathname === '/forgot-password' ||
-    pathname.startsWith('/login/oauth/callback/')
+    pathname === '/auth/login' ||
+    pathname === '/auth/register' ||
+    pathname === '/auth/forgot-password' ||
+    pathname.startsWith('/auth/oauth/callback/')
   );
 }
 

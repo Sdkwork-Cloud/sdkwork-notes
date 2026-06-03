@@ -3,37 +3,18 @@ import type {
   Note,
   NoteFolder,
   NoteSummary,
-  Page,
   PageRequest,
   ServiceResult,
 } from '@sdkwork/notes-types';
-import { createNotesWorkspaceStore } from './useNotesWorkspaceStore';
+import {
+  createEmptyNoteWorkspaceSnapshot,
+  createRemoteAppSdkNoteWorkspaceDataSource,
+  type NoteWorkspaceSnapshot,
+} from '../types/notesWorkspace';
+import { createNotesWorkspaceStore, type NoteWorkspaceStoreService } from './useNotesWorkspaceStore';
 
 function ok<T>(data: T): ServiceResult<T> {
   return { success: true, data };
-}
-
-function page<T>(content: T[]): Page<T> {
-  return {
-    content,
-    pageable: {
-      pageNumber: 0,
-      pageSize: content.length || 20,
-      offset: 0,
-      paged: true,
-      unpaged: false,
-      sort: { sorted: true, unsorted: false, empty: false },
-    },
-    last: true,
-    totalPages: 1,
-    totalElements: content.length,
-    size: content.length || 20,
-    number: 0,
-    sort: { sorted: true, unsorted: false, empty: false },
-    first: true,
-    numberOfElements: content.length,
-    empty: content.length === 0,
-  };
 }
 
 function createSummary(id: string, title: string, overrides: Partial<NoteSummary> = {}): NoteSummary {
@@ -72,24 +53,23 @@ function createFolder(id: string, name: string, overrides: Partial<NoteFolder> =
   };
 }
 
-function createWorkspaceServiceStub(overrides: Partial<ReturnType<typeof createWorkspaceServiceDefaults>> = {}) {
+function createWorkspaceSnapshot(
+  overrides: Partial<NoteWorkspaceSnapshot> = {},
+): NoteWorkspaceSnapshot {
+  return createEmptyNoteWorkspaceSnapshot(overrides);
+}
+
+function createWorkspaceServiceStub(overrides: Partial<NoteWorkspaceStoreService> = {}) {
   return {
     ...createWorkspaceServiceDefaults(),
     ...overrides,
   };
 }
 
-function createWorkspaceServiceDefaults() {
+function createWorkspaceServiceDefaults(): NoteWorkspaceStoreService {
   return {
     queryWorkspaceSnapshot: vi.fn(async (_pageRequest?: PageRequest) =>
-      ok({
-        notes: [],
-        trashedNotes: [],
-        folders: [],
-      })),
-    findAll: vi.fn(async () => ok(page<NoteSummary>([]))),
-    findTrashed: vi.fn(async () => ok(page<NoteSummary>([]))),
-    getFolders: vi.fn(async () => ok([])),
+      ok(createWorkspaceSnapshot())),
     findById: vi.fn(async (_id: string) => ok<Note | null>(null)),
     save: vi.fn(async (_entity: Partial<Note>) => ok(createSummary('new-note', 'Untitled'))),
     createFolder: vi.fn(async (name: string, parentId: string | null) =>
@@ -102,13 +82,10 @@ function createWorkspaceServiceDefaults() {
     deleteFolder: vi.fn(async (_id: string) => ok(undefined)),
     moveFolder: vi.fn(async (_id: string, _newParentId: string | null) => ok(undefined)),
     moveNote: vi.fn(async (_note: NoteSummary, _newParentId: string | null) => ok(undefined)),
-    delete: vi.fn(async (entity: NoteSummary) => ok(undefined)),
-    deleteAll: vi.fn(async (_ids: string[]) => ok(undefined)),
-    findAllById: vi.fn(async (_ids: string[]) => ok([])),
-    saveAll: vi.fn(async (_entities: Partial<NoteSummary>[]) => ok([])),
-    count: vi.fn(async () => 0),
   };
 }
+
+type WorkspaceSnapshotResult = ServiceResult<NoteWorkspaceSnapshot>;
 
 describe('createNotesWorkspaceStore', () => {
   it('loads workspace snapshot, restores sidebar width, and opens the first note', async () => {
@@ -116,11 +93,10 @@ describe('createNotesWorkspaceStore', () => {
     const folders = [createFolder('folder-1', 'Strategy')];
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot: vi.fn(async () =>
-        ok({
+        ok(createWorkspaceSnapshot({
           notes,
-          trashedNotes: [],
           folders,
-        })),
+        }))),
       findById: vi.fn(async (id: string) =>
         ok(id === 'note-1' ? createNote('note-1', 'Project brief') : null)),
     });
@@ -138,9 +114,54 @@ describe('createNotesWorkspaceStore', () => {
     expect(store.getState().sidebarWidth).toBe(368);
     expect(store.getState().notes).toEqual(notes);
     expect(store.getState().folders).toEqual(folders);
+    expect(store.getState().dataSource).toEqual(createRemoteAppSdkNoteWorkspaceDataSource());
     expect(store.getState().activeNoteId).toBe('note-1');
     expect(store.getState().activeNote?.content).toBe('Project brief content');
     expect(store.getState().isLoading).toBe(false);
+  });
+
+  it('deduplicates overlapping initialize calls so StrictMode-style remounts do not reload the workspace twice', async () => {
+    let hasPendingSnapshotResolver = false;
+    let resolveSnapshot!: (value: WorkspaceSnapshotResult) => void;
+
+    const queryWorkspaceSnapshot = vi.fn(
+      () =>
+        new Promise<WorkspaceSnapshotResult>((resolve) => {
+          hasPendingSnapshotResolver = true;
+          resolveSnapshot = resolve;
+        }),
+    );
+    const workspaceService = createWorkspaceServiceStub({
+      queryWorkspaceSnapshot,
+      findById: vi.fn(async (id: string) =>
+        ok(id === 'note-1' ? createNote('note-1', 'Project brief') : null)),
+    });
+
+    const store = createNotesWorkspaceStore({
+      workspaceService,
+      layoutService: {
+        getSidebarWidth: vi.fn(() => 320),
+        saveSidebarWidth: vi.fn(),
+      },
+    });
+
+    const firstInitialize = store.getState().initialize();
+    const secondInitialize = store.getState().initialize();
+
+    expect(queryWorkspaceSnapshot).toHaveBeenCalledTimes(1);
+
+    if (!hasPendingSnapshotResolver) {
+      throw new Error('Expected initialize to start loading the workspace snapshot.');
+    }
+
+    resolveSnapshot(ok(createWorkspaceSnapshot({
+      notes: [createSummary('note-1', 'Project brief')],
+    })));
+
+    await Promise.all([firstInitialize, secondInitialize]);
+
+    expect(queryWorkspaceSnapshot).toHaveBeenCalledTimes(1);
+    expect(workspaceService.findById).toHaveBeenCalledTimes(1);
   });
 
   it('creates a new note and selects the created detail', async () => {
@@ -182,14 +203,156 @@ describe('createNotesWorkspaceStore', () => {
     });
   });
 
+  it('enqueues a sync task after creating a new note', async () => {
+    const createdSummary = createSummary('note-42', 'Shipping checklist', {
+      type: 'article',
+      updatedAt: '2026-04-13T14:00:00Z',
+    });
+    const createdDetail = createNote('note-42', 'Shipping checklist', {
+      type: 'article',
+      content: '<p>Ready to ship</p>',
+      updatedAt: '2026-04-13T14:00:00Z',
+    });
+    const workspaceService = createWorkspaceServiceStub({
+      save: vi.fn(async () => ok(createdSummary)),
+      findById: vi.fn(async (id: string) =>
+        ok(id === 'note-42' ? createdDetail : null)),
+    });
+    const syncQueueStore = {
+      loadQueue: vi.fn(async () => ({ tasks: [] })),
+      saveQueue: vi.fn(async (_snapshot: { tasks: unknown[] }) => undefined),
+      clearQueue: vi.fn(async () => undefined),
+    };
+
+    const store = createNotesWorkspaceStore(
+      Object.assign({
+        workspaceService,
+        layoutService: {
+          getSidebarWidth: vi.fn(() => 300),
+          saveSidebarWidth: vi.fn(),
+        },
+      }, {
+        syncQueueStore,
+      }) as Parameters<typeof createNotesWorkspaceStore>[0],
+    );
+
+    await store.getState().createNote({
+      title: 'Shipping checklist',
+      type: 'article',
+      parentId: null,
+    });
+
+    expect(syncQueueStore.loadQueue).toHaveBeenCalledTimes(1);
+    expect(syncQueueStore.saveQueue).toHaveBeenCalledTimes(1);
+    expect(syncQueueStore.saveQueue).toHaveBeenCalledWith({
+      tasks: [
+        expect.objectContaining({
+          id: expect.any(String),
+          entityType: 'note',
+          entityId: 'note-42',
+          operation: 'upsert',
+          replayable: false,
+          status: 'queued',
+          createdAt: '2026-04-13T14:00:00.000Z',
+          updatedAt: '2026-04-13T14:00:00.000Z',
+          enqueuedAt: '2026-04-13T14:00:00.000Z',
+          startedAt: null,
+          completedAt: null,
+          nextRetryAt: null,
+          retryCount: 0,
+          attemptCount: 0,
+          localRevision: null,
+          remoteCursor: null,
+          lastFailure: null,
+          lastConflict: null,
+        }),
+      ],
+    });
+  });
+
+  it('requests a sync drain after creating a new note when a sync runtime is available', async () => {
+    const createdSummary = createSummary('note-42', 'Shipping checklist', {
+      type: 'article',
+      updatedAt: '2026-04-13T14:00:00Z',
+    });
+    const createdDetail = createNote('note-42', 'Shipping checklist', {
+      type: 'article',
+      content: '<p>Ready to ship</p>',
+      updatedAt: '2026-04-13T14:00:00Z',
+    });
+    const workspaceService = createWorkspaceServiceStub({
+      save: vi.fn(async () => ok(createdSummary)),
+      findById: vi.fn(async (id: string) =>
+        ok(id === 'note-42' ? createdDetail : null)),
+    });
+    const syncQueueStore = {
+      loadQueue: vi.fn(async () => ({ tasks: [] })),
+      saveQueue: vi.fn(async (_snapshot: { tasks: unknown[] }) => undefined),
+      clearQueue: vi.fn(async () => undefined),
+    };
+    const syncRuntime = {
+      requestDrain: vi.fn(async () => undefined),
+      dispose: vi.fn(),
+    };
+
+    const store = createNotesWorkspaceStore(
+      Object.assign({
+        workspaceService,
+        layoutService: {
+          getSidebarWidth: vi.fn(() => 300),
+          saveSidebarWidth: vi.fn(),
+        },
+      }, {
+        syncQueueStore,
+        syncRuntime,
+      }) as Parameters<typeof createNotesWorkspaceStore>[0],
+    );
+
+    await store.getState().createNote({
+      title: 'Shipping checklist',
+      type: 'article',
+      parentId: null,
+    });
+
+    expect(syncQueueStore.saveQueue).toHaveBeenCalledTimes(1);
+    expect(syncRuntime.requestDrain).toHaveBeenCalledTimes(1);
+  });
+
+  it('requests a sync drain after initialize when a sync runtime is available', async () => {
+    const notes = [createSummary('note-1', 'Project brief')];
+    const workspaceService = createWorkspaceServiceStub({
+      queryWorkspaceSnapshot: vi.fn(async () =>
+        ok(createWorkspaceSnapshot({
+          notes,
+        }))),
+      findById: vi.fn(async (id: string) =>
+        ok(id === 'note-1' ? createNote('note-1', 'Project brief') : null)),
+    });
+    const syncRuntime = {
+      requestDrain: vi.fn(async () => undefined),
+      dispose: vi.fn(),
+    };
+
+    const store = createNotesWorkspaceStore({
+      workspaceService,
+      layoutService: {
+        getSidebarWidth: vi.fn(() => 368),
+        saveSidebarWidth: vi.fn(),
+      },
+      syncRuntime,
+    } as Parameters<typeof createNotesWorkspaceStore>[0]);
+
+    await store.getState().initialize();
+
+    expect(syncRuntime.requestDrain).toHaveBeenCalledTimes(1);
+  });
+
   it('moves the active note to trash and clears the editor selection', async () => {
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot: vi.fn(async () =>
-        ok({
+        ok(createWorkspaceSnapshot({
           notes: [createSummary('note-7', 'Daily log')],
-          trashedNotes: [],
-          folders: [],
-        })),
+        }))),
       findById: vi.fn(async (id: string) =>
         ok(id === 'note-7' ? createNote('note-7', 'Daily log') : null)),
       moveToTrash: vi.fn(async (id: string) =>
@@ -223,11 +386,9 @@ describe('createNotesWorkspaceStore', () => {
   it('renames a folder and keeps the selection on the updated entity', async () => {
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot: vi.fn(async () =>
-        ok({
-          notes: [],
-          trashedNotes: [],
+        ok(createWorkspaceSnapshot({
           folders: [createFolder('folder-7', 'Projects')],
-        })),
+        }))),
       renameFolder: vi.fn(async () => ok('folder-7')),
     });
 
@@ -252,17 +413,70 @@ describe('createNotesWorkspaceStore', () => {
     });
   });
 
+  it('rewires descendants and note parents when a folder rename resolves to a different id', async () => {
+    const workspaceService = createWorkspaceServiceStub({
+      queryWorkspaceSnapshot: vi.fn(async () =>
+        ok(createWorkspaceSnapshot({
+          notes: [createSummary('note-1', 'Project brief', { parentId: 'folder-7' })],
+          trashedNotes: [],
+          folders: [
+            createFolder('folder-7', 'Projects'),
+            createFolder('folder-8', 'Specs', { parentId: 'folder-7' }),
+          ],
+        }))),
+      findById: vi.fn(async (id: string) =>
+        ok(id === 'note-1' ? createNote('note-1', 'Project brief', { parentId: 'folder-7' }) : null)),
+      renameFolder: vi.fn(async () => ok('folder-99')),
+    });
+
+    const store = createNotesWorkspaceStore({
+      workspaceService,
+      layoutService: {
+        getSidebarWidth: vi.fn(() => 300),
+        saveSidebarWidth: vi.fn(),
+      },
+    });
+
+    await store.getState().initialize();
+    store.getState().setSelectedFolderId('folder-7');
+    store.getState().toggleFolderExpanded('folder-7');
+
+    const renamedId = await store.getState().renameFolder('folder-7', 'Roadmaps');
+
+    expect(renamedId).toBe('folder-99');
+    expect(store.getState().selectedFolderId).toBe('folder-99');
+    expect(store.getState().expandedFolderIds).toContain('folder-99');
+    expect(store.getState().folders).toEqual([
+      expect.objectContaining({
+        id: 'folder-99',
+        name: 'Roadmaps',
+      }),
+      expect.objectContaining({
+        id: 'folder-8',
+        parentId: 'folder-99',
+      }),
+    ]);
+    expect(store.getState().notes[0]).toMatchObject({
+      id: 'note-1',
+      parentId: 'folder-99',
+    });
+    expect(store.getState().activeNote).toMatchObject({
+      id: 'note-1',
+      parentId: 'folder-99',
+    });
+  });
+
   it('keeps the current draft selected when saving fails during note switching', async () => {
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot: vi.fn(async () =>
-        ok({
+        ok(createWorkspaceSnapshot({
           notes: [
             createSummary('note-1', 'Draft one'),
             createSummary('note-2', 'Draft two', { updatedAt: '2026-03-30T11:00:00Z' }),
           ],
           trashedNotes: [],
           folders: [],
-        })),
+        }))),
       findById: vi.fn(async (id: string) =>
         ok(id === 'note-1' ? createNote('note-1', 'Draft one') : createNote('note-2', 'Draft two'))),
       save: vi.fn(async () => ({ success: false, message: 'Save failed' })),
@@ -290,14 +504,14 @@ describe('createNotesWorkspaceStore', () => {
   it('continues blocking note switching after a failed draft save leaves the note in error state', async () => {
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot: vi.fn(async () =>
-        ok({
+        ok(createWorkspaceSnapshot({
           notes: [
             createSummary('note-1', 'Draft one'),
             createSummary('note-2', 'Draft two', { updatedAt: '2026-03-30T11:00:00Z' }),
           ],
           trashedNotes: [],
           folders: [],
-        })),
+        }))),
       findById: vi.fn(async (id: string) =>
         ok(id === 'note-1' ? createNote('note-1', 'Draft one') : createNote('note-2', 'Draft two'))),
       save: vi.fn(async () => ({ success: false, message: 'Save failed' })),
@@ -327,11 +541,11 @@ describe('createNotesWorkspaceStore', () => {
   it('does not move a dirty note to trash when the save step fails', async () => {
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot: vi.fn(async () =>
-        ok({
+        ok(createWorkspaceSnapshot({
           notes: [createSummary('note-7', 'Daily log')],
           trashedNotes: [],
           folders: [],
-        })),
+        }))),
       findById: vi.fn(async (id: string) =>
         ok(id === 'note-7' ? createNote('note-7', 'Daily log') : null)),
       save: vi.fn(async () => ({ success: false, message: 'Save failed' })),
@@ -365,11 +579,11 @@ describe('createNotesWorkspaceStore', () => {
   it('does not create a new note when the active draft cannot be saved first', async () => {
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot: vi.fn(async () =>
-        ok({
+        ok(createWorkspaceSnapshot({
           notes: [createSummary('note-1', 'Draft one')],
           trashedNotes: [],
           folders: [],
-        })),
+        }))),
       findById: vi.fn(async (id: string) =>
         ok(id === 'note-1' ? createNote('note-1', 'Draft one') : createNote(id, 'New note'))),
       save: vi.fn(async (entity: Partial<Note>) => (
@@ -407,11 +621,11 @@ describe('createNotesWorkspaceStore', () => {
   it('keeps unsaved draft fields when toggling favorite on the active dirty note', async () => {
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot: vi.fn(async () =>
-        ok({
+        ok(createWorkspaceSnapshot({
           notes: [createSummary('note-9', 'Remote title')],
           trashedNotes: [],
           folders: [],
-        })),
+        }))),
       findById: vi.fn(async (id: string) =>
         ok(id === 'note-9' ? createNote('note-9', 'Remote title', {
           content: 'Remote body',
@@ -454,22 +668,62 @@ describe('createNotesWorkspaceStore', () => {
     expect(store.getState().saveState).toBe('dirty');
   });
 
+  it('persists document status changes as a focused delta through the workspace service', async () => {
+    const workspaceService = createWorkspaceServiceStub({
+      queryWorkspaceSnapshot: vi.fn(async () =>
+        ok(createWorkspaceSnapshot({
+          notes: [createSummary('note-5', 'Architecture review', { publishStatus: 'draft' })],
+          trashedNotes: [],
+          folders: [],
+        }))),
+      findById: vi.fn(async (id: string) =>
+        ok(id === 'note-5' ? createNote('note-5', 'Architecture review', { publishStatus: 'draft' }) : null)),
+      save: vi.fn(async () =>
+        ok(createSummary('note-5', 'Architecture review', {
+          publishStatus: 'archived',
+        }))),
+    });
+
+    const store = createNotesWorkspaceStore({
+      workspaceService,
+      layoutService: {
+        getSidebarWidth: vi.fn(() => 300),
+        saveSidebarWidth: vi.fn(),
+      },
+    });
+
+    await store.getState().initialize();
+    store.getState().updateActiveNoteDraft({ publishStatus: 'archived' });
+
+    const saved = await store.getState().persistActiveNote();
+
+    expect(saved).toBe(true);
+    expect(workspaceService.save).toHaveBeenLastCalledWith({
+      id: 'note-5',
+      publishStatus: 'archived',
+    });
+    expect(store.getState().activeNote).toMatchObject({
+      id: 'note-5',
+      publishStatus: 'archived',
+    });
+  });
+
   it('deletes a folder, clears the selection, and refreshes the workspace snapshot', async () => {
     const queryWorkspaceSnapshot = vi
       .fn()
-      .mockResolvedValueOnce(ok({
+      .mockResolvedValueOnce(ok(createWorkspaceSnapshot({
         notes: [createSummary('note-1', 'Project brief', { parentId: 'folder-1' })],
         trashedNotes: [],
         folders: [
           createFolder('folder-1', 'Projects'),
           createFolder('folder-2', 'Q2', { parentId: 'folder-1' }),
         ],
-      }))
-      .mockResolvedValueOnce(ok({
+      })))
+      .mockResolvedValueOnce(ok(createWorkspaceSnapshot({
         notes: [createSummary('note-1', 'Project brief')],
         trashedNotes: [],
         folders: [],
-      }));
+      })));
 
     const workspaceService = createWorkspaceServiceStub({
       queryWorkspaceSnapshot,
@@ -496,5 +750,90 @@ describe('createNotesWorkspaceStore', () => {
     expect(queryWorkspaceSnapshot).toHaveBeenCalledTimes(2);
     expect(store.getState().selectedFolderId).toBeNull();
     expect(store.getState().folders).toHaveLength(0);
+  });
+
+  it('moves a note into another folder and keeps the active note parent in sync', async () => {
+    const workspaceService = createWorkspaceServiceStub({
+      queryWorkspaceSnapshot: vi.fn(async () =>
+        ok(createWorkspaceSnapshot({
+          notes: [createSummary('note-1', 'Project brief', { parentId: null })],
+          trashedNotes: [],
+          folders: [
+            createFolder('folder-a', 'Projects'),
+            createFolder('folder-b', 'Roadmap'),
+          ],
+        }))),
+      findById: vi.fn(async (id: string) =>
+        ok(id === 'note-1' ? createNote('note-1', 'Project brief', { parentId: null }) : null)),
+      moveNote: vi.fn(async (_note: NoteSummary, _newParentId: string | null) => ok(undefined)),
+    });
+
+    const store = createNotesWorkspaceStore({
+      workspaceService,
+      layoutService: {
+        getSidebarWidth: vi.fn(() => 300),
+        saveSidebarWidth: vi.fn(),
+      },
+    });
+
+    await store.getState().initialize();
+
+    const moved = await store.getState().moveNote('note-1', 'folder-b');
+
+    expect(moved).toBe(true);
+    expect(workspaceService.moveNote).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'note-1',
+        parentId: null,
+      }),
+      'folder-b',
+    );
+    expect(store.getState().notes[0]).toMatchObject({
+      id: 'note-1',
+      parentId: 'folder-b',
+    });
+    expect(store.getState().activeNote).toMatchObject({
+      id: 'note-1',
+      parentId: 'folder-b',
+    });
+  });
+
+  it('moves a folder to the root level and rejects invalid descendant moves', async () => {
+    const moveFolder = vi.fn(async (_id: string, _newParentId: string | null) => ok(undefined));
+    const workspaceService = createWorkspaceServiceStub({
+      queryWorkspaceSnapshot: vi.fn(async () =>
+        ok(createWorkspaceSnapshot({
+          notes: [],
+          trashedNotes: [],
+          folders: [
+            createFolder('folder-a', 'Projects'),
+            createFolder('folder-b', 'Roadmap', { parentId: 'folder-a' }),
+            createFolder('folder-c', 'Research', { parentId: 'folder-b' }),
+          ],
+        }))),
+      moveFolder,
+    });
+
+    const store = createNotesWorkspaceStore({
+      workspaceService,
+      layoutService: {
+        getSidebarWidth: vi.fn(() => 300),
+        saveSidebarWidth: vi.fn(),
+      },
+    });
+
+    await store.getState().initialize();
+
+    const invalidMove = await store.getState().moveFolder('folder-a', 'folder-c');
+    const movedToRoot = await store.getState().moveFolder('folder-b', null);
+
+    expect(invalidMove).toBe(false);
+    expect(moveFolder).toHaveBeenCalledTimes(1);
+    expect(moveFolder).toHaveBeenCalledWith('folder-b', null);
+    expect(movedToRoot).toBe(true);
+    expect(store.getState().folders.find((folder) => folder.id === 'folder-b')).toMatchObject({
+      id: 'folder-b',
+      parentId: null,
+    });
   });
 });

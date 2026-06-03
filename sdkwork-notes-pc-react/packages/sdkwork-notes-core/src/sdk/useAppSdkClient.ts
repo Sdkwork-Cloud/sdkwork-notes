@@ -1,11 +1,7 @@
 import { useMemo } from 'react';
-import {
-  createClient,
-  type SdkworkAppClient,
-  type SdkworkAppConfig,
-} from '@sdkwork/app-sdk';
+import { createClient, type SdkworkAppClient, type SdkworkAppConfig } from '@sdkwork/app-sdk';
 
-export type AppRuntimeEnv = 'development' | 'test' | 'production';
+export type AppRuntimeEnv = 'development' | 'staging' | 'production' | 'test';
 
 export interface AppSdkClientConfig extends SdkworkAppConfig {
   env: AppRuntimeEnv;
@@ -17,58 +13,361 @@ export interface AppSdkSessionTokens {
   refreshToken?: string;
 }
 
-const DEFAULT_TIMEOUT = 30_000;
-const DEFAULT_DEV_BASE_URL = 'http://127.0.0.1:18080';
-const DEFAULT_TEST_BASE_URL = 'http://127.0.0.1:18080';
-const DEFAULT_PROD_BASE_URL = 'https://api.sdkwork.com';
+export type OwnerMode = 'root' | 'tenant' | 'organization';
+export type AppRuntimeSourceName = '__SDKWORK_NOTES_ENV__' | 'import.meta.env' | 'process.env';
+
+export interface AppSdkRuntimeContext {
+  env: AppRuntimeEnv;
+  ownerMode: OwnerMode;
+  platform: string;
+  sourcePriority: readonly AppRuntimeSourceName[];
+}
+
+export interface AppSdkSessionStoreAdapter {
+  kind: string;
+  read(): AppSdkSessionTokens | null | undefined;
+  write(session: AppSdkSessionTokens): void;
+  clear(): void;
+}
 
 export const APP_SDK_SESSION_STORAGE_KEY = 'sdkwork-notes-auth-session';
 
-let appSdkClient: SdkworkAppClient | null = null;
-let appSdkConfig: AppSdkClientConfig | null = null;
+const APP_RUNTIME_SOURCE_PRIORITY = [
+  '__SDKWORK_NOTES_ENV__',
+  'import.meta.env',
+  'process.env',
+] as const;
+const NOTES_ENV_GLOBAL_KEYS = ['__SDKWORK_NOTES_ENV__'];
+const AUTH_TOKEN_STORAGE_KEY = 'sdkwork.core.pc-react.auth-token';
+const ACCESS_TOKEN_STORAGE_KEY = 'sdkwork.core.pc-react.access-token';
+const REFRESH_TOKEN_STORAGE_KEY = 'sdkwork.core.pc-react.refresh-token';
+const DEFAULT_TIMEOUT = 30_000;
 
-function readEnv(name: string): string | undefined {
-  const env = (import.meta as { env?: Record<string, string | undefined> }).env;
-  return env?.[name];
+type EnvSource = Record<string, unknown>;
+type RuntimeWindow = Window & {
+  __TAURI__?: unknown;
+  __TAURI_IPC__?: unknown;
+  __TAURI_INTERNALS__?: unknown;
+};
+
+let appClientCache: SdkworkAppClient | null = null;
+let appClientConfigCache: AppSdkClientConfig | null = null;
+let appSdkSessionStoreAdapter: AppSdkSessionStoreAdapter | null = null;
+let sessionMemorySnapshot: AppSdkSessionTokens | null = null;
+const memoryStorage = new Map<string, string>();
+
+function normalizeEnvValue(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
+  }
+  return undefined;
 }
 
-function firstDefined(...values: Array<string | undefined>) {
+function normalizeString(value?: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeBearerToken(value?: unknown): string {
+  const normalized = normalizeString(value);
+  if (!normalized) {
+    return '';
+  }
+
+  return normalized.replace(/^Bearer\s+/i, '').trim();
+}
+
+function normalizeUrl(value?: unknown): string {
+  return normalizeString(value).replace(/\/+$/g, '');
+}
+
+function firstNonEmptyValue(...values: Array<string | undefined>): string | undefined {
   for (const value of values) {
-    if (value !== undefined && value !== null && value !== '') {
-      return value;
+    const normalized = normalizeString(value);
+    if (normalized) {
+      return normalized;
     }
   }
 
   return undefined;
 }
 
-function getStorage(): Storage | null {
-  if (typeof globalThis.localStorage !== 'undefined') {
-    return globalThis.localStorage;
+function parsePositiveNumber(value?: string, fallback: number = DEFAULT_TIMEOUT): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
   }
 
-  if (typeof window !== 'undefined' && window.localStorage) {
-    return window.localStorage;
+  return parsed;
+}
+
+function safeParseJson<T>(value: string | null | undefined): T | null {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeSessionTokens(session?: AppSdkSessionTokens | null): AppSdkSessionTokens {
+  return {
+    authToken: normalizeBearerToken(session?.authToken) || undefined,
+    accessToken: normalizeBearerToken(session?.accessToken) || undefined,
+    refreshToken: normalizeString(session?.refreshToken) || undefined,
+  };
+}
+
+function hasSessionTokens(session?: AppSdkSessionTokens | null): boolean {
+  return Boolean(session?.authToken || session?.accessToken || session?.refreshToken);
+}
+
+function readImportMetaEnv(): EnvSource {
+  return ((import.meta as { env?: EnvSource }).env ?? {}) as EnvSource;
+}
+
+function readProcessEnv(): EnvSource {
+  const processEnv = (
+    globalThis as typeof globalThis & {
+      process?: {
+        env?: Record<string, unknown>;
+      };
+    }
+  ).process?.env;
+
+  return processEnv ?? {};
+}
+
+function readNamedGlobalEnvSources(globalKeys: string[]): EnvSource {
+  return globalKeys.reduce<EnvSource>((accumulator, globalKey) => {
+    const source = (globalThis as Record<string, unknown>)[globalKey];
+    if (!source || typeof source !== 'object') {
+      return accumulator;
+    }
+
+    return {
+      ...accumulator,
+      ...(source as EnvSource),
+    };
+  }, {});
+}
+
+function createNotesEnvSource(): Record<string, string | undefined> {
+  const mergedSource = {
+    ...readProcessEnv(),
+    ...readImportMetaEnv(),
+    ...readNamedGlobalEnvSources(NOTES_ENV_GLOBAL_KEYS),
+  };
+
+  return Object.fromEntries(
+    Object.entries(mergedSource).map(([key, value]) => [key, normalizeEnvValue(value)]),
+  );
+}
+
+export function resolveAppSdkRuntimeContext(
+  overrides: Partial<SdkworkAppConfig> = {},
+): AppSdkRuntimeContext {
+  const envSource = createNotesEnvSource();
+
+  return {
+    env: resolveRuntimeEnv(envSource.VITE_APP_ENV, envSource.MODE, envSource.NODE_ENV),
+    ownerMode: resolveOwnerMode(envSource),
+    platform: normalizeString(overrides.platform) || resolvePlatformId(envSource),
+    sourcePriority: [...APP_RUNTIME_SOURCE_PRIORITY],
+  };
+}
+
+function resolveRuntimeEnv(...values: Array<string | undefined>): AppRuntimeEnv {
+  const normalized = firstNonEmptyValue(...values)?.toLowerCase();
+  if (normalized === 'production' || normalized === 'prod') {
+    return 'production';
+  }
+  if (normalized === 'test') {
+    return 'test';
+  }
+  if (normalized === 'staging' || normalized === 'stage') {
+    return 'staging';
+  }
+
+  return 'development';
+}
+
+function resolveDefaultBaseUrl(env: AppRuntimeEnv): string {
+  switch (env) {
+    case 'production':
+      return 'https://api.sdkwork.com';
+    case 'test':
+      return 'https://api-test.sdkwork.com';
+    case 'staging':
+      return 'https://staging-api.sdkwork.com';
+    case 'development':
+    default:
+      return 'https://api-dev.sdkwork.com';
+  }
+}
+
+function resolveOwnerMode(envSource: Record<string, string | undefined>): OwnerMode {
+  const explicitOwnerMode = firstNonEmptyValue(
+    envSource.VITE_APP_OWNER_MODE,
+    envSource.VITE_OWNER_MODE,
+    envSource.SDKWORK_OWNER_MODE,
+  )?.toLowerCase();
+
+  if (explicitOwnerMode === 'organization' || explicitOwnerMode === 'org') {
+    return 'organization';
+  }
+  if (explicitOwnerMode === 'tenant') {
+    return 'tenant';
+  }
+
+  const hasTenantSignals = Boolean(
+    firstNonEmptyValue(
+      envSource.VITE_TENANT_ID,
+      envSource.VITE_APP_TENANT_ID,
+      envSource.SDKWORK_TENANT_ID,
+      envSource.VITE_TENANT_ACCESS_TOKEN,
+      envSource.VITE_APP_TENANT_ACCESS_TOKEN,
+      envSource.VITE_TENANT_API_BASE_URL,
+      envSource.VITE_APP_TENANT_API_BASE_URL,
+    ),
+  );
+  if (hasTenantSignals) {
+    return 'tenant';
+  }
+
+  const hasOrganizationSignals = Boolean(
+    firstNonEmptyValue(
+      envSource.VITE_ORGANIZATION_ID,
+      envSource.VITE_APP_ORGANIZATION_ID,
+      envSource.SDKWORK_ORGANIZATION_ID,
+      envSource.VITE_ORGANIZATION_ACCESS_TOKEN,
+      envSource.VITE_APP_ORGANIZATION_ACCESS_TOKEN,
+      envSource.VITE_ORGANIZATION_API_BASE_URL,
+      envSource.VITE_APP_ORGANIZATION_API_BASE_URL,
+    ),
+  );
+  if (hasOrganizationSignals) {
+    return 'organization';
+  }
+
+  return 'root';
+}
+
+function pickOwnerScopedValue(
+  ownerMode: OwnerMode,
+  values: {
+    default?: string;
+    root?: string;
+    tenant?: string;
+    organization?: string;
+  },
+): string | undefined {
+  if (ownerMode === 'tenant') {
+    return values.tenant ?? values.default;
+  }
+  if (ownerMode === 'organization') {
+    return values.organization ?? values.default;
+  }
+  return values.root ?? values.default;
+}
+
+function detectTauriRuntime(): boolean {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const runtimeWindow = window as RuntimeWindow;
+  return Boolean(runtimeWindow.__TAURI__ || runtimeWindow.__TAURI_IPC__ || runtimeWindow.__TAURI_INTERNALS__);
+}
+
+function resolvePlatformId(envSource: Record<string, string | undefined>): string {
+  if (detectTauriRuntime()) {
+    return 'desktop';
+  }
+
+  return (
+    firstNonEmptyValue(
+      envSource.VITE_PLATFORM,
+      envSource.VITE_APP_PLATFORM,
+      envSource.SDKWORK_PLATFORM,
+    )
+    || 'web'
+  );
+}
+
+function resolveConfiguredAccessToken(
+  overrides: Partial<SdkworkAppConfig> = {},
+  config: AppSdkClientConfig | null = appClientConfigCache,
+): string {
+  if (overrides.accessToken !== undefined) {
+    return normalizeBearerToken(overrides.accessToken);
+  }
+  if (config?.accessToken) {
+    return normalizeBearerToken(config.accessToken);
+  }
+  return normalizeBearerToken(createAppSdkClientConfig().accessToken);
+}
+
+function createMemoryStorage(): Storage {
+  return {
+    get length() {
+      return memoryStorage.size;
+    },
+    clear() {
+      memoryStorage.clear();
+    },
+    getItem(key) {
+      return memoryStorage.get(key) ?? null;
+    },
+    key(index) {
+      return Array.from(memoryStorage.keys())[index] ?? null;
+    },
+    removeItem(key) {
+      memoryStorage.delete(key);
+    },
+    setItem(key, value) {
+      memoryStorage.set(key, value);
+    },
+  };
+}
+
+function resolveSessionStorage(): Storage {
+  if (typeof globalThis.sessionStorage !== 'undefined') {
+    return globalThis.sessionStorage;
+  }
+
+  return createMemoryStorage();
+}
+
+function resolveLocalStorage(): Storage | null {
+  if (typeof globalThis.localStorage !== 'undefined') {
+    return globalThis.localStorage;
   }
 
   return null;
 }
 
-function readStorage(key: string): string | undefined {
-  const storage = getStorage();
+function readStorageValue(storage: Storage | null | undefined, key: string): string | undefined {
   if (!storage) {
     return undefined;
   }
 
   try {
-    return storage.getItem(key) || undefined;
+    return storage.getItem(key) ?? undefined;
   } catch {
     return undefined;
   }
 }
 
-function writeStorage(key: string, value?: string) {
-  const storage = getStorage();
+function writeStorageValue(storage: Storage | null | undefined, key: string, value?: string): void {
   if (!storage) {
     return;
   }
@@ -81,218 +380,386 @@ function writeStorage(key: string, value?: string) {
 
     storage.removeItem(key);
   } catch {
-    // ignore storage failures
+    // ignore storage write failures
   }
 }
 
-function removeStorage(key: string) {
-  const storage = getStorage();
+function clearStorageKeys(storage: Storage | null | undefined, keys: string[]): void {
+  for (const key of keys) {
+    writeStorageValue(storage, key, undefined);
+  }
+}
+
+function readStorageSessionSnapshot(storage: Storage | null | undefined): AppSdkSessionTokens {
+  const session = safeParseJson<AppSdkSessionTokens>(
+    readStorageValue(storage, APP_SDK_SESSION_STORAGE_KEY),
+  );
+  const authToken = normalizeBearerToken(
+    session?.authToken || readStorageValue(storage, AUTH_TOKEN_STORAGE_KEY),
+  );
+  const accessToken = normalizeBearerToken(
+    session?.accessToken || readStorageValue(storage, ACCESS_TOKEN_STORAGE_KEY),
+  );
+  const refreshToken = normalizeString(
+    session?.refreshToken || readStorageValue(storage, REFRESH_TOKEN_STORAGE_KEY),
+  );
+
+  return {
+    authToken: authToken || undefined,
+    accessToken: accessToken || undefined,
+    refreshToken: refreshToken || undefined,
+  };
+}
+
+function writeStorageSessionSnapshot(
+  storage: Storage | null | undefined,
+  session: AppSdkSessionTokens,
+): void {
   if (!storage) {
     return;
   }
 
-  try {
-    storage.removeItem(key);
-  } catch {
-    // ignore storage failures
-  }
-}
-
-function normalizeAuthToken(value?: string) {
-  const normalized = (value || '').trim();
-  if (!normalized) {
-    return '';
-  }
-
-  if (normalized.toLowerCase().startsWith('bearer ')) {
-    return normalized.slice(7).trim();
-  }
-
-  return normalized;
-}
-
-function resolveRuntimeEnv(): AppRuntimeEnv {
-  const env = firstDefined(readEnv('VITE_APP_ENV'), readEnv('MODE'), readEnv('NODE_ENV'))?.toLowerCase();
-  if (env === 'production') {
-    return 'production';
-  }
-  if (env === 'test') {
-    return 'test';
-  }
-  return 'development';
-}
-
-function resolveDefaultBaseUrl(env: AppRuntimeEnv) {
-  if (env === 'production') {
-    return DEFAULT_PROD_BASE_URL;
-  }
-  if (env === 'test') {
-    return DEFAULT_TEST_BASE_URL;
-  }
-  return DEFAULT_DEV_BASE_URL;
-}
-
-function normalizeBaseUrl(baseUrl?: string, env: AppRuntimeEnv = 'development') {
-  const safe = (baseUrl || resolveDefaultBaseUrl(env)).trim();
-  return safe.replace(/\/+$/g, '');
-}
-
-function readPersistedSession(): Pick<AppSdkSessionTokens, 'authToken' | 'refreshToken'> {
-  const rawValue = readStorage(APP_SDK_SESSION_STORAGE_KEY);
-  if (!rawValue) {
-    return {};
-  }
-
-  try {
-    const parsed = JSON.parse(rawValue) as Partial<AppSdkSessionTokens>;
-    return {
-      authToken: normalizeAuthToken(parsed.authToken),
-      refreshToken: typeof parsed.refreshToken === 'string' ? parsed.refreshToken.trim() : undefined,
-    };
-  } catch {
-    return {};
-  }
-}
-
-function writePersistedSession(tokens: Pick<AppSdkSessionTokens, 'authToken' | 'refreshToken'>) {
-  const authToken = normalizeAuthToken(tokens.authToken);
-  const refreshToken = (tokens.refreshToken || '').trim();
-
-  if (!authToken) {
-    removeStorage(APP_SDK_SESSION_STORAGE_KEY);
+  const normalizedSession = normalizeSessionTokens(session);
+  if (!hasSessionTokens(normalizedSession)) {
+    clearStorageKeys(storage, [
+      APP_SDK_SESSION_STORAGE_KEY,
+      AUTH_TOKEN_STORAGE_KEY,
+      ACCESS_TOKEN_STORAGE_KEY,
+      REFRESH_TOKEN_STORAGE_KEY,
+    ]);
     return;
   }
 
-  writeStorage(
-    APP_SDK_SESSION_STORAGE_KEY,
-    JSON.stringify({
-      authToken,
-      refreshToken: refreshToken || undefined,
-    }),
-  );
+  writeStorageValue(storage, APP_SDK_SESSION_STORAGE_KEY, JSON.stringify(normalizedSession));
+  clearStorageKeys(storage, [
+    AUTH_TOKEN_STORAGE_KEY,
+    ACCESS_TOKEN_STORAGE_KEY,
+    REFRESH_TOKEN_STORAGE_KEY,
+  ]);
 }
 
-function applySessionTokensToClient(client: SdkworkAppClient, tokens: AppSdkSessionTokens) {
-  client.setAuthToken(normalizeAuthToken(tokens.authToken));
-  client.setAccessToken((tokens.accessToken ?? resolveAppSdkAccessToken()).trim());
+function clearLegacyLocalStorageSession(): void {
+  clearStorageKeys(resolveLocalStorage(), [
+    APP_SDK_SESSION_STORAGE_KEY,
+    AUTH_TOKEN_STORAGE_KEY,
+    ACCESS_TOKEN_STORAGE_KEY,
+    REFRESH_TOKEN_STORAGE_KEY,
+  ]);
+}
+
+const defaultAppSdkSessionStoreAdapter: AppSdkSessionStoreAdapter = {
+  kind: 'browser-session',
+  read() {
+    const sessionStorageSnapshot = normalizeSessionTokens(
+      readStorageSessionSnapshot(resolveSessionStorage()),
+    );
+    if (hasSessionTokens(sessionStorageSnapshot)) {
+      sessionMemorySnapshot = sessionStorageSnapshot;
+      clearLegacyLocalStorageSession();
+      return sessionStorageSnapshot;
+    }
+
+    const legacyLocalStorageSnapshot = normalizeSessionTokens(
+      readStorageSessionSnapshot(resolveLocalStorage()),
+    );
+    if (hasSessionTokens(legacyLocalStorageSnapshot)) {
+      sessionMemorySnapshot = legacyLocalStorageSnapshot;
+      writeStorageSessionSnapshot(resolveSessionStorage(), legacyLocalStorageSnapshot);
+      clearLegacyLocalStorageSession();
+      return legacyLocalStorageSnapshot;
+    }
+
+    return sessionMemorySnapshot;
+  },
+  write(session) {
+    const normalizedSession = normalizeSessionTokens(session);
+    sessionMemorySnapshot = hasSessionTokens(normalizedSession) ? normalizedSession : null;
+    writeStorageSessionSnapshot(resolveSessionStorage(), normalizedSession);
+    clearLegacyLocalStorageSession();
+  },
+  clear() {
+    sessionMemorySnapshot = null;
+    writeStorageSessionSnapshot(resolveSessionStorage(), {});
+    clearLegacyLocalStorageSession();
+  },
+};
+
+function resolveAppSdkSessionStoreAdapter(): AppSdkSessionStoreAdapter {
+  return appSdkSessionStoreAdapter ?? defaultAppSdkSessionStoreAdapter;
+}
+
+export function configureAppSdkSessionStoreAdapter(
+  adapter: AppSdkSessionStoreAdapter | null,
+): void {
+  appSdkSessionStoreAdapter = adapter;
+  sessionMemorySnapshot = adapter
+    ? (() => {
+        const snapshot = normalizeSessionTokens(adapter.read() ?? undefined);
+        return hasSessionTokens(snapshot) ? snapshot : null;
+      })()
+    : null;
+}
+
+function readPersistedSession(): AppSdkSessionTokens {
+  const session = normalizeSessionTokens(
+    resolveAppSdkSessionStoreAdapter().read() ?? sessionMemorySnapshot,
+  );
+  sessionMemorySnapshot = hasSessionTokens(session) ? session : null;
+  return session;
+}
+
+function readRuntimeSession(): AppSdkSessionTokens {
+  const storedSession = readPersistedSession();
+  const configuredAccessToken = resolveConfiguredAccessToken();
+
+  return {
+    authToken: storedSession.authToken,
+    accessToken: storedSession.accessToken || configuredAccessToken || undefined,
+    refreshToken: storedSession.refreshToken,
+  };
+}
+
+function writeSessionSnapshot(session: AppSdkSessionTokens): void {
+  const snapshot = normalizeSessionTokens(session);
+  if (!hasSessionTokens(snapshot)) {
+    resolveAppSdkSessionStoreAdapter().clear();
+    return;
+  }
+
+  resolveAppSdkSessionStoreAdapter().write(snapshot);
+}
+
+function applySessionTokensToClient(
+  client: SdkworkAppClient,
+  session: AppSdkSessionTokens,
+  fallbackAccessToken: string,
+): void {
+  client.setAuthToken(normalizeBearerToken(session.authToken));
+  client.setAccessToken(normalizeBearerToken(session.accessToken || fallbackAccessToken));
+}
+
+function resolveEffectiveSession(
+  overrides: Partial<SdkworkAppConfig> = {},
+  fallbackAccessToken: string,
+): AppSdkSessionTokens {
+  const session = readRuntimeSession();
+
+  return {
+    authToken:
+      overrides.authToken !== undefined
+        ? normalizeBearerToken(overrides.authToken)
+        : normalizeBearerToken(session.authToken),
+    accessToken:
+      overrides.accessToken !== undefined
+        ? normalizeBearerToken(overrides.accessToken)
+        : normalizeBearerToken(session.accessToken || fallbackAccessToken),
+    refreshToken: normalizeString(session.refreshToken),
+  };
+}
+
+function createScopedClient(overrides: Partial<SdkworkAppConfig> = {}): SdkworkAppClient {
+  const config = createAppSdkClientConfig(overrides);
+  const client = createClient(config);
+  applySessionTokensToClient(client, resolveEffectiveSession(overrides, config.accessToken || ''), config.accessToken || '');
+  return client;
 }
 
 export function createAppSdkClientConfig(
   overrides: Partial<SdkworkAppConfig> = {},
 ): AppSdkClientConfig {
-  const env = resolveRuntimeEnv();
+  const envSource = createNotesEnvSource();
+  const runtimeContext = resolveAppSdkRuntimeContext(overrides);
+  const env = runtimeContext.env;
+  const ownerMode = runtimeContext.ownerMode;
+  const defaultBaseUrl = normalizeUrl(
+    firstNonEmptyValue(
+      envSource.VITE_API_BASE_URL,
+      envSource.VITE_APP_API_BASE_URL,
+      envSource.VITE_APP_BASE_URL,
+      envSource.SDKWORK_API_BASE_URL,
+      resolveDefaultBaseUrl(env),
+    ),
+  );
+  const baseUrl = normalizeUrl(
+    pickOwnerScopedValue(ownerMode, {
+      default: defaultBaseUrl,
+      root: firstNonEmptyValue(envSource.VITE_ROOT_API_BASE_URL, envSource.VITE_APP_ROOT_API_BASE_URL, defaultBaseUrl),
+      tenant: firstNonEmptyValue(envSource.VITE_TENANT_API_BASE_URL, envSource.VITE_APP_TENANT_API_BASE_URL, defaultBaseUrl),
+      organization: firstNonEmptyValue(
+        envSource.VITE_ORGANIZATION_API_BASE_URL,
+        envSource.VITE_APP_ORGANIZATION_API_BASE_URL,
+        defaultBaseUrl,
+      ),
+    }) || resolveDefaultBaseUrl(env),
+  );
+  const accessToken = normalizeBearerToken(
+    pickOwnerScopedValue(ownerMode, {
+      default: firstNonEmptyValue(envSource.VITE_ACCESS_TOKEN, envSource.VITE_APP_ACCESS_TOKEN, envSource.SDKWORK_ACCESS_TOKEN),
+      root: firstNonEmptyValue(envSource.VITE_ROOT_ACCESS_TOKEN, envSource.VITE_APP_ROOT_ACCESS_TOKEN),
+      tenant: firstNonEmptyValue(envSource.VITE_TENANT_ACCESS_TOKEN, envSource.VITE_APP_TENANT_ACCESS_TOKEN),
+      organization: firstNonEmptyValue(
+        envSource.VITE_ORGANIZATION_ACCESS_TOKEN,
+        envSource.VITE_APP_ORGANIZATION_ACCESS_TOKEN,
+      ),
+    }),
+  );
+  const apiKey = normalizeString(firstNonEmptyValue(envSource.VITE_API_KEY, envSource.SDKWORK_API_KEY));
+  const authToken = normalizeBearerToken(overrides.authToken);
+  const overrideApiKey = normalizeString(overrides.apiKey);
+  const resolvedApiKey = overrideApiKey || apiKey || undefined;
+  const resolvedAccessToken = normalizeBearerToken(overrides.accessToken) || accessToken || undefined;
+  const resolvedAuthMode =
+    overrides.authMode
+    || (resolvedApiKey && !resolvedAccessToken && !authToken ? 'apikey' : 'dual-token');
 
   return {
     env,
-    baseUrl: normalizeBaseUrl(
-      firstDefined(overrides.baseUrl, readEnv('VITE_APP_API_BASE_URL'), readEnv('VITE_API_BASE_URL')),
-      env,
-    ),
-    timeout: overrides.timeout ?? DEFAULT_TIMEOUT,
-    apiKey: overrides.apiKey ?? firstDefined(readEnv('VITE_API_KEY')),
-    authToken: overrides.authToken,
-    accessToken: overrides.accessToken ?? firstDefined(readEnv('VITE_APP_ACCESS_TOKEN'), readEnv('VITE_ACCESS_TOKEN')),
-    tenantId: overrides.tenantId ?? firstDefined(readEnv('VITE_TENANT_ID')),
-    organizationId: overrides.organizationId ?? firstDefined(readEnv('VITE_ORGANIZATION_ID')),
-    platform: overrides.platform ?? firstDefined(readEnv('VITE_APP_PLATFORM')) ?? 'web',
+    baseUrl: normalizeUrl(overrides.baseUrl) || baseUrl,
+    timeout: overrides.timeout ?? parsePositiveNumber(firstNonEmptyValue(envSource.VITE_TIMEOUT, envSource.SDKWORK_TIMEOUT)),
+    apiKey: resolvedApiKey,
+    authToken: authToken || undefined,
+    accessToken: resolvedAccessToken,
+    tenantId: normalizeString(overrides.tenantId) || firstNonEmptyValue(envSource.VITE_TENANT_ID, envSource.VITE_APP_TENANT_ID, envSource.SDKWORK_TENANT_ID) || undefined,
+    organizationId:
+      normalizeString(overrides.organizationId)
+      || firstNonEmptyValue(envSource.VITE_ORGANIZATION_ID, envSource.VITE_APP_ORGANIZATION_ID, envSource.SDKWORK_ORGANIZATION_ID)
+      || undefined,
+    platform: runtimeContext.platform,
     tokenManager: overrides.tokenManager,
-    authMode: overrides.authMode,
-    headers: overrides.headers,
+    authMode: resolvedAuthMode,
+    headers: {
+      ...(overrides.headers ?? {}),
+    },
   };
 }
 
-export function initAppSdkClient(overrides: Partial<SdkworkAppConfig> = {}) {
-  appSdkConfig = createAppSdkClientConfig(overrides);
-  appSdkClient = createClient(appSdkConfig);
-  return appSdkClient;
+export function initAppSdkClient(
+  overrides: Partial<SdkworkAppConfig> = {},
+): SdkworkAppClient {
+  const config = createAppSdkClientConfig(overrides);
+  const client = createClient(config);
+  applySessionTokensToClient(client, resolveEffectiveSession(overrides, config.accessToken || ''), config.accessToken || '');
+  appClientCache = client;
+  appClientConfigCache = config;
+  return client;
 }
 
-export function getAppSdkClient() {
-  if (!appSdkClient) {
-    return initAppSdkClient();
+export function getAppSdkClient(): SdkworkAppClient {
+  return appClientCache ?? initAppSdkClient();
+}
+
+export function getAppSdkClientConfig(): AppSdkClientConfig | null {
+  return appClientConfigCache;
+}
+
+export function resolveAppSdkAccessToken(): string {
+  const sessionAccessToken = normalizeBearerToken(readPersistedSession().accessToken);
+  if (sessionAccessToken) {
+    return sessionAccessToken;
   }
 
-  return appSdkClient;
+  const configuredAccessToken = normalizeBearerToken(appClientConfigCache?.accessToken);
+  if (configuredAccessToken) {
+    return configuredAccessToken;
+  }
+
+  return resolveConfiguredAccessToken();
 }
 
-export function getAppSdkClientConfig() {
-  return appSdkConfig;
+export function resetAppSdkClient(): void {
+  appClientCache = null;
+  appClientConfigCache = null;
+  sessionMemorySnapshot = null;
 }
 
-export function resolveAppSdkAccessToken() {
-  return (firstDefined(getAppSdkClientConfig()?.accessToken, readEnv('VITE_APP_ACCESS_TOKEN'), readEnv('VITE_ACCESS_TOKEN')) || '').trim();
-}
-
-export function resetAppSdkClient() {
-  appSdkClient = null;
-  appSdkConfig = null;
-}
-
-export function applyAppSdkSessionTokens(tokens: AppSdkSessionTokens) {
+export function applyAppSdkSessionTokens(tokens: AppSdkSessionTokens): void {
   const client = getAppSdkClient();
-  applySessionTokensToClient(client, tokens);
+  applySessionTokensToClient(
+    client,
+    {
+      ...readRuntimeSession(),
+      ...tokens,
+      accessToken: tokens.accessToken ?? resolveAppSdkAccessToken(),
+    },
+    resolveConfiguredAccessToken({}, appClientConfigCache),
+  );
 }
 
 export function readAppSdkSessionTokens(): AppSdkSessionTokens {
-  const stored = readPersistedSession();
-  const accessToken = resolveAppSdkAccessToken();
+  const session = readRuntimeSession();
+  const accessToken = session.accessToken || resolveAppSdkAccessToken();
 
   return {
-    authToken: stored.authToken || undefined,
+    authToken: session.authToken,
     accessToken: accessToken || undefined,
-    refreshToken: stored.refreshToken || undefined,
+    refreshToken: session.refreshToken,
   };
 }
 
-export function persistAppSdkSessionTokens(tokens: AppSdkSessionTokens) {
-  const authToken = normalizeAuthToken(tokens.authToken);
-  const refreshToken = (tokens.refreshToken || '').trim();
-  const accessToken = (tokens.accessToken ?? resolveAppSdkAccessToken()).trim();
+export function persistAppSdkSessionTokens(tokens: AppSdkSessionTokens): void {
+  const currentSession = readRuntimeSession();
+  const fallbackAccessToken = resolveConfiguredAccessToken();
+  const nextSession: AppSdkSessionTokens = {
+    authToken:
+      tokens.authToken !== undefined
+        ? normalizeBearerToken(tokens.authToken) || undefined
+        : currentSession.authToken,
+    accessToken:
+      tokens.accessToken !== undefined
+        ? normalizeBearerToken(tokens.accessToken) || undefined
+        : currentSession.accessToken || fallbackAccessToken || undefined,
+    refreshToken:
+      tokens.refreshToken !== undefined
+        ? normalizeString(tokens.refreshToken) || undefined
+        : currentSession.refreshToken,
+  };
+  const persistedAccessToken =
+    normalizeBearerToken(nextSession.accessToken) === normalizeBearerToken(fallbackAccessToken)
+      ? undefined
+      : normalizeBearerToken(nextSession.accessToken) || undefined;
 
-  writePersistedSession({
-    authToken,
-    refreshToken: refreshToken || undefined,
+  writeSessionSnapshot({
+    authToken: nextSession.authToken,
+    accessToken: persistedAccessToken,
+    refreshToken: nextSession.refreshToken,
   });
 
-  applyAppSdkSessionTokens({
-    authToken,
-    accessToken,
-    refreshToken,
-  });
-}
-
-export function clearAppSdkSessionTokens() {
-  removeStorage(APP_SDK_SESSION_STORAGE_KEY);
-  const configuredAccessToken = resolveAppSdkAccessToken();
-  if (appSdkClient) {
-    applySessionTokensToClient(appSdkClient, {
-      authToken: '',
-      accessToken: configuredAccessToken,
-    });
+  if (appClientCache) {
+    applySessionTokensToClient(appClientCache, nextSession, fallbackAccessToken);
   }
-  resetAppSdkClient();
 }
 
-function createScopedAppSdkClient(overrides: Partial<SdkworkAppConfig> = {}) {
-  const config = createAppSdkClientConfig(overrides);
-  const client = createClient(config);
-  applySessionTokensToClient(client, readAppSdkSessionTokens());
-  return client;
+export function clearAppSdkSessionTokens(): void {
+  resolveAppSdkSessionStoreAdapter().clear();
+
+  if (appClientCache) {
+    applySessionTokensToClient(
+      appClientCache,
+      {
+        authToken: undefined,
+        accessToken: resolveConfiguredAccessToken(),
+      },
+      resolveConfiguredAccessToken({}, appClientConfigCache),
+    );
+  }
 }
 
 export function getAppSdkClientWithSession(
   overrides: Partial<SdkworkAppConfig> = {},
-) {
+): SdkworkAppClient {
   if (Object.keys(overrides).length > 0) {
-    return createScopedAppSdkClient(overrides);
+    return createScopedClient(overrides);
   }
 
   const client = getAppSdkClient();
-  applySessionTokensToClient(client, readAppSdkSessionTokens());
+  const config = appClientConfigCache ?? createAppSdkClientConfig();
+  applySessionTokensToClient(client, readRuntimeSession(), config.accessToken || '');
   return client;
 }
 
-export function useAppSdkClient(overrides: Partial<SdkworkAppConfig> = {}) {
+export function useAppSdkClient(
+  overrides: Partial<SdkworkAppConfig> = {},
+): SdkworkAppClient {
   const key = JSON.stringify(overrides || {});
   return useMemo(() => getAppSdkClientWithSession(overrides), [key]);
 }

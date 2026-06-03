@@ -3,8 +3,8 @@ import type { Note, NoteSummary, PageRequest, ServiceResult } from '@sdkwork/not
 import {
   noteRepository,
   type NoteRepository,
-  type NoteWorkspaceSnapshot,
 } from '../repository/noteRepository';
+import type { NoteWorkspaceSnapshot } from '../types/notesWorkspace';
 
 export interface NoteWorkspaceService extends NoteRepository {
   queryWorkspaceSnapshot(pageRequest?: PageRequest): Promise<ServiceResult<NoteWorkspaceSnapshot>>;

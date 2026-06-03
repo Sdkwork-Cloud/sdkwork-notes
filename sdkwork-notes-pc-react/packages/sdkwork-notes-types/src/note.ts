@@ -1,5 +1,5 @@
 export type NoteType = 'doc' | 'article' | 'novel' | 'log' | 'news' | 'code';
-export type PublishStatus = 'draft' | 'published' | 'archived';
+export type PublishStatus = 'draft' | 'archived';
 
 export interface NoteMetadata {
   coverImage?: string;

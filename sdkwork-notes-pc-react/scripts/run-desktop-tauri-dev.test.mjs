@@ -8,6 +8,7 @@ test('createDesktopTauriDevPlan prepares notes desktop tauri dev with source SDK
   const workspaceRoot = process.cwd();
   const plan = createDesktopTauriDevPlan({
     currentWorkingDir: workspaceRoot,
+    mode: 'test',
     runtimePlatform: 'win32',
     windowsCargoBinDir: 'C:\\Users\\admin\\.cargo\\bin',
     env: {
@@ -24,6 +25,7 @@ test('createDesktopTauriDevPlan prepares notes desktop tauri dev with source SDK
   assert.equal(plan.host, '127.0.0.1');
   assert.equal(plan.port, 1430);
   assert.equal(plan.env.SDKWORK_SHARED_SDK_MODE, 'source');
+  assert.equal(plan.env.SDKWORK_NOTES_APP_MODE, 'test');
   assert.match(plan.env.PATH, /^C:\\Users\\admin\\\.cargo\\bin;/);
   assert.equal(plan.tauriCommand, 'pnpm.cmd');
   assert.deepEqual(plan.tauriArgs, ['exec', 'tauri', 'dev']);

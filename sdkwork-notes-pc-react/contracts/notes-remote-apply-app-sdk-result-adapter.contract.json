@@ -1,0 +1,49 @@
+{
+  "owner": {
+    "family": "typescript-wrapper",
+    "sharedWrapperPackage": "@sdkwork/notes-core",
+    "clientAccessor": "getAppSdkClientWithSession",
+    "sdkMethod": "note.remoteApply"
+  },
+  "input": {
+    "noteIdSource": "request.entityId",
+    "requestType": "NoteRemoteApplyRequest"
+  },
+  "result": {
+    "allowedLocalTypesFromSemanticResponse": [
+      "completed",
+      "conflict"
+    ],
+    "applied": {
+      "localType": "completed",
+      "atField": "appliedAt",
+      "remoteCursorField": "remoteCursor"
+    },
+    "conflict": {
+      "localType": "conflict",
+      "atField": "conflict.occurredAt",
+      "messageField": "conflict.message",
+      "code": {
+        "passthrough": [
+          "stale-base-version",
+          "deleted-remotely",
+          "folder-structure-changed"
+        ],
+        "fallback": "unknown"
+      }
+    }
+  },
+  "transportFailures": {
+    "mode": "throw",
+    "workerFallback": {
+      "localType": "failed",
+      "code": "unknown",
+      "retryable": true
+    }
+  },
+  "forbidden": [
+    "semantic failed outcome payload",
+    "wrapper-level direct-write fallback",
+    "request.body.entityId drift from path noteId"
+  ]
+}

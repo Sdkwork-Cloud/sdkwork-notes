@@ -15,15 +15,18 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sdkwork/notes-auth": "workspace:*",
     "@sdkwork/notes-commons": "workspace:*",
     "@sdkwork/notes-core": "workspace:*",
     "@sdkwork/notes-i18n": "workspace:*",
     "@sdkwork/notes-types": "workspace:*",
     "lucide-react": "catalog:",
-    "react": "catalog:"
+    "react": "catalog:",
+    "sonner": "catalog:"
   },
   "devDependencies": {
     "@types/react": "catalog:",
