@@ -6,29 +6,46 @@ import test from 'node:test';
 const workspaceRoot = process.cwd();
 const workflowPath = path.resolve(
   workspaceRoot,
+  '../.github/workflows/package.yml',
+);
+const legacyWorkflowPath = path.resolve(
+  workspaceRoot,
   '../.github/workflows/sdkwork-notes-desktop-release.yml',
 );
+const workflowConfigPath = path.resolve(workspaceRoot, '../sdkwork.workflow.json');
 
-test('release workflow publishes desktop bundles with git-backed shared SDK dependencies', () => {
+test('release workflow delegates desktop packaging to the SDKWork reusable workflow', () => {
   const workflowSource = fs.readFileSync(workflowPath, 'utf8');
+  const workflowConfig = JSON.parse(fs.readFileSync(workflowConfigPath, 'utf8'));
+  const targetIds = workflowConfig.targets.map((target) => target.id);
 
-  assert.match(workflowSource, /name:\s+sdkwork-notes-desktop-release/i);
-  assert.match(workflowSource, /SDKWORK_SHARED_SDK_MODE:\s+git/);
-  assert.match(workflowSource, /SDKWORK_SHARED_SDK_GIT_REF:\s+main/);
-  assert.match(workflowSource, /node scripts\/prepare-shared-sdk-git-sources\.mjs/);
-  assert.match(workflowSource, /pnpm prepare:shared-sdk/);
-  assert.match(workflowSource, /pnpm release:desktop -- --target/);
-  assert.match(workflowSource, /uses:\s+softprops\/action-gh-release@v2/);
-  assert.match(workflowSource, /runner:\s+windows-2022/);
-  assert.match(workflowSource, /runner:\s+windows-11-arm/);
-  assert.match(workflowSource, /runner:\s+ubuntu-24\.04/);
-  assert.match(workflowSource, /runner:\s+ubuntu-24\.04-arm/);
-  assert.match(workflowSource, /runner:\s+macos-15-intel/);
-  assert.match(workflowSource, /runner:\s+macos-15/);
-  assert.match(workflowSource, /x86_64-pc-windows-msvc/);
-  assert.match(workflowSource, /aarch64-pc-windows-msvc/);
-  assert.match(workflowSource, /x86_64-unknown-linux-gnu/);
-  assert.match(workflowSource, /aarch64-unknown-linux-gnu/);
-  assert.match(workflowSource, /x86_64-apple-darwin/);
-  assert.match(workflowSource, /aarch64-apple-darwin/);
+  assert.equal(fs.existsSync(legacyWorkflowPath), false);
+  assert.match(workflowSource, /name:\s+Package Application/i);
+  assert.match(
+    workflowSource,
+    /uses:\s+Sdkwork-Cloud\/sdkwork-github-workflow\/\.github\/workflows\/sdkwork-package\.yml@b0829529b9277a3da32b90c2d36ff34ff09fa832/,
+  );
+  assert.match(workflowSource, /config_path:\s+sdkwork\.workflow\.json/);
+  assert.match(
+    workflowSource,
+    /package_version:\s+\$\{\{\s*github\.event\.inputs\.package_version\s+\|\|\s+''\s*\}\}/,
+  );
+
+  assert.equal(workflowConfig.app.id, 'sdkwork-notes-pc-react');
+  assert.equal(workflowConfig.app.sourcePath, 'sdkwork-notes-pc-react');
+  assert.equal(workflowConfig.release.changelog.source, 'auto');
+  assert.deepEqual(targetIds, [
+    'windows-x64-desktop-msi',
+    'windows-x64-desktop-exe',
+    'windows-arm64-desktop-msi',
+    'windows-arm64-desktop-exe',
+    'linux-debian-x64-desktop-deb',
+    'linux-rhel-x64-desktop-rpm',
+    'linux-x64-desktop-appimage',
+    'linux-debian-arm64-desktop-deb',
+    'linux-rhel-arm64-desktop-rpm',
+    'linux-arm64-desktop-appimage',
+    'macos-x64-desktop-tar-gz',
+    'macos-arm64-desktop-tar-gz',
+  ]);
 });
