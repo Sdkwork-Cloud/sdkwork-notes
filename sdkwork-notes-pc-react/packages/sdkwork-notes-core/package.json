@@ -19,7 +19,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@sdkwork/app-sdk": "workspace:*",
     "@sdkwork/notes-types": "workspace:*",
     "react": "catalog:",
     "zustand": "catalog:"

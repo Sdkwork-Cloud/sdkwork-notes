@@ -15,23 +15,14 @@ test('git-backed shared sdk source specs align with the package preparation cont
   });
   const specs = createSharedSdkSourceSpecs(context.workspaceRoot);
 
-  const appSdkSpec = specs.find((spec) => spec.id === 'app-sdk');
   const sdkCommonSpec = specs.find((spec) => spec.id === 'sdk-common');
 
-  assert.ok(appSdkSpec, 'expected @sdkwork/app-sdk source spec');
   assert.ok(sdkCommonSpec, 'expected @sdkwork/sdk-common source spec');
-
-  assert.equal(resolveSourcePackageRoot(appSdkSpec), context.sharedAppSdkRoot);
-  assert.equal(
-    resolveSourcePackageContainerRoot(appSdkSpec),
-    path.dirname(context.sharedAppSdkRoot),
-  );
-  assert.equal(appSdkSpec.monorepoSubmodulePath, 'sdkwork-sdk-app');
 
   assert.equal(resolveSourcePackageRoot(sdkCommonSpec), context.sharedSdkCommonRoot);
   assert.equal(
     resolveSourcePackageContainerRoot(sdkCommonSpec),
     path.dirname(context.sharedSdkCommonRoot),
   );
-  assert.equal(sdkCommonSpec.monorepoSubmodulePath, 'sdkwork-sdk-commons');
+  assert.equal(sdkCommonSpec.monorepoSubmodulePath, '');
 });

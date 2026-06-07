@@ -51,6 +51,6 @@ pnpm.cmd typecheck
 
 ## 下一轮入口
 
-1. 按该 spec 在 `spring-ai-plus-app-api` / OpenAPI / generator 闭合真实 `remoteApply(noteId, body)`。
+1. 按该 spec 在 `legacy-java-plus-app-api` / OpenAPI / generator 闭合真实 `remoteApply(noteId, body)`。
 2. 生成真实 SDK method 后，在 shared wrapper 添加最薄 adapter。
 3. 最后再把 bootstrap `apply(request)` 接到真实 `client.note.remoteApply(noteId, body)`。

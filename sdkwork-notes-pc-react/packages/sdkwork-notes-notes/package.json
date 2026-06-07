@@ -19,7 +19,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@sdkwork/app-sdk": "workspace:*",
     "@sdkwork/notes-commons": "workspace:*",
     "@sdkwork/notes-core": "workspace:*",
     "@sdkwork/notes-i18n": "workspace:*",

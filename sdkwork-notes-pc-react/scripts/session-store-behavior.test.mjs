@@ -48,15 +48,6 @@ async function loadUseAppSdkClientModule() {
     fileName: entryPoint,
   });
 
-  const sdkStubUrl = createDataModuleUrl(`
-    export function createClient(config) {
-      return {
-        config,
-        setAccessToken() {},
-        setAuthToken() {},
-      };
-    }
-  `);
   const reactStubUrl = createDataModuleUrl(`
     export function useMemo(factory) {
       return factory();
@@ -64,8 +55,6 @@ async function loadUseAppSdkClientModule() {
   `);
 
   const moduleSource = transpiled.outputText
-    .replaceAll("'@sdkwork/app-sdk'", `'${sdkStubUrl}'`)
-    .replaceAll('"@sdkwork/app-sdk"', `"${sdkStubUrl}"`)
     .replaceAll("'react'", `'${reactStubUrl}'`)
     .replaceAll('"react"', `"${reactStubUrl}"`);
 

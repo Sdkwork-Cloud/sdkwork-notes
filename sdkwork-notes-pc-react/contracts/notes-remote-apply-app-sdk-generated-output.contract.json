@@ -1,72 +1,29 @@
 {
   "owner": {
-    "family": "app-sdk-generated-output",
-    "appApiRepository": "spring-ai-plus-app-api",
-    "sdkPackageDirectory": "sdkwork-sdk-app/sdkwork-app-sdk-typescript",
-    "sdkApiFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts",
-    "typesIndexFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/index.ts"
+    "family": "notes-product-app-client-port-generated-output",
+    "applicationRoot": "sdkwork-notes/sdkwork-notes-pc-react",
+    "localPortFile": "packages/sdkwork-notes-core/src/sdk/appSdkPort.ts",
+    "futureSdkFamily": "sdkwork-notes-app-sdk",
+    "futureGeneratedTransport": "sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi"
   },
-  "request": {
-    "file": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-remote-apply-request.ts",
-    "export": "NoteRemoteApplyRequest",
-    "requiredFields": [
-      "idempotencyKey",
-      "taskId",
-      "entityType",
-      "entityId",
-      "operation",
-      "mutation"
+  "typedPort": {
+    "clientInterface": "NotesRemoteAppClient",
+    "noteModule": "NotesAppNoteClient",
+    "remoteApplyMethod": "remoteApply",
+    "requestType": "NoteRemoteApplyRequest",
+    "responseType": "NoteRemoteApplyResultVO"
+  },
+  "generatedOutputRule": {
+    "currentStatus": "no product generated output is consumed by this application root yet",
+    "whenGenerated": [
+      "generated output must live under the application root SDK family",
+      "generated transport must not import dependency SDK packages",
+      "services must continue to depend on the typed client port or approved composed facade"
     ],
-    "optionalFields": [
-      "localRevision",
-      "baseRemoteCursor"
+    "forbidden": [
+      "legacy generic SDK generated package roots",
+      "Spring legacy SDK source paths",
+      "hand-edited generated transport"
     ]
-  },
-  "response": {
-    "modelFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-remote-apply-result-vo.ts",
-    "modelExport": "NoteRemoteApplyResultVO",
-    "wrapperFile": "sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/plus-api-result-note-remote-apply-result-vo.ts",
-    "wrapperExport": "PlusApiResultNoteRemoteApplyResultVO",
-    "wrapperRequiredFields": [
-      "data",
-      "code",
-      "msg",
-      "requestId",
-      "errorName"
-    ],
-    "wrapperOptionalFields": [
-      "ip",
-      "hostname"
-    ],
-    "outcomeField": "outcome",
-    "appliedFields": [
-      "taskId",
-      "remoteCursor",
-      "appliedAt"
-    ],
-    "conflictFields": [
-      "taskId",
-      "remoteCursor",
-      "conflict.code",
-      "conflict.message",
-      "conflict.occurredAt"
-    ]
-  },
-  "barrel": {
-    "expectedExports": [
-      "NoteRemoteApplyRequest",
-      "NoteRemoteApplyResultVO",
-      "PlusApiResultNoteRemoteApplyResultVO"
-    ]
-  },
-  "apiBinding": {
-    "method": "remoteApply",
-    "parameterType": "NoteRemoteApplyRequest",
-    "returnType": "PlusApiResultNoteRemoteApplyResultVO"
-  },
-  "forbidden": [
-    "remote apply reuses note-batch-update-request.ts",
-    "remote apply reuses note-batch-update-result-vo.ts",
-    "remote apply omits PlusApiResult envelope export"
-  ]
+  }
 }

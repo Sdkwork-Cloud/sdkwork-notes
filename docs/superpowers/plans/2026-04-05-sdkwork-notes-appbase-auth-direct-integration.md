@@ -13,8 +13,8 @@
 ### Task 1: Lock The New Auth Boundary
 
 **Files:**
-- Create: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\docs\superpowers\specs\2026-04-05-sdkwork-notes-appbase-auth-direct-integration-design.md`
-- Create: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\docs\superpowers\plans\2026-04-05-sdkwork-notes-appbase-auth-direct-integration.md`
+- Create: `<workspace-root>\sdkwork-notes\docs\superpowers\specs\2026-04-05-sdkwork-notes-appbase-auth-direct-integration-design.md`
+- Create: `<workspace-root>\sdkwork-notes\docs\superpowers\plans\2026-04-05-sdkwork-notes-appbase-auth-direct-integration.md`
 
 - [ ] **Step 1: Record the approved direct-integration architecture**
 - [ ] **Step 2: Use the document as the implementation checklist**
@@ -22,11 +22,11 @@
 ### Task 2: Write The Failing Auth Integration Contracts
 
 **Files:**
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\AuthPage.test.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\AuthOAuthCallbackPage.test.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\router\AppRoutes.test.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\providers\AppProviders.test.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\layouts\ThemeConsistency.contract.test.ts`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\AuthPage.test.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\AuthOAuthCallbackPage.test.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\router\AppRoutes.test.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\providers\AppProviders.test.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\layouts\ThemeConsistency.contract.test.ts`
 
 - [ ] **Step 1: Assert that Notes auth pages wrap shared appbase auth pages**
 - [ ] **Step 2: Assert that shell routes move to `/auth/*`**
@@ -36,13 +36,13 @@
 ### Task 3: Build The Notes Auth Bridge
 
 **Files:**
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\package.json`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\index.ts`
-- Create: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\services\sdkworkAuthBridge.ts`
-- Create: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\store\authStore.tsx`
-- Create: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\store\index.ts`
-- Create: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\theme\SdkworkIamThemeProvider.tsx`
-- Create: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\theme\index.ts`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\package.json`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\index.ts`
+- Create: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\services\sdkworkAuthBridge.ts`
+- Create: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\store\authStore.tsx`
+- Create: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\store\index.ts`
+- Create: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\theme\SdkworkIamThemeProvider.tsx`
+- Create: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\theme\index.ts`
 
 - [ ] **Step 1: Add direct dependencies on shared auth and UI packages**
 - [ ] **Step 2: Bind the Notes app SDK client into `createSdkworkAuthService`**
@@ -52,10 +52,10 @@
 ### Task 4: Replace Local Auth Screens With Shared Wrappers
 
 **Files:**
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\AuthPage.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\AuthOAuthCallbackPage.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\Auth.tsx`
-- Create: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\authMessages.ts`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\AuthPage.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\AuthOAuthCallbackPage.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\pages\Auth.tsx`
+- Create: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-auth\src\authMessages.ts`
 
 - [ ] **Step 1: Replace the local auth page implementation with a themed `SdkworkAuthPage` wrapper**
 - [ ] **Step 2: Replace the local OAuth callback implementation with a themed `SdkworkAuthOAuthCallbackPage` wrapper**
@@ -64,13 +64,13 @@
 ### Task 5: Rewire Shell And Account Consumers
 
 **Files:**
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\package.json`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-user\package.json`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\providers\AppProviders.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\router\AppRoutes.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\layouts\MainLayout.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\layouts\AppHeader.tsx`
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-user\src\AccountPage.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\package.json`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-user\package.json`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\providers\AppProviders.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\router\AppRoutes.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\layouts\MainLayout.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\application\layouts\AppHeader.tsx`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-user\src\AccountPage.tsx`
 
 - [ ] **Step 1: Wrap the app shell in the Notes auth provider**
 - [ ] **Step 2: Switch route guards and session bootstrap to controller-backed auth state**
@@ -80,7 +80,7 @@
 ### Task 6: Tune Theme Contracts And Verify
 
 **Files:**
-- Modify: `D:\javasource\spring-ai-plus\spring-ai-plus-business\apps\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\styles\index.css`
+- Modify: `<workspace-root>\sdkwork-notes\sdkwork-notes-pc-react\packages\sdkwork-notes-shell\src\styles\index.css`
 
 - [ ] **Step 1: Add Notes host auth CSS tuning for shared SDKWORK controls**
 - [ ] **Step 2: Run targeted auth and shell tests**

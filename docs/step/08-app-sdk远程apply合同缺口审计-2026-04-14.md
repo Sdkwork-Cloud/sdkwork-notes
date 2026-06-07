@@ -2,7 +2,7 @@
 
 ## 本轮目标
 
-在 `shell / desktop -> bootstrap -> apply(request)` 顶层注入路径已经存在的前提下，确认 shared wrapper -> `@sdkwork/app-sdk` -> `spring-ai-plus-app-api` 是否已经具备可被真实消费的 replay-safe remote apply 合同，避免把现有 direct-write note API 误接成 worker replay handler。
+在 `shell / desktop -> bootstrap -> apply(request)` 顶层注入路径已经存在的前提下，确认 shared wrapper -> `@sdkwork/app-sdk` -> `legacy-java-plus-app-api` 是否已经具备可被真实消费的 replay-safe remote apply 合同，避免把现有 direct-write note API 误接成 worker replay handler。
 
 ## 实际完成
 
@@ -44,6 +44,6 @@ pnpm.cmd typecheck
 
 ## 下一轮入口
 
-1. 先在 `spring-ai-plus-app-api` / backend / OpenAPI generator 闭合真实 replay-safe 合同。
+1. 先在 `legacy-java-plus-app-api` / backend / OpenAPI generator 闭合真实 replay-safe 合同。
 2. 生成语义化 app-sdk 方法后，再把 shared wrapper 与 bootstrap `apply(request)` 接到真实 transport。
 3. 在那之前，继续禁止把当前 note direct-write API 当作 replay handler。

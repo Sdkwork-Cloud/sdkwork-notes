@@ -39,29 +39,19 @@ export default defineConfig(({ mode }) => {
   const appMode = resolveAppMode(mode);
   const runtimeEnv = createRuntimeEnv(loadEnv(appMode, workspaceRootDir, ''), appMode, 'web');
   const monorepoRoot = path.resolve(__dirname, '../../..');
-  const sharedAppSdkSourceEntry = path.resolve(
-    __dirname,
-    '../../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/index.ts',
-  );
   const sharedSdkCommonSourceEntry = path.resolve(
     __dirname,
-    '../../../sdk/sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts',
+    '../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts',
   );
   const notesSearchSourceEntry = path.resolve(
     __dirname,
     './packages/sdkwork-notes-search/src/index.ts',
   );
-  const sharedAppSdkDistEntry =
-    resolvePnpmPackageDistEntry('@sdkwork/app-sdk', workspaceRootDir)
-    ?? path.resolve(
-      __dirname,
-      '../../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/dist/index.js',
-    );
   const sharedSdkCommonDistEntry =
     resolvePnpmPackageDistEntry('@sdkwork/sdk-common', workspaceRootDir)
     ?? path.resolve(
       __dirname,
-      '../../../sdk/sdkwork-sdk-commons/sdkwork-sdk-common-typescript/dist/index.js',
+      '../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript/dist/index.js',
     );
 
   return {
@@ -107,11 +97,9 @@ export default defineConfig(({ mode }) => {
         },
         ...(useSharedSdkSourceMode
           ? [
-              { find: '@sdkwork/app-sdk', replacement: sharedAppSdkSourceEntry },
               { find: '@sdkwork/sdk-common', replacement: sharedSdkCommonSourceEntry },
             ]
           : [
-              { find: '@sdkwork/app-sdk', replacement: sharedAppSdkDistEntry },
               { find: '@sdkwork/sdk-common', replacement: sharedSdkCommonDistEntry },
             ]),
         { find: '@sdkwork/notes-search', replacement: notesSearchSourceEntry },

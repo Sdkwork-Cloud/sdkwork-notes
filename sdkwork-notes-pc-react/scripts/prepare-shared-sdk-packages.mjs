@@ -53,13 +53,9 @@ export function createSharedSdkPackageContext({
 
   return {
     workspaceRoot,
-    sharedAppSdkRoot: path.resolve(
-      localRepoRoots.appRepoRoot,
-      'sdkwork-sdk-app/sdkwork-app-sdk-typescript',
-    ),
     sharedSdkCommonRoot: path.resolve(
       localRepoRoots.sdkCommonRepoRoot,
-      'sdkwork-sdk-commons/sdkwork-sdk-common-typescript',
+      'sdkwork-sdk-common-typescript',
     ),
     mode: resolveSharedSdkMode(env),
   };
@@ -111,22 +107,6 @@ function assertPackageRootExists(packageRoot, packageName) {
   );
 }
 
-function ensureWorkspaceLinks(workspaceRoot, sharedAppSdkRoot) {
-  const appSdkCommonLink = path.join(
-    sharedAppSdkRoot,
-    'node_modules',
-    '@sdkwork',
-    'sdk-common',
-  );
-
-  if (exists(appSdkCommonLink)) {
-    return;
-  }
-
-  console.log('[prepare-shared-sdk-packages] Refreshing pnpm workspace links.');
-  run('pnpm', ['install'], workspaceRoot);
-}
-
 function shouldBuildPackage(packageRoot) {
   const distEntry = path.join(packageRoot, 'dist', 'index.js');
   if (!exists(distEntry)) {
@@ -172,10 +152,7 @@ export function prepareSharedSdkPackages({
   }
 
   assertPackageRootExists(context.sharedSdkCommonRoot, '@sdkwork/sdk-common');
-  assertPackageRootExists(context.sharedAppSdkRoot, '@sdkwork/app-sdk');
-  ensureWorkspaceLinks(context.workspaceRoot, context.sharedAppSdkRoot);
   ensurePackageBuilt('@sdkwork/sdk-common', context.sharedSdkCommonRoot, context.workspaceRoot);
-  ensurePackageBuilt('@sdkwork/app-sdk', context.sharedAppSdkRoot, context.workspaceRoot);
 
   return context;
 }

@@ -2,13 +2,13 @@
 
 ## 本轮目标
 
-冻结 future `spring-ai-plus-app-api / OpenAPI / generator` 的真实闭环输入，避免后续上游实现时再次讨论 controller 入口、snapshot / upgrade 入口和 TypeScript SDK 产物路径。
+冻结 future `legacy-java-plus-app-api / OpenAPI / generator` 的真实闭环输入，避免后续上游实现时再次讨论 controller 入口、snapshot / upgrade 入口和 TypeScript SDK 产物路径。
 
 ## 本轮完成
 
 1. 新增 `sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-upstream-closure.contract.json`
    - 冻结 app-api repo 与 controller 入口：
-     - `spring-ai-plus-app-api`
+     - `legacy-java-plus-app-api`
      - `src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/NotesAppApiController.java`
    - 冻结 OpenAPI / generator 入口：
      - `sdkwork-sdk-app/README.md`

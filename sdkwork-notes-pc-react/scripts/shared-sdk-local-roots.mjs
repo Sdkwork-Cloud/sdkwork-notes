@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const SHARED_SDK_APP_LOCAL_ROOT_ENV_VAR = 'SDKWORK_SHARED_SDK_APP_LOCAL_ROOT';
 export const SHARED_SDK_COMMON_LOCAL_ROOT_ENV_VAR = 'SDKWORK_SHARED_SDK_COMMON_LOCAL_ROOT';
 
 function isEmbeddedMonorepoLayout(workspaceRoot) {
@@ -27,24 +26,15 @@ export function resolveSharedSdkLocalRepoRoots({
   workspaceRoot,
   env = process.env,
 } = {}) {
-  const explicitAppRoot = typeof env?.[SHARED_SDK_APP_LOCAL_ROOT_ENV_VAR] === 'string'
-    ? env[SHARED_SDK_APP_LOCAL_ROOT_ENV_VAR].trim()
-    : '';
   const explicitCommonRoot = typeof env?.[SHARED_SDK_COMMON_LOCAL_ROOT_ENV_VAR] === 'string'
     ? env[SHARED_SDK_COMMON_LOCAL_ROOT_ENV_VAR].trim()
     : '';
 
-  const appRepoRoot = explicitAppRoot.length > 0
-    ? path.resolve(explicitAppRoot)
-    : resolveRepoRootFromCandidates(
-        createRepoRootCandidates(workspaceRoot, 'spring-ai-plus-app-api'),
-      );
   const sdkCommonRepoRoot = explicitCommonRoot.length > 0
     ? path.resolve(explicitCommonRoot)
-    : resolveRepoRootFromCandidates(createRepoRootCandidates(workspaceRoot, 'sdk'));
+    : resolveRepoRootFromCandidates(createRepoRootCandidates(workspaceRoot, 'sdkwork-sdk-commons'));
 
   return {
-    appRepoRoot,
     sdkCommonRepoRoot,
   };
 }

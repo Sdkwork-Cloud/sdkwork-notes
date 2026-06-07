@@ -2,7 +2,7 @@
 
 ## 1. 本轮定位
 
-本轮继续停留在 `Step 08 / CP08-4`，没有提前进入 `Step 09`。目标不是继续在 app 内部堆 caller wiring，而是确认 shared wrapper -> `@sdkwork/app-sdk` -> `spring-ai-plus-app-api` 这条远端能力链是否已经具备可被真实消费的 replay-safe remote apply 合同。
+本轮继续停留在 `Step 08 / CP08-4`，没有提前进入 `Step 09`。目标不是继续在 app 内部堆 caller wiring，而是确认 shared wrapper -> `@sdkwork/app-sdk` -> `legacy-java-plus-app-api` 这条远端能力链是否已经具备可被真实消费的 replay-safe remote apply 合同。
 
 ## 2. 已落地的审计事实
 
@@ -31,7 +31,7 @@
 1. 顶层 `apply(request)` 注入路径虽然已经存在，但当前仓库没有可被如实消费的上游语义合同。
 2. 若直接复用现有 note direct-write API，会把“远端成功后的同步影子任务”误接成“可安全重放的远端写指令”，破坏 replay / 幂等语义。
 3. 因此下一步必须是上游合同闭环，而不是 app 本地 workaround：
-   - `spring-ai-plus-app-api`
+   - `legacy-java-plus-app-api`
    - backend capability
    - OpenAPI 3.x
    - SDK regeneration

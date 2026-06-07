@@ -9,18 +9,18 @@
 - `sdkwork-notes-pc-react/scripts/workspace-sync-app-sdk-contract.test.mjs`
 - `sdkwork-notes-pc-react/package.json`
 - `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
-- `spring-ai-plus-app-api/src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/NotesAppApiController.java`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/README.md`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/app-openapi-8080.json`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/sdk.ts`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts`
+- `legacy-java-plus-app-api/src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/NotesAppApiController.java`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/README.md`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/app-openapi-8080.json`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/sdk.ts`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts`
 
 ## 审计结论
 
 - 本轮没有发现新的 P0 / P1 缺陷。
 - 在“当前工作区不能修改兄弟仓库，且上游真实 `note.remoteApply(noteId, body)` 仍未落地”的前提下，冻结 upstream closure input contract 是正确增量，因为它把未来上游真实闭环的唯一入口从口头约定提升为可执行 spec。
 - 当前冻结的最小 upstream closure path 为：
-  - app-api repo：`spring-ai-plus-app-api`
+  - app-api repo：`legacy-java-plus-app-api`
   - controller file：`NotesAppApiController.java`
   - OpenAPI base snapshot：`sdkwork-sdk-app/app-openapi-8080.json`
   - regen guide：`sdkwork-sdk-app/README.md`

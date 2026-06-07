@@ -1,10 +1,15 @@
 import type { NoteSummary } from '@sdkwork/notes-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearAppSdkSessionTokens, initAppSdkClient, resetAppSdkClient } from '@sdkwork/notes-core';
+import {
+  clearAppSdkSessionTokens,
+  configureAppSdkClientFactory,
+  initAppSdkClient,
+  resetAppSdkClient,
+} from '@sdkwork/notes-core';
 import { createNoteRepository, noteRepository } from './noteRepository';
 import type { NoteWorkspaceDataSource } from '../types/notesWorkspace';
 
-const fetchCalls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
+const sdkCalls: Array<{ method: string; body?: unknown; params?: unknown }> = [];
 let noteDeleted = false;
 let note42Status = 'ACTIVE';
 let note42ContentText = 'console.log(1);';
@@ -12,7 +17,7 @@ let notesPages: Array<Array<Record<string, unknown>>> = [];
 let deletedPages: Array<Array<Record<string, unknown>>> = [];
 
 beforeEach(() => {
-  fetchCalls.length = 0;
+  sdkCalls.length = 0;
   noteDeleted = false;
   note42Status = 'ACTIVE';
   note42ContentText = 'console.log(1);';
@@ -47,24 +52,24 @@ beforeEach(() => {
     },
   ]];
   resetAppSdkClient();
+  configureAppSdkClientFactory(null);
   clearAppSdkSessionTokens();
-  initAppSdkClient({ baseUrl: 'https://notes.example.com', accessToken: 'configured-access-token' });
-
-  globalThis.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    fetchCalls.push({ input, init });
-    const url = String(input);
-
-    if (/\/app\/v3\/api\/notes(?:\?.*)?$/.test(url) && init?.method !== 'POST') {
-      const includeDeleted = url.includes('includeDeleted=true');
-      const pageNum = Number(new URL(url).searchParams.get('pageNum') || '1');
-      const currentPage = includeDeleted ? deletedPages : notesPages;
-      const pageContent = includeDeleted
-        ? (currentPage[pageNum - 1] ?? [])
-        : noteDeleted
-          ? []
-          : (currentPage[pageNum - 1] ?? []);
-      return new Response(
-        JSON.stringify({
+  configureAppSdkClientFactory(() => ({
+    setAccessToken: vi.fn(),
+    setAuthToken: vi.fn(),
+    user: {} as never,
+    note: {
+      async listNotes(params) {
+        sdkCalls.push({ method: 'note.listNotes', params });
+        const includeDeleted = Boolean(params.includeDeleted);
+        const pageNum = Number(params.pageNum || 1);
+        const currentPage = includeDeleted ? deletedPages : notesPages;
+        const pageContent = includeDeleted
+          ? (currentPage[pageNum - 1] ?? [])
+          : noteDeleted
+            ? []
+            : (currentPage[pageNum - 1] ?? []);
+        return {
           code: '2000',
           msg: 'success',
           data: {
@@ -78,79 +83,46 @@ beforeEach(() => {
             last: pageNum >= currentPage.length,
             empty: pageContent.length === 0,
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/notes/folders')) {
-      return new Response(
-        JSON.stringify({
+        };
+      },
+      async listFolders() {
+        sdkCalls.push({ method: 'note.listFolders' });
+        return {
           code: '2000',
           msg: 'success',
           data: [],
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/filesystem/nodes/folder-7/move') && init?.method === 'PUT') {
-      return new Response(
-        JSON.stringify({
-          code: '2000',
-          msg: 'success',
-          data: {
-            id: 'folder-7',
-            uuid: 'folder-uuid-7',
-            name: 'Projects',
-            parentId: 'folder-2',
-            createdAt: '2026-03-30T00:00:00Z',
-            updatedAt: '2026-03-30T12:00:00Z',
-          },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/notes') && init?.method === 'POST') {
-      return new Response(
-        JSON.stringify({
+        };
+      },
+      async createNote(body) {
+        sdkCalls.push({ method: 'note.createNote', body });
+        return {
           code: '2000',
           msg: 'success',
           data: {
             noteId: '42',
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/notes/42/content')) {
-      return new Response(
-        JSON.stringify({
+        };
+      },
+      async getNoteContent(noteId) {
+        sdkCalls.push({ method: 'note.getNoteContent', body: noteId });
+        return {
           code: '2000',
           msg: 'success',
           data: {
             text: note42ContentText,
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/notes/42') && init?.method !== 'DELETE') {
-      if (noteDeleted) {
-        return new Response(
-          JSON.stringify({
+        };
+      },
+      async getNoteDetail(noteId) {
+        sdkCalls.push({ method: 'note.getNoteDetail', body: noteId });
+        if (noteDeleted) {
+          return {
             code: '2000',
             msg: 'success',
             data: null,
-          }),
-          { status: 200, headers: { 'Content-Type': 'application/json' } },
-        );
-      }
-      return new Response(
-        JSON.stringify({
+          };
+        }
+        return {
           code: '2000',
           msg: 'success',
           data: {
@@ -166,59 +138,124 @@ beforeEach(() => {
             createdAt: '2026-03-30T00:00:00Z',
             updatedAt: '2026-03-30T12:00:00Z',
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/notes/42/archive') && init?.method === 'PUT') {
-      note42Status = 'ARCHIVED';
-      return new Response(
-        JSON.stringify({
+        };
+      },
+      async archive(noteId) {
+        sdkCalls.push({ method: 'note.archive', body: noteId });
+        note42Status = 'ARCHIVED';
+        return {
           code: '2000',
           msg: 'success',
           data: {
             noteId: '42',
             operationType: 'ARCHIVE',
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/notes/42/restore') && init?.method === 'PUT') {
-      note42Status = 'ACTIVE';
-      noteDeleted = false;
-      return new Response(
-        JSON.stringify({
+        };
+      },
+      async restore(noteId) {
+        sdkCalls.push({ method: 'note.restore', body: noteId });
+        note42Status = 'ACTIVE';
+        noteDeleted = false;
+        return {
           code: '2000',
           msg: 'success',
           data: {
             noteId: '42',
             operationType: 'RESTORE',
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/notes/42') && init?.method === 'DELETE') {
-      noteDeleted = true;
-      return new Response(
-        JSON.stringify({
+        };
+      },
+      async deleteNote(noteId) {
+        sdkCalls.push({ method: 'note.deleteNote', body: noteId });
+        noteDeleted = true;
+        return {
           code: '2000',
           msg: 'success',
           data: null,
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    return new Response(JSON.stringify({ code: 404, msg: 'Not found' }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }) as typeof fetch;
+        };
+      },
+      async favorite(noteId) {
+        sdkCalls.push({ method: 'note.favorite', body: noteId });
+        return { code: '2000', msg: 'success', data: null };
+      },
+      async unfavorite(noteId) {
+        sdkCalls.push({ method: 'note.unfavorite', body: noteId });
+        return { code: '2000', msg: 'success', data: null };
+      },
+      async updateNote(noteId, body) {
+        sdkCalls.push({ method: 'note.updateNote', body: { noteId, ...body } });
+        return { code: '2000', msg: 'success', data: null };
+      },
+      async updateNoteContent(noteId, body) {
+        sdkCalls.push({ method: 'note.updateNoteContent', body: { noteId, ...body } });
+        return { code: '2000', msg: 'success', data: null };
+      },
+      async move(noteId, body) {
+        sdkCalls.push({ method: 'note.move', body: { noteId, ...body } });
+        return { code: '2000', msg: 'success', data: null };
+      },
+      async createFolder(body) {
+        sdkCalls.push({ method: 'note.createFolder', body });
+        return {
+          code: '2000',
+          msg: 'success',
+          data: {
+            id: 'folder-7',
+            uuid: 'folder-uuid-7',
+            name: body.name,
+            parentId: body.parentId,
+            createdAt: '2026-03-30T00:00:00Z',
+            updatedAt: '2026-03-30T12:00:00Z',
+          },
+        };
+      },
+      async updateFolder(folderId, body) {
+        sdkCalls.push({ method: 'note.updateFolder', body: { folderId, ...body } });
+        return {
+          code: '2000',
+          msg: 'success',
+          data: {
+            id: folderId,
+            uuid: folderId,
+            name: body.name,
+            parentId: null,
+            createdAt: '2026-03-30T00:00:00Z',
+            updatedAt: '2026-03-30T12:00:00Z',
+          },
+        };
+      },
+      async permanentlyDelete(noteId) {
+        sdkCalls.push({ method: 'note.permanentlyDelete', body: noteId });
+        return { code: '2000', msg: 'success', data: null };
+      },
+      async clearTrash() {
+        sdkCalls.push({ method: 'note.clearTrash' });
+        return { code: '2000', msg: 'success', data: null };
+      },
+      async deleteFolder(folderId) {
+        sdkCalls.push({ method: 'note.deleteFolder', body: folderId });
+        return { code: '2000', msg: 'success', data: null };
+      },
+    },
+    filesystem: {
+      async moveNode(nodeId, body) {
+        sdkCalls.push({ method: 'filesystem.moveNode', body: { nodeId, ...body } });
+        return {
+          code: '2000',
+          msg: 'success',
+          data: {
+            id: 'folder-7',
+            uuid: 'folder-uuid-7',
+            name: 'Projects',
+            parentId: 'folder-2',
+            createdAt: '2026-03-30T00:00:00Z',
+            updatedAt: '2026-03-30T12:00:00Z',
+          },
+        };
+      },
+    },
+  }));
+  initAppSdkClient({ baseUrl: 'https://notes.example.com', accessToken: 'configured-access-token' });
 });
 
 describe('noteRepository', () => {
@@ -237,7 +274,7 @@ describe('noteRepository', () => {
     });
   });
 
-  it('creates a note through the generated app sdk and persists the system note type tag', async () => {
+  it('creates a note through the injected product app client and persists the system note type tag', async () => {
     const result = await noteRepository.save({
       title: 'Untitled',
       type: 'code',
@@ -254,12 +291,10 @@ describe('noteRepository', () => {
       title: 'Untitled',
     });
 
-    const createRequest = fetchCalls.find(({ input, init }) =>
-      String(input).endsWith('/app/v3/api/notes') && init?.method === 'POST',
-    );
+    const createRequest = sdkCalls.find(({ method }) => method === 'note.createNote');
 
     expect(createRequest).toBeDefined();
-    expect(JSON.parse(String(createRequest?.init?.body ?? '{}'))).toMatchObject({
+    expect(createRequest?.body).toMatchObject({
       title: 'Untitled',
       content: 'console.log(1);',
       tags: ['snippet', '__note_type__:code'],
@@ -316,8 +351,8 @@ describe('noteRepository', () => {
       publishStatus: 'archived',
     });
 
-    expect(fetchCalls.some(({ input, init }) =>
-      String(input).endsWith('/app/v3/api/notes/42/archive') && init?.method === 'PUT',
+    expect(sdkCalls.some(({ method, body }) =>
+      method === 'note.archive' && body === '42',
     )).toBe(true);
   });
 
@@ -335,24 +370,21 @@ describe('noteRepository', () => {
       publishStatus: 'draft',
     });
 
-    expect(fetchCalls.some(({ input, init }) =>
-      String(input).endsWith('/app/v3/api/notes/42/restore') && init?.method === 'PUT',
+    expect(sdkCalls.some(({ method, body }) =>
+      method === 'note.restore' && body === '42',
     )).toBe(true);
   });
 
-  it('moves a folder through the shared app sdk filesystem endpoint', async () => {
+  it('moves a folder through the injected product app client filesystem port', async () => {
     const result = await noteRepository.moveFolder('folder-7', 'folder-2');
 
     expect(result.success).toBe(true);
-    expect(fetchCalls.some(({ input, init }) =>
-      String(input).endsWith('/app/v3/api/filesystem/nodes/folder-7/move') && init?.method === 'PUT',
-    )).toBe(true);
+    expect(sdkCalls.some(({ method }) => method === 'filesystem.moveNode')).toBe(true);
 
-    const moveRequest = fetchCalls.find(({ input, init }) =>
-      String(input).endsWith('/app/v3/api/filesystem/nodes/folder-7/move') && init?.method === 'PUT',
-    );
+    const moveRequest = sdkCalls.find(({ method }) => method === 'filesystem.moveNode');
 
-    expect(JSON.parse(String(moveRequest?.init?.body ?? '{}'))).toEqual({
+    expect(moveRequest?.body).toEqual({
+      nodeId: 'folder-7',
       targetParentId: 'folder-2',
     });
   });
@@ -396,8 +428,11 @@ describe('noteRepository', () => {
 
     expect(result.success).toBe(true);
     expect(result.data?.notes.map((note) => note.id)).toEqual(['1', '2']);
-    expect(fetchCalls.some(({ input }) =>
-      String(input).includes('/app/v3/api/notes?') && String(input).includes('includeArchived=true'),
+    expect(sdkCalls.some(({ method, params }) =>
+      method === 'note.listNotes'
+      && typeof params === 'object'
+      && params !== null
+      && (params as { includeArchived?: boolean }).includeArchived === true,
     )).toBe(true);
   });
 

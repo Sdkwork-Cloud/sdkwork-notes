@@ -93,7 +93,7 @@ Environment overrides are also supported:
 
 For a standalone `sdkwork-notes` repository layout, local source mode expects these sibling repositories by default:
 
-- `../spring-ai-plus-app-api`
+- `../legacy-java-plus-app-api`
 - `../sdk`
 
 If your local layout is different, set the override environment variables above.
@@ -236,7 +236,7 @@ This repository is currently centered on the desktop Notes product. The mobile d
 
 默认情况下，独立仓库模式会优先查找这些同级目录：
 
-- `../spring-ai-plus-app-api`
+- `../legacy-java-plus-app-api`
 - `../sdk`
 
 ### 快速开始

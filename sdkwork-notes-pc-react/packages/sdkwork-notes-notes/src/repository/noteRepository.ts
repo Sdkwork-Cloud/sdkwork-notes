@@ -1,12 +1,13 @@
 import type {
   NoteContentUpdateRequest,
+  NoteContentVO,
   NoteCreateRequest,
   NoteFolderVO,
   NoteUpdateRequest,
   NoteVO,
   PageNoteVO,
   QueryParams,
-} from '@sdkwork/app-sdk';
+} from '@sdkwork/notes-core';
 import {
   Result,
   createServiceAdapterController,
@@ -554,7 +555,7 @@ class AppSdkNoteRepository implements NoteRepository {
       let text = normalizeString(detailData.content);
       try {
         const contentResponse = await this.getClient().note.getNoteContent(noteId);
-        const contentData = unwrapAppSdkResponse<{ text?: string } | null>(
+        const contentData = unwrapAppSdkResponse<NoteContentVO | null>(
           contentResponse,
           'Failed to load note content',
         );

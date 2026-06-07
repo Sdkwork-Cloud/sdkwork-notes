@@ -2,7 +2,7 @@
 
 ## 本轮发布内容
 
-- 新增 `sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-upstream-closure.contract.json`，冻结 future `spring-ai-plus-app-api / OpenAPI / generator` 的唯一闭环输入路径。
+- 新增 `sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-upstream-closure.contract.json`，冻结 future `legacy-java-plus-app-api / OpenAPI / generator` 的唯一闭环输入路径。
 - 新增 `sdkwork-notes-pc-react/scripts/workspace-sync-app-sdk-upstream-closure-contract.test.mjs`，把 app-api controller、OpenAPI snapshot、SDK generator 入口和预期缺失产物纳入根级 contract 门禁。
 - 更新 `sdkwork-notes-pc-react/package.json` 与 `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`，确保该合同进入 `test:workspace:contracts`。
 
@@ -10,7 +10,7 @@
 
 - 当前仍不存在真实 generated SDK 方法 `client.note.remoteApply(noteId, body)`。
 - 当前仍不存在 generated `NoteRemoteApplyRequest / NoteRemoteApplyResultVO`。
-- 当前仍不能修改兄弟仓库 `spring-ai-plus-app-api`，因此本轮只交付 closure-ready spec，不交付上游实现。
+- 当前仍不能修改兄弟仓库 `legacy-java-plus-app-api`，因此本轮只交付 closure-ready spec，不交付上游实现。
 
 ## 验证基线
 

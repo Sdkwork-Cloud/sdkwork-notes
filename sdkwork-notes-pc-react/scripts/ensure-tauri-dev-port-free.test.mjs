@@ -7,14 +7,11 @@ import { isManagedNotesDesktopDevPortBlocker } from './ensure-tauri-dev-port-fre
 test('isManagedNotesDesktopDevPortBlocker matches stale notes desktop vite servers for the managed dev port', () => {
   const workspaceRoot = path.join(
     'D:',
-    'javasource',
-    'spring-ai-plus',
-    'spring-ai-plus-business',
-    'apps',
+    'workspace',
     'sdkwork-notes',
     'sdkwork-notes-pc-react',
   );
-  const commandLine = 'node "D:\\javasource\\spring-ai-plus\\spring-ai-plus-business\\apps\\sdkwork-notes\\sdkwork-notes-pc-react\\packages\\sdkwork-notes-desktop\\node_modules\\.bin\\\\..\\vite\\bin\\vite.js" --host 127.0.0.1 --port 1430 --strictPort';
+  const commandLine = `node "${path.join(workspaceRoot, 'packages', 'sdkwork-notes-desktop', 'node_modules', '.bin', '..', 'vite', 'bin', 'vite.js')}" --host 127.0.0.1 --port 1430 --strictPort`;
 
   assert.equal(
     isManagedNotesDesktopDevPortBlocker({

@@ -18,12 +18,11 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@sdkwork/app-sdk": ["../../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/index.ts"],
       "@sdkwork/notes-local": ["packages/sdkwork-notes-local/src/index.ts"],
       "@sdkwork/notes-observability": ["packages/sdkwork-notes-observability/src/index.ts"],
       "@sdkwork/notes-search": ["packages/sdkwork-notes-search/src/index.ts"],
       "@sdkwork/notes-sync": ["packages/sdkwork-notes-sync/src/index.ts"],
-      "@sdkwork/sdk-common": ["../../../sdk/sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts"]
+      "@sdkwork/sdk-common": ["../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts"]
     },
     "noEmit": true
   }

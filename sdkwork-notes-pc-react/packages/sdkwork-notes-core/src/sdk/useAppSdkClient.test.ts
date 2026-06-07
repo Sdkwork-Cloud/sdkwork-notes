@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   type AppSdkSessionTokens,
   clearAppSdkSessionTokens,
+  configureAppSdkClientFactory,
   configureAppSdkSessionStoreAdapter,
   createAppSdkClientConfig,
   readAppSdkSessionTokens,
@@ -42,6 +43,7 @@ function createMemoryStorage(): Storage {
 
 beforeEach(() => {
   resetAppSdkClient();
+  configureAppSdkClientFactory(null);
   clearAppSdkSessionTokens();
   configureAppSdkSessionStoreAdapter(null);
   globalThis.__SDKWORK_NOTES_ENV__ = undefined;

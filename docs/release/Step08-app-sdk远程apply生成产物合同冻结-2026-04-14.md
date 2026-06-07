@@ -10,7 +10,7 @@
 
 - 当前仍不存在真实 generated `NoteRemoteApplyRequest / NoteRemoteApplyResultVO / PlusApiResultNoteRemoteApplyResultVO`。
 - 当前 `api/note.ts` 仍不存在 `remoteApply(noteId, body)` 方法签名。
-- 当前不能修改兄弟仓库 `spring-ai-plus-app-api`，因此本轮只交付 generated-output closure-ready spec，不交付上游产物。
+- 当前不能修改兄弟仓库 `legacy-java-plus-app-api`，因此本轮只交付 generated-output closure-ready spec，不交付上游产物。
 
 ## 验证基线
 
@@ -29,5 +29,5 @@ pnpm.cmd typecheck
 
 ## 下一轮发布入口
 
-- 若上游可改，优先按该 spec 验证 `spring-ai-plus-app-api` 的 OpenAPI / generator 产物是否真实生成 request、result、envelope 与 barrel export。
+- 若上游可改，优先按该 spec 验证 `legacy-java-plus-app-api` 的 OpenAPI / generator 产物是否真实生成 request、result、envelope 与 barrel export。
 - 若上游仍不可改，则继续停留在 `Step 08 / CP08-4`，只补 guardrail，不伪造 generated output。

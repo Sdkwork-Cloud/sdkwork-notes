@@ -2,7 +2,7 @@
 
 ## 本轮目标
 
-冻结 future `spring-ai-plus-app-api` TypeScript generated SDK 的 remote apply request、result、envelope、types barrel 与 `api/note.ts` 绑定，避免后续上游生成产物落地时再次讨论文件名、export 名与 API method shape。
+冻结 future `legacy-java-plus-app-api` TypeScript generated SDK 的 remote apply request、result、envelope、types barrel 与 `api/note.ts` 绑定，避免后续上游生成产物落地时再次讨论文件名、export 名与 API method shape。
 
 ## 本轮完成
 
@@ -35,7 +35,7 @@
   - `PlusApiResult` envelope
   - `types/index.ts` barrel export
   - `api/note.ts` method binding
-- 因此后续真实实现必须先在 `spring-ai-plus-app-api` 闭合生成链，再回到 shared-wrapper；不允许在 app 本地补 alias file 或复用 batchUpdate DTO 假装闭合。
+- 因此后续真实实现必须先在 `legacy-java-plus-app-api` 闭合生成链，再回到 shared-wrapper；不允许在 app 本地补 alias file 或复用 batchUpdate DTO 假装闭合。
 
 ## 当前状态
 

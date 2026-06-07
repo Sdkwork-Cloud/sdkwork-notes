@@ -6,11 +6,9 @@ import { resolveSharedSdkLocalRepoRoots } from './shared-sdk-local-roots.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 
-export const SHARED_SDK_APP_REPO_URL_ENV_VAR = 'SDKWORK_SHARED_SDK_APP_REPO_URL';
 export const SHARED_SDK_COMMON_REPO_URL_ENV_VAR = 'SDKWORK_SHARED_SDK_COMMON_REPO_URL';
 export const SHARED_SDK_GIT_REF_ENV_VAR = 'SDKWORK_SHARED_SDK_GIT_REF';
 export const SHARED_SDK_GIT_FORCE_SYNC_ENV_VAR = 'SDKWORK_SHARED_SDK_GIT_FORCE_SYNC';
-export const DEFAULT_SHARED_SDK_APP_REPO_URL = 'https://github.com/Sdkwork-Cloud/sdkwork-sdk-app.git';
 export const DEFAULT_SHARED_SDK_COMMON_REPO_URL = 'https://github.com/Sdkwork-Cloud/sdkwork-sdk-commons.git';
 
 function run(command, args, { cwd = process.cwd(), captureStdout = false } = {}) {
@@ -49,22 +47,12 @@ export function createSharedSdkSourceSpecs(workspaceRootDir) {
 
   return [
     {
-      id: 'app-sdk',
-      label: '@sdkwork/app-sdk',
-      repoRoot: localRepoRoots.appRepoRoot,
-      packageContainerDirName: 'sdkwork-sdk-app',
-      packageDirName: 'sdkwork-app-sdk-typescript',
-      monorepoSubmodulePath: 'sdkwork-sdk-app',
-      repoUrlEnvVar: SHARED_SDK_APP_REPO_URL_ENV_VAR,
-      defaultRepoUrl: DEFAULT_SHARED_SDK_APP_REPO_URL,
-    },
-    {
       id: 'sdk-common',
       label: '@sdkwork/sdk-common',
       repoRoot: localRepoRoots.sdkCommonRepoRoot,
-      packageContainerDirName: 'sdkwork-sdk-commons',
+      packageContainerDirName: '.',
       packageDirName: 'sdkwork-sdk-common-typescript',
-      monorepoSubmodulePath: 'sdkwork-sdk-commons',
+      monorepoSubmodulePath: '',
       repoUrlEnvVar: SHARED_SDK_COMMON_REPO_URL_ENV_VAR,
       defaultRepoUrl: DEFAULT_SHARED_SDK_COMMON_REPO_URL,
     },

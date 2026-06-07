@@ -1,37 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { initAppSdkClient, resetAppSdkClient } from '../sdk/useAppSdkClient';
+import {
+  configureAppSdkClientFactory,
+  initAppSdkClient,
+  resetAppSdkClient,
+} from '../sdk/useAppSdkClient';
 import { appUserService } from './appUserService';
 
-const fetchCalls: Array<{ input: RequestInfo | URL; init?: RequestInit }> = [];
+const sdkCalls: Array<{ method: string; body?: unknown }> = [];
 
 beforeEach(() => {
-  fetchCalls.length = 0;
+  sdkCalls.length = 0;
   resetAppSdkClient();
-  initAppSdkClient({ accessToken: 'configured-access-token' });
-
-  globalThis.fetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    fetchCalls.push({ input, init });
-    const url = String(input);
-
-    if (url.endsWith('/app/v3/api/user/profile') && init?.method === 'PUT') {
-      const body = JSON.parse(String(init?.body || '{}')) as { nickname?: string };
-      return new Response(
-        JSON.stringify({
-          code: '2000',
-          msg: 'success',
-          data: {
-            email: 'notes-user@example.com',
-            nickname: body.nickname,
-            avatar: 'https://cdn.example.com/notes-user.png',
-          },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/user/profile')) {
-      return new Response(
-        JSON.stringify({
+  configureAppSdkClientFactory(() => ({
+    setAccessToken: vi.fn(),
+    setAuthToken: vi.fn(),
+    user: {
+      async getUserProfile() {
+        sdkCalls.push({ method: 'user.getUserProfile' });
+        return {
           code: '2000',
           msg: 'success',
           data: {
@@ -39,48 +25,51 @@ beforeEach(() => {
             nickname: 'Notes User',
             avatar: 'https://cdn.example.com/notes-user.png',
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/user/settings') && init?.method === 'PUT') {
-      const body = JSON.parse(String(init?.body || '{}')) as { theme?: string; language?: string };
-      return new Response(
-        JSON.stringify({
+        };
+      },
+      async updateUserProfile(body) {
+        sdkCalls.push({ method: 'user.updateUserProfile', body });
+        return {
           code: '2000',
           msg: 'success',
           data: {
-            theme: body.theme,
-            language: body.language,
+            email: 'notes-user@example.com',
+            nickname: body.nickname,
+            avatar: 'https://cdn.example.com/notes-user.png',
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    if (url.endsWith('/app/v3/api/user/settings')) {
-      return new Response(
-        JSON.stringify({
+        };
+      },
+      async getUserSettings() {
+        sdkCalls.push({ method: 'user.getUserSettings' });
+        return {
           code: '2000',
           msg: 'success',
           data: {
             theme: 'dark',
             language: 'en-US',
           },
-        }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      );
-    }
-
-    return new Response(JSON.stringify({ code: 404, msg: 'Not found' }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }) as typeof fetch;
+        };
+      },
+      async updateUserSettings(body) {
+        sdkCalls.push({ method: 'user.updateUserSettings', body });
+        return {
+          code: '2000',
+          msg: 'success',
+          data: {
+            theme: body.theme,
+            language: body.language,
+          },
+        };
+      },
+    },
+    note: {} as never,
+    filesystem: {} as never,
+  }));
+  initAppSdkClient({ accessToken: 'configured-access-token' });
 });
 
 afterEach(() => {
+  configureAppSdkClientFactory(null);
   vi.restoreAllMocks();
 });
 
@@ -100,13 +89,10 @@ describe('appUserService', () => {
       displayName: 'Night Operator',
     });
 
-    const profileUpdateRequest = fetchCalls.find(
-      ({ input, init }) =>
-        String(input).endsWith('/app/v3/api/user/profile') && init?.method === 'PUT',
-    );
+    const profileUpdateRequest = sdkCalls.find(({ method }) => method === 'user.updateUserProfile');
 
     expect(profileUpdateRequest).toBeDefined();
-    expect(JSON.parse(String(profileUpdateRequest?.init?.body ?? '{}'))).toEqual({
+    expect(profileUpdateRequest?.body).toEqual({
       nickname: 'Night Operator',
     });
     expect(profile).toEqual({
@@ -131,13 +117,10 @@ describe('appUserService', () => {
       languagePreference: 'zh-CN',
     });
 
-    const settingsUpdateRequest = fetchCalls.find(
-      ({ input, init }) =>
-        String(input).endsWith('/app/v3/api/user/settings') && init?.method === 'PUT',
-    );
+    const settingsUpdateRequest = sdkCalls.find(({ method }) => method === 'user.updateUserSettings');
 
     expect(settingsUpdateRequest).toBeDefined();
-    expect(JSON.parse(String(settingsUpdateRequest?.init?.body ?? '{}'))).toEqual({
+    expect(settingsUpdateRequest?.body).toEqual({
       theme: 'system',
       language: 'zh-CN',
     });

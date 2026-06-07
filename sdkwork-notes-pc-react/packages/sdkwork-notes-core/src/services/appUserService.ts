@@ -1,7 +1,7 @@
 import type {
   UserProfileVO,
   UserSettingsVO,
-} from '@sdkwork/app-sdk';
+} from '../sdk/appSdkPort';
 import type { LanguagePreference, ThemeMode } from '@sdkwork/notes-types';
 import { getAppSdkClientWithSession } from '../sdk/useAppSdkClient';
 import { unwrapAppSdkResponse } from '../sdk/appSdkResult';

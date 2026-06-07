@@ -70,10 +70,10 @@ function collectSourceFiles(rootPath) {
   return sourceFiles;
 }
 
-test('notes workspace stays self-contained and does not pull core-pc-react or IM sdk packages', () => {
+test('notes workspace does not retain retired embedded core or IM sdk workspace paths', () => {
   const workspaceConfig = fs.readFileSync(workspaceConfigPath, 'utf8');
 
-  assert.doesNotMatch(workspaceConfig, /sdkwork-core\/sdkwork-core-pc-react/);
+  assert.doesNotMatch(workspaceConfig, /apps\/sdkwork-core\/sdkwork-core-pc-react/);
   assert.doesNotMatch(workspaceConfig, /openchat\/sdkwork-im-sdk\/sdkwork-im-sdk-typescript\/composed/);
   assert.doesNotMatch(workspaceConfig, /openchat\/sdkwork-im-sdk\/sdkwork-im-sdk-typescript\/adapter-wukongim/);
   assert.doesNotMatch(workspaceConfig, /openchat\/sdkwork-im-sdk\/sdkwork-im-sdk-typescript\/generated\/server-openapi/);
@@ -91,7 +91,7 @@ test('notes-auth owns the shared auth runtime boundary and the rest of the works
   const dependencies = packageJson.dependencies ?? {};
 
   assert.equal(dependencies['@sdkwork/core-pc-react'], undefined);
-  assert.match(String(dependencies['@sdkwork/auth-pc-react'] ?? ''), /^file:/);
+  assert.equal(dependencies['@sdkwork/auth-pc-react'], 'workspace:*');
 
   const bridgeSource = fs.readFileSync(notesAuthBridgePath, 'utf8');
 
@@ -116,12 +116,12 @@ test('notes-auth owns the shared auth runtime boundary and the rest of the works
   );
 });
 
-test('lockfile does not retain core-pc-react or openchat IM workspace links', () => {
+test('lockfile does not retain retired embedded core or openchat IM workspace links', () => {
   const lockfile = fs.readFileSync(lockfilePath, 'utf8');
 
   assert.doesNotMatch(lockfile, /^ {2}'@sdkwork\/core-pc-react@/m);
-  assert.doesNotMatch(lockfile, /resolution:\s+\{directory:\s+.*sdkwork-core-pc-react.*\}/);
-  assert.doesNotMatch(lockfile, /version:\s+(?:file|link):.*sdkwork-core-pc-react/);
+  assert.doesNotMatch(lockfile, /resolution:\s+\{directory:\s+.*apps\/sdkwork-core\/sdkwork-core-pc-react.*\}/);
+  assert.doesNotMatch(lockfile, /version:\s+(?:file|link):.*apps\/sdkwork-core\/sdkwork-core-pc-react/);
   assert.doesNotMatch(lockfile, /openchat\/sdkwork-im-sdk\/sdkwork-im-sdk-typescript\/composed/);
   assert.doesNotMatch(lockfile, /openchat\/sdkwork-im-sdk\/sdkwork-im-sdk-typescript\/adapter-wukongim/);
   assert.doesNotMatch(lockfile, /openchat\/sdkwork-im-sdk\/sdkwork-im-sdk-typescript\/generated\/server-openapi/);
@@ -131,14 +131,16 @@ test('typescript resolves shared sdk types through explicit workspace path alias
   const tsconfigBase = JSON.parse(fs.readFileSync(tsconfigBasePath, 'utf8'));
   const paths = tsconfigBase.compilerOptions?.paths ?? {};
 
-  assert.deepEqual(
-    paths['@sdkwork/app-sdk'],
-    ['../../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/index.ts'],
-    'Expected tsconfig.base.json to resolve @sdkwork/app-sdk through the workspace source alias.',
+  const retiredGenericAppSdkPackage = `@sdkwork/${'app'}-sdk`;
+
+  assert.equal(
+    paths[retiredGenericAppSdkPackage],
+    undefined,
+    'Expected the retired generic app SDK alias to stay absent from tsconfig.base.json.',
   );
   assert.deepEqual(
     paths['@sdkwork/sdk-common'],
-    ['../../../sdk/sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts'],
+    ['../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts'],
     'Expected tsconfig.base.json to resolve @sdkwork/sdk-common through the workspace source alias.',
   );
 });

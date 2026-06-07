@@ -1,10 +1,19 @@
 import { useMemo } from 'react';
-import { createClient, type SdkworkAppClient, type SdkworkAppConfig } from '@sdkwork/app-sdk';
+import type {
+  NotesRemoteAppClient,
+  NotesRemoteAppClientFactory,
+  SdkworkAppConfig,
+} from './appSdkPort';
 
 export type AppRuntimeEnv = 'development' | 'staging' | 'production' | 'test';
 
 export interface AppSdkClientConfig extends SdkworkAppConfig {
   env: AppRuntimeEnv;
+}
+
+export interface AppSdkClientOverrides extends Partial<SdkworkAppConfig> {
+  client?: NotesRemoteAppClient;
+  clientFactory?: NotesRemoteAppClientFactory;
 }
 
 export interface AppSdkSessionTokens {
@@ -50,9 +59,10 @@ type RuntimeWindow = Window & {
   __TAURI_INTERNALS__?: unknown;
 };
 
-let appClientCache: SdkworkAppClient | null = null;
+let appClientCache: NotesRemoteAppClient | null = null;
 let appClientConfigCache: AppSdkClientConfig | null = null;
 let appSdkSessionStoreAdapter: AppSdkSessionStoreAdapter | null = null;
+let appSdkClientFactory: NotesRemoteAppClientFactory | null = null;
 let sessionMemorySnapshot: AppSdkSessionTokens | null = null;
 const memoryStorage = new Map<string, string>();
 
@@ -173,7 +183,7 @@ function createNotesEnvSource(): Record<string, string | undefined> {
 }
 
 export function resolveAppSdkRuntimeContext(
-  overrides: Partial<SdkworkAppConfig> = {},
+  overrides: AppSdkClientOverrides = {},
 ): AppSdkRuntimeContext {
   const envSource = createNotesEnvSource();
 
@@ -304,7 +314,7 @@ function resolvePlatformId(envSource: Record<string, string | undefined>): strin
 }
 
 function resolveConfiguredAccessToken(
-  overrides: Partial<SdkworkAppConfig> = {},
+  overrides: AppSdkClientOverrides = {},
   config: AppSdkClientConfig | null = appClientConfigCache,
 ): string {
   if (overrides.accessToken !== undefined) {
@@ -530,16 +540,16 @@ function writeSessionSnapshot(session: AppSdkSessionTokens): void {
 }
 
 function applySessionTokensToClient(
-  client: SdkworkAppClient,
+  client: NotesRemoteAppClient,
   session: AppSdkSessionTokens,
   fallbackAccessToken: string,
 ): void {
-  client.setAuthToken(normalizeBearerToken(session.authToken));
-  client.setAccessToken(normalizeBearerToken(session.accessToken || fallbackAccessToken));
+  client.setAuthToken?.(normalizeBearerToken(session.authToken));
+  client.setAccessToken?.(normalizeBearerToken(session.accessToken || fallbackAccessToken));
 }
 
 function resolveEffectiveSession(
-  overrides: Partial<SdkworkAppConfig> = {},
+  overrides: AppSdkClientOverrides = {},
   fallbackAccessToken: string,
 ): AppSdkSessionTokens {
   const session = readRuntimeSession();
@@ -557,15 +567,33 @@ function resolveEffectiveSession(
   };
 }
 
-function createScopedClient(overrides: Partial<SdkworkAppConfig> = {}): SdkworkAppClient {
+function resolveInjectedAppSdkClient(
+  overrides: AppSdkClientOverrides,
+  config: AppSdkClientConfig,
+): NotesRemoteAppClient {
+  if (overrides.client) {
+    return overrides.client;
+  }
+
+  const factory = overrides.clientFactory ?? appSdkClientFactory;
+  if (!factory) {
+    throw new Error(
+      'SDKWork Notes product app client is not configured. Inject a generated product app SDK client, dependency SDK facade, or approved composed runtime client before using remote Notes services.',
+    );
+  }
+
+  return factory(config);
+}
+
+function createScopedClient(overrides: AppSdkClientOverrides = {}): NotesRemoteAppClient {
   const config = createAppSdkClientConfig(overrides);
-  const client = createClient(config);
+  const client = resolveInjectedAppSdkClient(overrides, config);
   applySessionTokensToClient(client, resolveEffectiveSession(overrides, config.accessToken || ''), config.accessToken || '');
   return client;
 }
 
 export function createAppSdkClientConfig(
-  overrides: Partial<SdkworkAppConfig> = {},
+  overrides: AppSdkClientOverrides = {},
 ): AppSdkClientConfig {
   const envSource = createNotesEnvSource();
   const runtimeContext = resolveAppSdkRuntimeContext(overrides);
@@ -634,17 +662,17 @@ export function createAppSdkClientConfig(
 }
 
 export function initAppSdkClient(
-  overrides: Partial<SdkworkAppConfig> = {},
-): SdkworkAppClient {
+  overrides: AppSdkClientOverrides = {},
+): NotesRemoteAppClient {
   const config = createAppSdkClientConfig(overrides);
-  const client = createClient(config);
+  const client = resolveInjectedAppSdkClient(overrides, config);
   applySessionTokensToClient(client, resolveEffectiveSession(overrides, config.accessToken || ''), config.accessToken || '');
   appClientCache = client;
   appClientConfigCache = config;
   return client;
 }
 
-export function getAppSdkClient(): SdkworkAppClient {
+export function getAppSdkClient(): NotesRemoteAppClient {
   return appClientCache ?? initAppSdkClient();
 }
 
@@ -670,6 +698,14 @@ export function resetAppSdkClient(): void {
   appClientCache = null;
   appClientConfigCache = null;
   sessionMemorySnapshot = null;
+}
+
+export function configureAppSdkClientFactory(
+  factory: NotesRemoteAppClientFactory | null,
+): void {
+  appSdkClientFactory = factory;
+  appClientCache = null;
+  appClientConfigCache = null;
 }
 
 export function applyAppSdkSessionTokens(tokens: AppSdkSessionTokens): void {
@@ -745,8 +781,8 @@ export function clearAppSdkSessionTokens(): void {
 }
 
 export function getAppSdkClientWithSession(
-  overrides: Partial<SdkworkAppConfig> = {},
-): SdkworkAppClient {
+  overrides: AppSdkClientOverrides = {},
+): NotesRemoteAppClient {
   if (Object.keys(overrides).length > 0) {
     return createScopedClient(overrides);
   }
@@ -758,8 +794,8 @@ export function getAppSdkClientWithSession(
 }
 
 export function useAppSdkClient(
-  overrides: Partial<SdkworkAppConfig> = {},
-): SdkworkAppClient {
+  overrides: AppSdkClientOverrides = {},
+): NotesRemoteAppClient {
   const key = JSON.stringify(overrides || {});
   return useMemo(() => getAppSdkClientWithSession(overrides), [key]);
 }

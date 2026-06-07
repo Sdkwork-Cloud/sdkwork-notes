@@ -58,6 +58,6 @@ pnpm.cmd typecheck
 
 ## 审计建议
 
-1. 上游 `spring-ai-plus-app-api` / OpenAPI / generator 实现时，优先按本地 spec 落 `remoteApply(noteId, body)`，避免新增第二套命名。
+1. 上游 `legacy-java-plus-app-api` / OpenAPI / generator 实现时，优先按本地 spec 落 `remoteApply(noteId, body)`，避免新增第二套命名。
 2. 一旦上游生成了真实 SDK method，下一轮应先在 shared wrapper 加最薄 adapter，再把 bootstrap `apply(request)` 接到该 adapter。
 3. 在真实 SDK method 生成前，继续禁止把现有 direct-write note API 当作 replay handler。

@@ -8,11 +8,11 @@
 - `sdkwork-notes-pc-react/scripts/workspace-sync-app-sdk-generated-output-contract.test.mjs`
 - `sdkwork-notes-pc-react/package.json`
 - `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/index.ts`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-update-request.ts`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-update-result-vo.ts`
-- `spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/plus-api-result-note-batch-update-result-vo.ts`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/index.ts`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-update-request.ts`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-update-result-vo.ts`
+- `legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/plus-api-result-note-batch-update-result-vo.ts`
 
 ## 审计结论
 

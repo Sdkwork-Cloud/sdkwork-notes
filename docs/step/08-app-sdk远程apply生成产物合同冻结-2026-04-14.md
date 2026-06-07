@@ -45,5 +45,5 @@ pnpm.cmd typecheck
 
 ## 下一轮入口
 
-- 若上游可改，优先在 `spring-ai-plus-app-api` 闭合 `remoteApply` controller / OpenAPI / generator，然后验证生成产物是否满足该 spec。
+- 若上游可改，优先在 `legacy-java-plus-app-api` 闭合 `remoteApply` controller / OpenAPI / generator，然后验证生成产物是否满足该 spec。
 - 若上游仍不可改，则继续停留在 `Step 08 / CP08-4`，只补 guardrail，不把当前 direct-write 产物伪装成 remote apply generated output。

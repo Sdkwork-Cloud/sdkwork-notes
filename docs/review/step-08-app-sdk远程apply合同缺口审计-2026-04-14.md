@@ -5,17 +5,17 @@
 - `sdkwork-notes-pc-react/packages/sdkwork-notes-core/src/sdk/useAppSdkClient.ts`
 - `sdkwork-notes-pc-react/scripts/workspace-sync-app-sdk-contract.test.mjs`
 - `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/sdk.ts`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-create-request.ts`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-update-request.ts`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-content-update-request.ts`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-move-request.ts`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-update-request.ts`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-operation-request.ts`
-- `../../spring-ai-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-update-result-vo.ts`
-- `../../spring-ai-plus-app-api/src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/NotesAppApiController.java`
-- `../../spring-ai-plus-app-api/src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/README.md`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/sdk.ts`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/api/note.ts`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-create-request.ts`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-update-request.ts`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-content-update-request.ts`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-move-request.ts`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-update-request.ts`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-operation-request.ts`
+- `../../legacy-java-plus-app-api/sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-batch-update-result-vo.ts`
+- `../../legacy-java-plus-app-api/src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/NotesAppApiController.java`
+- `../../legacy-java-plus-app-api/src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/README.md`
 
 ## 审计结论
 
@@ -25,7 +25,7 @@
 
 ## 已确认成立的约束
 
-1. app 侧远端能力路径仍必须保持为 `feature / store / service -> shared app-sdk wrapper -> @sdkwork/app-sdk -> spring-ai-plus-app-api`。
+1. app 侧远端能力路径仍必须保持为 `feature / store / service -> shared app-sdk wrapper -> @sdkwork/app-sdk -> legacy-java-plus-app-api`。
 2. 当前 generated note surface 只有 direct-write 或正文 versioning 能力：
    - `createNote`
    - `updateNote`
@@ -50,7 +50,7 @@
 
 - 若后续有人直接把当前 `createNote / updateNote / updateNoteContent / move / restore / deleteNote / batchUpdate` 接到 worker replay，会制造重复远端写入与错误幂等语义。
 - 当前仍没有真实 ack apply / `remoteCursor` 合并闭环，也没有冲突恢复 UI 与离在线切换 smoke。
-- 上游合同闭环涉及 `spring-ai-plus-app-api`、OpenAPI 3.x 与 SDK 生成链；在本仓库内部继续堆 caller wiring 已经没有真实性收益。
+- 上游合同闭环涉及 `legacy-java-plus-app-api`、OpenAPI 3.x 与 SDK 生成链；在本仓库内部继续堆 caller wiring 已经没有真实性收益。
 
 ## 证据
 
@@ -66,7 +66,7 @@ pnpm.cmd typecheck
 
 ## 审计建议
 
-1. 下一轮先在 `spring-ai-plus-app-api` / backend / OpenAPI generator 闭合语义化 replay-safe 方法，再生成新的 app-sdk surface。
+1. 下一轮先在 `legacy-java-plus-app-api` / backend / OpenAPI generator 闭合语义化 replay-safe 方法，再生成新的 app-sdk surface。
 2. 新合同至少要显式覆盖：
    - `idempotencyKey`
    - `localRevision`

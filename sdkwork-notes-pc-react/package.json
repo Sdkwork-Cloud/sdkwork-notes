@@ -28,7 +28,7 @@
     "clean": "node -e \"import('node:fs/promises').then(fs => fs.rm('dist', { recursive: true, force: true }))\""
   },
   "dependencies": {
-    "@sdkwork/app-sdk": "workspace:*",
+    "@sdkwork/drive-app-sdk": "workspace:*",
     "@sdkwork/notes-auth": "workspace:*",
     "@sdkwork/notes-commons": "workspace:*",
     "@sdkwork/notes-core": "workspace:*",
@@ -49,6 +49,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "catalog:",
+    "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "catalog:",
