@@ -82,6 +82,14 @@ const REQUIRED_AI_SOURCE_DRIVE_VERSION_FIELDS = [
   'drive_version_no'
 ];
 
+const REQUIRED_AI_JOB_STATUS_VALUES = [
+  'queued',
+  'running',
+  'succeeded',
+  'failed',
+  'canceled'
+];
+
 const APP_BODY_SCHEMA_REQUIREMENTS = [
   {
     schemaName: 'CreateWorkspaceRequest',
@@ -196,6 +204,42 @@ const APP_BODY_SCHEMA_REQUIREMENTS = [
       'feedbackText'
     ],
     required: ['tenantId', 'organizationId', 'operatorId', 'feedbackType']
+  }
+];
+
+const APP_QUERY_CONTEXT_REQUIREMENTS = [
+  'workspaces.list',
+  'workspaces.bootstrap.retrieve',
+  'pages.list',
+  'pages.retrieve',
+  'pages.content.retrieve',
+  'pages.versions.list',
+  'pages.aiSuggestions.list',
+  'search.query'
+].map((operationId) => ({
+  operationId,
+  parameters: ['tenantId', 'organizationId', 'operatorId'],
+  required: ['tenantId', 'organizationId']
+}));
+
+const BACKEND_QUERY_CONTEXT_REQUIREMENTS = [
+  'aiJobs.admin.list',
+  'aiJobs.admin.retrieve',
+  'aiJobs.cancel',
+  'aiJobs.claim',
+  'aiJobs.complete',
+  'aiSuggestions.feedback.list'
+].map((operationId) => ({
+  operationId,
+  parameters: ['tenantId', 'organizationId', 'operatorId'],
+  required: ['tenantId', 'organizationId']
+}));
+
+const APP_HEADER_REQUIREMENTS = [
+  {
+    operationId: 'aiJobs.create',
+    parameters: ['Idempotency-Key'],
+    required: ['Idempotency-Key']
   }
 ];
 
@@ -416,9 +460,121 @@ function verifyOpenApiSchemaProperties({ findings, file, openapi, schemaName, re
   );
 }
 
+function verifySchemaStringEnum({ findings, file, openapi, schemaName, propertyName, expectedValues, code }) {
+  const property = openapi.components?.schemas?.[schemaName]?.properties?.[propertyName];
+  const actualValues = Array.isArray(property?.enum) ? property.enum : null;
+  if (!actualValues) {
+    pushFinding(
+      findings,
+      code,
+      file,
+      `${schemaName}.${propertyName} must expose a closed enum matching implemented persistence and service states: ${expectedValues.join(', ')}.`
+    );
+    return;
+  }
+
+  const missingValues = expectedValues.filter((value) => !actualValues.includes(value));
+  const unexpectedValues = actualValues.filter((value) => !expectedValues.includes(value));
+  if (missingValues.length === 0 && unexpectedValues.length === 0) {
+    return;
+  }
+
+  const details = [];
+  if (missingValues.length > 0) {
+    details.push(`missing ${missingValues.join(', ')}`);
+  }
+  if (unexpectedValues.length > 0) {
+    details.push(`unexpected ${unexpectedValues.join(', ')}`);
+  }
+  pushFinding(
+    findings,
+    code,
+    file,
+    `${schemaName}.${propertyName} enum must match implemented persistence and service states: ${details.join('; ')}.`
+  );
+}
+
 function requiredSchemaProperties(openapi, schemaName) {
   const schema = openapi.components?.schemas?.[schemaName];
   return new Set(Array.isArray(schema?.required) ? schema.required : []);
+}
+
+function resolveOpenApiParameter(openapi, parameter) {
+  if (!parameter || typeof parameter !== 'object') {
+    return null;
+  }
+  if (typeof parameter.$ref === 'string') {
+    const refName = parameter.$ref.match(/^#\/components\/parameters\/(.+)$/)?.[1];
+    return refName ? openapi.components?.parameters?.[refName] ?? null : null;
+  }
+  return parameter;
+}
+
+function operationQueryParameterMap(openapi, operation) {
+  const parameters = new Map();
+  for (const parameter of operation?.parameters ?? []) {
+    const resolved = resolveOpenApiParameter(openapi, parameter);
+    if (resolved?.in !== 'query' || typeof resolved.name !== 'string') {
+      continue;
+    }
+    parameters.set(resolved.name, resolved);
+  }
+  return parameters;
+}
+
+function operationHeaderParameterMap(openapi, operation) {
+  const parameters = new Map();
+  for (const parameter of operation?.parameters ?? []) {
+    const resolved = resolveOpenApiParameter(openapi, parameter);
+    if (resolved?.in !== 'header' || typeof resolved.name !== 'string') {
+      continue;
+    }
+    parameters.set(resolved.name.toLowerCase(), resolved);
+  }
+  return parameters;
+}
+
+function operationById(openapi, operationId) {
+  return iterOpenApiOperations(openapi)
+    .find((entry) => entry.operation?.operationId === operationId);
+}
+
+async function verifyAppApiImplementedHeaderContracts(rootDir, findings) {
+  const file = 'generated/openapi/notes-app-api.openapi.json';
+  if (!(await pathExists(path.join(rootDir, file)))) {
+    return;
+  }
+
+  const openapi = await readJson(rootDir, file);
+  for (const requirement of APP_HEADER_REQUIREMENTS) {
+    const entry = operationById(openapi, requirement.operationId);
+    if (!entry) {
+      continue;
+    }
+
+    const headerParameters = operationHeaderParameterMap(openapi, entry.operation);
+    const missingParameters = requirement.parameters
+      .filter((parameterName) => !headerParameters.has(parameterName.toLowerCase()));
+    if (missingParameters.length > 0) {
+      pushFinding(
+        findings,
+        'APP_HEADER_CONTRACT_MISSING',
+        file,
+        `${entry.operation.operationId} must expose header parameters required by the implemented Rust handler: ${missingParameters.join(', ')}.`
+      );
+    }
+
+    const missingRequired = requirement.required
+      .filter((parameterName) => headerParameters.get(parameterName.toLowerCase())?.required !== true);
+    if (missingRequired.length > 0) {
+      pushFinding(
+        findings,
+        'APP_HEADER_CONTRACT_MISSING',
+        file,
+        `${entry.operation.operationId} must require header parameters enforced by the implemented Rust handler: ${missingRequired.join(', ')}.`
+      );
+    }
+  }
 }
 
 async function verifyAppApiImplementedBodyContracts(rootDir, findings) {
@@ -455,6 +611,91 @@ async function verifyAppApiImplementedBodyContracts(rootDir, findings) {
         `${requirement.schemaName} must require fields needed by the implemented App API route context: ${missingRequired.join(', ')}.`
       );
     }
+
+    const unexpectedRequired = [...requiredProperties]
+      .filter((propertyName) => !requirement.required.includes(propertyName));
+    if (unexpectedRequired.length > 0) {
+      pushFinding(
+        findings,
+        'APP_BODY_REQUIRED_CONTRACT_MISMATCH',
+        file,
+        `${requirement.schemaName} must not require fields that the implemented App API DTO accepts as optional/defaulted: ${unexpectedRequired.join(', ')}.`
+      );
+    }
+  }
+}
+
+async function verifyImplementedQueryContextContracts(rootDir, findings) {
+  const authorities = [
+    {
+      file: 'generated/openapi/notes-app-api.openapi.json',
+      requirements: APP_QUERY_CONTEXT_REQUIREMENTS,
+      code: 'APP_QUERY_CONTEXT_CONTRACT_MISSING'
+    },
+    {
+      file: 'generated/openapi/notes-backend-api.openapi.json',
+      requirements: BACKEND_QUERY_CONTEXT_REQUIREMENTS,
+      code: 'BACKEND_QUERY_CONTEXT_CONTRACT_MISSING'
+    }
+  ];
+
+  for (const authority of authorities) {
+    if (!(await pathExists(path.join(rootDir, authority.file)))) {
+      continue;
+    }
+
+    const openapi = await readJson(rootDir, authority.file);
+    for (const requirement of authority.requirements) {
+      const entry = operationById(openapi, requirement.operationId);
+      if (!entry) {
+        continue;
+      }
+
+      const queryParameters = operationQueryParameterMap(openapi, entry.operation);
+      const missingParameters = requirement.parameters
+        .filter((parameterName) => !queryParameters.has(parameterName));
+      if (missingParameters.length > 0) {
+        pushFinding(
+          findings,
+          authority.code,
+          authority.file,
+          `${entry.operation.operationId} must expose query parameters accepted or required by the implemented Rust route DTO: ${missingParameters.join(', ')}.`
+        );
+      }
+
+      const missingRequired = requirement.required
+        .filter((parameterName) => queryParameters.get(parameterName)?.required !== true);
+      if (missingRequired.length > 0) {
+        pushFinding(
+          findings,
+          authority.code,
+          authority.file,
+          `${entry.operation.operationId} must require query parameters needed by the implemented Rust route context: ${missingRequired.join(', ')}.`
+        );
+      }
+    }
+  }
+}
+
+async function verifyImplementedSchemaValueContracts(rootDir, findings) {
+  for (const file of [
+    'generated/openapi/notes-app-api.openapi.json',
+    'generated/openapi/notes-backend-api.openapi.json'
+  ]) {
+    if (!(await pathExists(path.join(rootDir, file)))) {
+      continue;
+    }
+
+    const openapi = await readJson(rootDir, file);
+    verifySchemaStringEnum({
+      findings,
+      file,
+      openapi,
+      schemaName: 'AiJob',
+      propertyName: 'status',
+      expectedValues: REQUIRED_AI_JOB_STATUS_VALUES,
+      code: 'OPENAPI_AI_JOB_STATUS_ENUM_MISMATCH'
+    });
   }
 }
 
@@ -748,7 +989,10 @@ export async function verifyNotesContractFoundation({ rootDir = process.cwd() } 
   const findings = [];
   await verifyForbiddenNames(rootDir, findings);
   await verifyOpenApi(rootDir, findings);
+  await verifyAppApiImplementedHeaderContracts(rootDir, findings);
   await verifyAppApiImplementedBodyContracts(rootDir, findings);
+  await verifyImplementedQueryContextContracts(rootDir, findings);
+  await verifyImplementedSchemaValueContracts(rootDir, findings);
   await verifyDriveVersionReferenceContracts(rootDir, findings);
   await verifySdkDependencies(rootDir, findings);
   await verifyForbiddenSdkFamilyDirectories(rootDir, findings);

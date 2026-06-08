@@ -57,6 +57,53 @@ function operation(operationId = 'pages.list') {
   };
 }
 
+function temporaryContextQueryParameters() {
+  return [
+    {
+      name: 'tenantId',
+      in: 'query',
+      required: true,
+      schema: { type: 'string' }
+    },
+    {
+      name: 'organizationId',
+      in: 'query',
+      required: true,
+      schema: { type: 'string' }
+    },
+    {
+      name: 'operatorId',
+      in: 'query',
+      required: false,
+      schema: { type: 'string' }
+    }
+  ];
+}
+
+function withTemporaryContextQuery(operationValue, { omitContext = false } = {}) {
+  return {
+    ...operationValue,
+    parameters: [
+      ...operationValue.parameters ?? [],
+      ...omitContext ? [] : temporaryContextQueryParameters()
+    ]
+  };
+}
+
+function withIdempotencyKeyHeader(operationValue, { omitHeader = false } = {}) {
+  if (omitHeader) {
+    return operationValue;
+  }
+
+  return {
+    ...operationValue,
+    parameters: [
+      ...operationValue.parameters ?? [],
+      { $ref: '#/components/parameters/IdempotencyKeyHeader' }
+    ]
+  };
+}
+
 function appTemporaryContextRequestSchemas({ omitContext = false } = {}) {
   const contextProperties = omitContext
     ? {}
@@ -213,6 +260,31 @@ async function createFixture(options = {}) {
       }
     }
   };
+  const aiJobStatusProperty = options.omitAiJobStatusEnum
+    ? { type: 'string' }
+    : {
+      type: 'string',
+      enum: ['queued', 'running', 'succeeded', 'failed', 'canceled']
+    };
+  const aiJobSchema = {
+    type: 'object',
+    additionalProperties: false,
+    required: ['id', 'workspaceId', 'jobType', 'targetType', 'status', 'createdAt'],
+    properties: {
+      id: { type: 'string' },
+      workspaceId: { type: 'string' },
+      jobType: { type: 'string' },
+      targetType: { type: 'string' },
+      targetId: { type: 'string' },
+      status: options.wrongAiJobStatusEnum
+        ? { type: 'string', enum: ['proposed', 'accepted', 'applied', 'rejected', 'dismissed'] }
+        : aiJobStatusProperty,
+      result: { type: 'object', additionalProperties: true },
+      sourceCount: { type: 'string' },
+      suggestionCount: { type: 'string' },
+      createdAt: { type: 'string', format: 'date-time' }
+    }
+  };
 
   await writeText(
     path.join(rootDir, 'docs/superpowers/specs/2026-06-08-sdkwork-notes-ai-native-design.md'),
@@ -273,18 +345,41 @@ async function createFixture(options = {}) {
     path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json'),
     openApi({
       [options.appPath ?? '/app/v3/api/notes/pages']: {
-        get: operation(options.appOperationId ?? 'pages.list')
+        get: withTemporaryContextQuery(
+          operation(options.appOperationId ?? 'pages.list'),
+          { omitContext: options.omitAppQueryContextContracts }
+        )
+      },
+      '/app/v3/api/notes/ai_jobs': {
+        post: withIdempotencyKeyHeader(operation('aiJobs.create'), {
+          omitHeader: options.omitAppIdempotencyKeyHeader
+        })
       }
     }, {
       AuthToken: { type: 'http', scheme: 'bearer' },
       AccessToken: { type: 'apiKey', in: 'header', name: 'Access-Token' }
     }, {
       ...driveVersionSchemas,
+      AiJob: aiJobSchema,
       ...appTemporaryContextRequestSchemas({
         omitContext: options.omitAppBodyContextContracts
       })
     })
   );
+  const appOpenapiPath = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+  const appOpenapi = JSON.parse(await readFile(appOpenapiPath, 'utf8'));
+  appOpenapi.components.parameters ??= {};
+  appOpenapi.components.parameters.IdempotencyKeyHeader = {
+    name: 'Idempotency-Key',
+    in: 'header',
+    required: true,
+    schema: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 255
+    }
+  };
+  await writeJson(appOpenapiPath, appOpenapi);
 
   await writeJson(
     path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json'),
@@ -299,12 +394,18 @@ async function createFixture(options = {}) {
     path.join(rootDir, 'generated/openapi/notes-backend-api.openapi.json'),
     openApi({
       [options.backendPath ?? '/backend/v3/api/notes/pages']: {
-        get: operation(options.backendOperationId ?? 'pages.admin.list')
+        get: withTemporaryContextQuery(
+          operation(options.backendOperationId ?? 'aiJobs.admin.list'),
+          { omitContext: options.omitBackendQueryContextContracts }
+        )
       }
     }, {
       AuthToken: { type: 'http', scheme: 'bearer' },
       AccessToken: { type: 'apiKey', in: 'header', name: 'Access-Token' }
-    }, driveVersionSchemas)
+    }, {
+      ...driveVersionSchemas,
+      AiJob: aiJobSchema
+    })
   );
 
   await writeJson(
@@ -408,6 +509,42 @@ test('rejects missing Drive version references in Notes schema and OpenAPI contr
   }
 });
 
+test('rejects App API AiJob status enum that does not match implemented job lifecycle states', async () => {
+  const rootDir = await createFixture({
+    wrongAiJobStatusEnum: true
+  });
+  try {
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'OPENAPI_AI_JOB_STATUS_ENUM_MISMATCH'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects Backend API AiJob status without an enum matching implemented job lifecycle states', async () => {
+  const rootDir = await createFixture({
+    omitAiJobStatusEnum: true
+  });
+  try {
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'OPENAPI_AI_JOB_STATUS_ENUM_MISMATCH'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects app AI job create contract missing required Idempotency-Key header enforced by Rust handler', async () => {
+  const rootDir = await createFixture({
+    omitAppIdempotencyKeyHeader: true
+  });
+  try {
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'APP_HEADER_CONTRACT_MISSING'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
 test('rejects app body schemas missing temporary route context fields required by implemented DTOs', async () => {
   const rootDir = await createFixture({
     omitAppBodyContextContracts: true
@@ -415,6 +552,21 @@ test('rejects app body schemas missing temporary route context fields required b
   try {
     const result = await verifyNotesContractFoundation({ rootDir });
     assert.ok(result.findings.some((finding) => finding.code === 'APP_BODY_CONTEXT_CONTRACT_MISSING'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects app body schemas that require fields defaulted by implemented DTOs', async () => {
+  const rootDir = await createFixture();
+  try {
+    const file = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+    const openapi = JSON.parse(await readFile(file, 'utf8'));
+    openapi.components.schemas.UpdatePageContentRequest.required.push('contentType');
+    await writeJson(file, openapi);
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'APP_BODY_REQUIRED_CONTRACT_MISMATCH'));
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }
@@ -432,6 +584,30 @@ test('rejects app AI suggestion schemas missing temporary route context fields r
 
     const result = await verifyNotesContractFoundation({ rootDir });
     assert.ok(result.findings.some((finding) => finding.code === 'APP_BODY_CONTEXT_CONTRACT_MISSING'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects implemented App API query operations missing temporary route context parameters required by Rust DTOs', async () => {
+  const rootDir = await createFixture({
+    omitAppQueryContextContracts: true
+  });
+  try {
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'APP_QUERY_CONTEXT_CONTRACT_MISSING'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects implemented Backend API query operations missing temporary route context parameters required by Rust DTOs', async () => {
+  const rootDir = await createFixture({
+    omitBackendQueryContextContracts: true
+  });
+  try {
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'BACKEND_QUERY_CONTEXT_CONTRACT_MISSING'));
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }

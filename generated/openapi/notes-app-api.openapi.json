@@ -34,6 +34,15 @@
         ],
         "parameters": [
           {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
+          },
+          {
             "$ref": "#/components/parameters/PageQuery"
           },
           {
@@ -128,6 +137,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/WorkspaceIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -171,6 +189,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/WorkspaceIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           },
           {
             "$ref": "#/components/parameters/PageQuery"
@@ -275,6 +302,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/PageIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -369,6 +405,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/PageIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -466,6 +511,15 @@
             "$ref": "#/components/parameters/PageIdPath"
           },
           {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
+          },
+          {
             "$ref": "#/components/parameters/PageQuery"
           },
           {
@@ -511,6 +565,15 @@
           }
         ],
         "parameters": [
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
+          },
           {
             "$ref": "#/components/parameters/WorkspaceIdQuery"
           },
@@ -595,7 +658,12 @@
         "x-sdkwork-tenant-scope": "tenant",
         "x-sdkwork-data-scope": "organization",
         "x-sdkwork-audit-event": "notes.ai_job.create",
-        "x-sdkwork-idempotent": true
+        "x-sdkwork-idempotent": true,
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKeyHeader"
+          }
+        ]
       }
     },
     "/app/v3/api/notes/pages/{pageId}/ai_suggestions": {
@@ -614,6 +682,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/PageIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           },
           {
             "$ref": "#/components/parameters/PageQuery"
@@ -940,6 +1017,40 @@
           "type": "string"
         },
         "description": "Public Notes AI suggestion id."
+      },
+      "TenantIdQuery": {
+        "name": "tenantId",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "OrganizationIdQuery": {
+        "name": "organizationId",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "OperatorIdQuery": {
+        "name": "operatorId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "IdempotencyKeyHeader": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
       }
     },
     "responses": {
@@ -1436,11 +1547,11 @@
           "status": {
             "type": "string",
             "enum": [
-              "proposed",
-              "accepted",
-              "applied",
-              "rejected",
-              "dismissed"
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "canceled"
             ]
           },
           "result": {
@@ -1616,7 +1727,6 @@
         "additionalProperties": false,
         "required": [
           "content",
-          "contentType",
           "tenantId",
           "organizationId",
           "operatorId"

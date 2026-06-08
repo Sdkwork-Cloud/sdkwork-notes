@@ -370,6 +370,15 @@
         ],
         "parameters": [
           {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
+          },
+          {
             "$ref": "#/components/parameters/PageQuery"
           },
           {
@@ -420,6 +429,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/AiJobIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -463,6 +481,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/AiJobIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -602,6 +629,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/AiJobIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -645,6 +681,15 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/AiJobIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "requestBody": {
@@ -859,6 +904,15 @@
             "$ref": "#/components/parameters/AiSuggestionIdPath"
           },
           {
+            "$ref": "#/components/parameters/TenantIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OrganizationIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/OperatorIdQuery"
+          },
+          {
             "$ref": "#/components/parameters/PageQuery"
           },
           {
@@ -971,6 +1025,30 @@
         "name": "aiSuggestionId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "TenantIdQuery": {
+        "name": "tenantId",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "OrganizationIdQuery": {
+        "name": "organizationId",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "OperatorIdQuery": {
+        "name": "operatorId",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -1212,7 +1290,14 @@
             "type": "string"
           },
           "status": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "canceled"
+            ]
           },
           "sourceCount": {
             "type": "string"
