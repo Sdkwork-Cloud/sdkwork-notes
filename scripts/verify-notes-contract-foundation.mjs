@@ -9,18 +9,21 @@ const OPENAPI_AUTHORITIES = [
     file: 'generated/openapi/notes-app-api.openapi.json',
     prefix: '/app/v3/api/notes',
     surface: 'app-api',
+    apiAuthority: 'sdkwork-notes-app-api',
     requiredSecuritySchemes: ['AuthToken', 'AccessToken']
   },
   {
     file: 'generated/openapi/notes-open-api.openapi.json',
     prefix: '/notes/v3/api',
     surface: 'open-api',
+    apiAuthority: 'sdkwork-notes-open-api',
     requiredSecuritySchemes: ['ApiKey']
   },
   {
     file: 'generated/openapi/notes-backend-api.openapi.json',
     prefix: '/backend/v3/api/notes',
     surface: 'backend-api',
+    apiAuthority: 'sdkwork-notes-backend-api',
     requiredSecuritySchemes: ['AuthToken', 'AccessToken']
   }
 ];
@@ -243,6 +246,51 @@ const APP_HEADER_REQUIREMENTS = [
   }
 ];
 
+const SURFACE_EXPECTATIONS = {
+  'open-api': {
+    apiAuthoritySuffix: 'open-api',
+    sdkFamilySuffix: 'sdk',
+    surfacePrefix: null
+  },
+  'app-api': {
+    apiAuthoritySuffix: 'app-api',
+    sdkFamilySuffix: 'app-sdk',
+    surfacePrefix: '/app/v3/api'
+  },
+  'backend-api': {
+    apiAuthoritySuffix: 'backend-api',
+    sdkFamilySuffix: 'backend-sdk',
+    surfacePrefix: '/backend/v3/api'
+  }
+};
+
+const SDK_FAMILY_EXPECTATIONS = [
+  {
+    familyDir: 'sdks/sdkwork-notes-sdk',
+    domain: 'notes',
+    surface: 'open-api',
+    sdkFamily: 'sdkwork-notes-sdk',
+    apiPrefix: '/notes/v3/api',
+    generationInputSpec: '../../generated/openapi/notes-open-api.openapi.json'
+  },
+  {
+    familyDir: 'sdks/sdkwork-notes-app-sdk',
+    domain: 'notes',
+    surface: 'app-api',
+    sdkFamily: 'sdkwork-notes-app-sdk',
+    apiPrefix: '/app/v3/api',
+    generationInputSpec: '../../generated/openapi/notes-app-api.openapi.json'
+  },
+  {
+    familyDir: 'sdks/sdkwork-notes-backend-sdk',
+    domain: 'notes',
+    surface: 'backend-api',
+    sdkFamily: 'sdkwork-notes-backend-sdk',
+    apiPrefix: '/backend/v3/api',
+    generationInputSpec: '../../generated/openapi/notes-backend-api.openapi.json'
+  }
+];
+
 function toPosix(relativePath) {
   return relativePath.split(path.sep).join('/');
 }
@@ -306,6 +354,49 @@ function pushFinding(findings, code, file, message, line = null) {
     line,
     message
   });
+}
+
+function expectedApiAuthority(domain, surface) {
+  const expectation = SURFACE_EXPECTATIONS[surface];
+  return expectation ? `sdkwork-${domain}-${expectation.apiAuthoritySuffix}` : null;
+}
+
+function expectedSdkFamily(domain, surface) {
+  const expectation = SURFACE_EXPECTATIONS[surface];
+  return expectation ? `sdkwork-${domain}-${expectation.sdkFamilySuffix}` : null;
+}
+
+function expectedSurfacePrefix(surface) {
+  return SURFACE_EXPECTATIONS[surface]?.surfacePrefix ?? null;
+}
+
+function parseRoutePackageName(packageName) {
+  if (typeof packageName !== 'string' || !packageName.startsWith('sdkwork-routes-')) {
+    return null;
+  }
+
+  for (const surface of ['backend-api', 'app-api', 'open-api']) {
+    const suffix = `-${surface}`;
+    if (!packageName.endsWith(suffix)) {
+      continue;
+    }
+
+    const capability = packageName.slice('sdkwork-routes-'.length, -suffix.length);
+    if (!capability) {
+      return null;
+    }
+    return { capability, surface };
+  }
+
+  return null;
+}
+
+function packageImportName(packageName) {
+  return typeof packageName === 'string' ? packageName.replaceAll('-', '_') : null;
+}
+
+function sdkFamilyFromDirectory(familyDir) {
+  return path.basename(familyDir);
 }
 
 function isDesignAllowedForbiddenLine(lines, lineIndex, heading) {
