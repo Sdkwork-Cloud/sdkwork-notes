@@ -59,7 +59,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "workspaces",
         "x-sdkwork-permission": "notes.backend.workspaces.read",
@@ -102,7 +102,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "workspaces",
         "x-sdkwork-permission": "notes.backend.workspaces.read",
@@ -153,7 +153,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "workspaces",
         "x-sdkwork-permission": "notes.backend.workspaces.write",
@@ -206,7 +206,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "workspaces",
         "x-sdkwork-permission": "notes.backend.projections.rebuild",
@@ -256,7 +256,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "indexJobs",
         "x-sdkwork-permission": "notes.backend.index_jobs.read",
@@ -302,7 +302,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "indexJobs",
         "x-sdkwork-permission": "notes.backend.index_jobs.write",
@@ -346,7 +346,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "indexJobs",
         "x-sdkwork-permission": "notes.backend.index_jobs.read",
@@ -404,7 +404,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiJobs",
         "x-sdkwork-permission": "notes.backend.ai_jobs.read",
@@ -456,7 +456,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiJobs",
         "x-sdkwork-permission": "notes.backend.ai_jobs.read",
@@ -508,7 +508,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiJobs",
         "x-sdkwork-permission": "notes.backend.ai_jobs.write",
@@ -557,7 +557,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "diagnostics",
         "x-sdkwork-permission": "notes.backend.diagnostics.read",
@@ -603,7 +603,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "diagnostics",
         "x-sdkwork-permission": "notes.backend.diagnostics.write",
@@ -656,7 +656,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiJobs",
         "x-sdkwork-permission": "notes.backend.ai_jobs.write",
@@ -718,7 +718,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiJobs",
         "x-sdkwork-permission": "notes.backend.ai_jobs.write",
@@ -771,7 +771,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiSuggestions",
         "x-sdkwork-permission": "notes.backend.ai_suggestions.write",
@@ -824,7 +824,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiSuggestions",
         "x-sdkwork-permission": "notes.backend.ai_suggestions.write",
@@ -877,7 +877,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiSuggestions",
         "x-sdkwork-permission": "notes.backend.ai_suggestions.write",
@@ -935,7 +935,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-api-authority": "sdkwork-notes-backend-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "aiSuggestions.feedback",
         "x-sdkwork-permission": "notes.backend.ai_suggestions.feedback.read",

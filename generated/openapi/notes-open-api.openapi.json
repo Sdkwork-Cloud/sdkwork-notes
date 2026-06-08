@@ -55,7 +55,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "workspaces",
         "x-sdkwork-permission": "notes.open.workspaces.read",
@@ -106,7 +106,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "pages",
         "x-sdkwork-permission": "notes.open.pages.read",
@@ -151,7 +151,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "pages",
         "x-sdkwork-permission": "notes.open.pages.write",
@@ -194,7 +194,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "pages",
         "x-sdkwork-permission": "notes.open.pages.read",
@@ -244,7 +244,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "pages",
         "x-sdkwork-permission": "notes.open.pages.write",
@@ -286,7 +286,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "pages",
         "x-sdkwork-permission": "notes.open.pages.content.read",
@@ -336,7 +336,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "pages",
         "x-sdkwork-permission": "notes.open.pages.content.write",
@@ -385,7 +385,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "pages",
         "x-sdkwork-permission": "notes.open.pages.versions.read",
@@ -436,7 +436,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "search",
         "x-sdkwork-permission": "notes.open.search.query",
@@ -483,7 +483,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "exports",
         "x-sdkwork-permission": "notes.open.exports.write",
@@ -526,7 +526,7 @@
           }
         },
         "x-sdkwork-owner": "sdkwork-notes",
-        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
         "x-sdkwork-domain": "notes",
         "x-sdkwork-resource": "exports",
         "x-sdkwork-permission": "notes.open.exports.read",

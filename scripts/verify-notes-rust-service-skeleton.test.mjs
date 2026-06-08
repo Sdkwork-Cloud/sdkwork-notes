@@ -191,7 +191,7 @@ test('declares a route manifest artifact aligned with the Notes App OpenAPI auth
     assert.ok(operation, `${key} should exist in generated/openapi/notes-app-api.openapi.json`);
     assert.equal(route.operationId, operation.operationId);
     assert.equal(route.ownership.owner, operation['x-sdkwork-owner']);
-    assert.equal(operation['x-sdkwork-api-authority'], 'sdkwork-notes.app');
+    assert.equal(operation['x-sdkwork-api-authority'], 'sdkwork-notes-app-api');
   }
 });
 
@@ -258,7 +258,7 @@ test('declares a backend route manifest artifact aligned with the Notes Backend 
     assert.ok(operation, `${key} should exist in generated/openapi/notes-backend-api.openapi.json`);
     assert.equal(route.operationId, operation.operationId);
     assert.equal(route.ownership.owner, operation['x-sdkwork-owner']);
-    assert.equal(operation['x-sdkwork-api-authority'], 'sdkwork-notes.backend');
+    assert.equal(operation['x-sdkwork-api-authority'], 'sdkwork-notes-backend-api');
   }
 });
 

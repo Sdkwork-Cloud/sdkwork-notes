@@ -70,7 +70,7 @@ fn route_manifest_matches_app_openapi_operations() {
         assert_eq!(route["ownership"]["apiAuthority"], "sdkwork-notes-app-api");
         assert_eq!(
             openapi_operation["x-sdkwork-api-authority"],
-            "sdkwork-notes.app"
+            "sdkwork-notes-app-api"
         );
         assert_eq!(route["auth"]["mode"], "dual-token");
     }

@@ -8,7 +8,7 @@
     "type": "web-backend-service",
     "root": "sdkwork-notes/packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api",
     "domain": "notes",
-    "capability": "pages",
+    "capability": "notes",
     "surface": "app-api",
     "languages": [
       "rust"
@@ -63,7 +63,7 @@
   ],
   "contracts": {
     "apiAuthority": {
-      "name": "sdkwork-notes.app",
+      "name": "sdkwork-notes-app-api",
       "prefix": "/app/v3/api/notes",
       "authorityOpenApi": "../../generated/openapi/notes-app-api.openapi.json",
       "owner": "sdkwork-notes"

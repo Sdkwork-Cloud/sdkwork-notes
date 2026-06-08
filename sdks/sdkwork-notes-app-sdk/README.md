@@ -6,7 +6,7 @@ This directory declares the owner-authored SDK family contract for the app/clien
 
 Status:
 
-- Authority: `sdkwork-notes.app`
+- Authority: `sdkwork-notes-app-api`
 - SDK family: `sdkwork-notes-app-sdk`
 - API prefix: `/app/v3/api`
 - Standard profile: `sdkwork-v3`

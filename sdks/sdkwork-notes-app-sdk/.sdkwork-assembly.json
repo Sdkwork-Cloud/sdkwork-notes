@@ -8,7 +8,7 @@
   "derivedSpecs": {
     "default": "../../generated/openapi/notes-app-api.openapi.json"
   },
-  "apiAuthority": "sdkwork-notes.app",
+  "apiAuthority": "sdkwork-notes-app-api",
   "discoverySurface": {
     "sdkTarget": "app",
     "apiPrefix": "/app/v3/api",

@@ -48,7 +48,7 @@
   ],
   "contracts": {
     "apiAuthority": {
-      "name": "sdkwork-notes.backend",
+      "name": "sdkwork-notes-backend-api",
       "prefix": "/backend/v3/api",
       "authorityOpenApi": "../../generated/openapi/notes-backend-api.openapi.json",
       "derivedOpenApi": [

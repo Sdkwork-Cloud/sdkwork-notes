@@ -870,6 +870,415 @@ async function verifyOpenApi(rootDir, findings) {
       } else {
         operationIds.set(operation.operationId, location);
       }
+
+      if (operation['x-sdkwork-owner'] !== 'sdkwork-notes') {
+        pushFinding(
+          findings,
+          'OPENAPI_OWNER_MISMATCH',
+          authority.file,
+          `${location} must declare x-sdkwork-owner as sdkwork-notes.`
+        );
+      }
+
+      if (operation['x-sdkwork-api-authority'] !== authority.apiAuthority) {
+        pushFinding(
+          findings,
+          'OPENAPI_AUTHORITY_MISMATCH',
+          authority.file,
+          `${location} must declare x-sdkwork-api-authority as ${authority.apiAuthority}, got ${operation['x-sdkwork-api-authority'] ?? 'missing'}.`
+        );
+      }
+    }
+  }
+}
+
+async function verifyRouteManifestMetadata(rootDir, findings) {
+  const manifestFiles = await walkFiles(rootDir, 'sdks/_route-manifests');
+
+  for (const relativePath of manifestFiles) {
+    if (!relativePath.endsWith('.route-manifest.json')) {
+      continue;
+    }
+
+    const manifest = await readJson(rootDir, relativePath);
+    if (manifest.kind !== 'sdkwork.route.manifest') {
+      pushFinding(
+        findings,
+        'ROUTE_MANIFEST_METADATA_MISMATCH',
+        relativePath,
+        'Route manifest artifact must declare kind "sdkwork.route.manifest".'
+      );
+      continue;
+    }
+
+    const packageParts = parseRoutePackageName(manifest.packageName);
+    if (!packageParts) {
+      pushFinding(
+        findings,
+        'ROUTE_MANIFEST_METADATA_MISMATCH',
+        relativePath,
+        `Route manifest packageName must follow sdkwork-routes-<capability>-<surface>, got ${manifest.packageName ?? 'missing'}.`
+      );
+      continue;
+    }
+
+    const expectedFileName = `sdks/_route-manifests/${packageParts.surface}/${manifest.packageName}.route-manifest.json`;
+    if (relativePath !== expectedFileName) {
+      pushFinding(
+        findings,
+        'ROUTE_MANIFEST_METADATA_MISMATCH',
+        relativePath,
+        `Route manifest artifact path must be ${expectedFileName}.`
+      );
+    }
+
+    const expectedAuthority = expectedApiAuthority(manifest.domain, packageParts.surface);
+    const expectedFamily = expectedSdkFamily(manifest.domain, packageParts.surface);
+    const expectedPrefix = expectedSurfacePrefix(packageParts.surface);
+    const expectedCrateRoot = `packages/native-rust/routes/${packageParts.surface}/${manifest.packageName}`;
+    const expectedCrateImport = packageImportName(manifest.packageName);
+
+    const metadataChecks = [
+      {
+        actual: manifest.surface,
+        expected: packageParts.surface,
+        label: 'surface'
+      },
+      {
+        actual: manifest.capability,
+        expected: packageParts.capability,
+        label: 'capability'
+      },
+      {
+        actual: manifest.apiAuthority,
+        expected: expectedAuthority,
+        label: 'apiAuthority'
+      },
+      {
+        actual: manifest.sdkFamily,
+        expected: expectedFamily,
+        label: 'sdkFamily'
+      },
+      {
+        actual: manifest.source?.crateRoot,
+        expected: expectedCrateRoot,
+        label: 'source.crateRoot'
+      },
+      {
+        actual: manifest.source?.crateImport,
+        expected: expectedCrateImport,
+        label: 'source.crateImport'
+      }
+    ];
+
+    if (expectedPrefix) {
+      metadataChecks.push({
+        actual: manifest.prefix,
+        expected: expectedPrefix,
+        label: 'prefix'
+      });
+    }
+
+    for (const check of metadataChecks) {
+      if (check.actual === check.expected) {
+        continue;
+      }
+      pushFinding(
+        findings,
+        'ROUTE_MANIFEST_METADATA_MISMATCH',
+        relativePath,
+        `Route manifest ${check.label} must be ${check.expected}, got ${check.actual ?? 'missing'}.`
+      );
+    }
+
+    const routes = Array.isArray(manifest.routes) ? manifest.routes : [];
+    for (const [index, route] of routes.entries()) {
+      const routeLabel = route?.method && route?.path
+        ? `${route.method} ${route.path}`
+        : `routes[${index}]`;
+
+      if (expectedPrefix && typeof route?.path === 'string' && !route.path.startsWith(expectedPrefix)) {
+        pushFinding(
+          findings,
+          'ROUTE_MANIFEST_METADATA_MISMATCH',
+          relativePath,
+          `${routeLabel} path must start with ${expectedPrefix}.`
+        );
+      }
+
+      if (route?.ownership?.owner !== manifest.owner) {
+        pushFinding(
+          findings,
+          'ROUTE_MANIFEST_METADATA_MISMATCH',
+          relativePath,
+          `${routeLabel} ownership.owner must match top-level owner ${manifest.owner}.`
+        );
+      }
+
+      if (route?.ownership?.apiAuthority !== manifest.apiAuthority) {
+        pushFinding(
+          findings,
+          'ROUTE_MANIFEST_METADATA_MISMATCH',
+          relativePath,
+          `${routeLabel} ownership.apiAuthority must match top-level apiAuthority ${manifest.apiAuthority}.`
+        );
+      }
+
+      if (route?.auth?.mode !== 'dual-token') {
+        pushFinding(
+          findings,
+          'ROUTE_MANIFEST_METADATA_MISMATCH',
+          relativePath,
+          `${routeLabel} auth.mode must be dual-token for implemented protected app/backend Notes routes.`
+        );
+      }
+    }
+  }
+}
+
+async function verifyRouteComponentSpecMetadata(rootDir, findings) {
+  const manifestFiles = await walkFiles(rootDir, 'sdks/_route-manifests');
+
+  for (const relativePath of manifestFiles) {
+    if (!relativePath.endsWith('.route-manifest.json')) {
+      continue;
+    }
+
+    const manifest = await readJson(rootDir, relativePath);
+    const packageParts = parseRoutePackageName(manifest.packageName);
+    if (!packageParts) {
+      continue;
+    }
+
+    const componentSpecPath = `packages/native-rust/routes/${packageParts.surface}/${manifest.packageName}/specs/component.spec.json`;
+    if (!(await pathExists(path.join(rootDir, componentSpecPath)))) {
+      pushFinding(
+        findings,
+        'ROUTE_COMPONENT_SPEC_MISSING',
+        componentSpecPath,
+        `Missing component spec for route manifest ${relativePath}.`
+      );
+      continue;
+    }
+
+    const componentSpec = await readJson(rootDir, componentSpecPath);
+    const expectedRouteManifest = `../../../../../../sdks/_route-manifests/${packageParts.surface}/${manifest.packageName}.route-manifest.json`;
+    const componentChecks = [
+      {
+        actual: componentSpec.component?.name,
+        expected: manifest.packageName,
+        label: 'component.name'
+      },
+      {
+        actual: componentSpec.component?.domain,
+        expected: manifest.domain,
+        label: 'component.domain'
+      },
+      {
+        actual: componentSpec.component?.capability,
+        expected: manifest.capability,
+        label: 'component.capability'
+      },
+      {
+        actual: componentSpec.component?.surface,
+        expected: manifest.surface,
+        label: 'component.surface'
+      },
+      {
+        actual: componentSpec.contracts?.apiAuthority?.name,
+        expected: manifest.apiAuthority,
+        label: 'contracts.apiAuthority.name'
+      },
+      {
+        actual: componentSpec.contracts?.apiAuthority?.prefix,
+        expected: `${manifest.prefix}/notes`,
+        label: 'contracts.apiAuthority.prefix'
+      },
+      {
+        actual: componentSpec.contracts?.routeManifest,
+        expected: expectedRouteManifest,
+        label: 'contracts.routeManifest'
+      }
+    ];
+
+    for (const check of componentChecks) {
+      if (check.actual === check.expected) {
+        continue;
+      }
+      pushFinding(
+        findings,
+        'ROUTE_COMPONENT_SPEC_MISMATCH',
+        componentSpecPath,
+        `Route component spec ${check.label} must be ${check.expected}, got ${check.actual ?? 'missing'}.`
+      );
+    }
+  }
+}
+
+function dependencyKey(dependency) {
+  return JSON.stringify(dependency ?? {});
+}
+
+function dependenciesMatch(left, right) {
+  if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) {
+    return false;
+  }
+
+  const leftKeys = left.map(dependencyKey).sort();
+  const rightKeys = right.map(dependencyKey).sort();
+  return leftKeys.every((key, index) => key === rightKeys[index]);
+}
+
+function dependencyApiExportsFrom(json) {
+  return json?.contracts?.dependencyApiExports ?? json?.dependencyApiExports;
+}
+
+async function verifySdkFamilyMetadata(rootDir, findings) {
+  for (const expectation of SDK_FAMILY_EXPECTATIONS) {
+    const assemblyPath = `${expectation.familyDir}/.sdkwork-assembly.json`;
+    const manifestPath = `${expectation.familyDir}/sdk-manifest.json`;
+    const componentSpecPath = `${expectation.familyDir}/specs/component.spec.json`;
+
+    const assembly = await readOptionalJson(rootDir, assemblyPath);
+    const manifest = await readOptionalJson(rootDir, manifestPath);
+    const componentSpec = await readOptionalJson(rootDir, componentSpecPath);
+
+    if (!assembly || !manifest || !componentSpec) {
+      continue;
+    }
+
+    const expectedAuthority = expectedApiAuthority(expectation.domain, expectation.surface);
+    const expectedFamily = expectedSdkFamily(expectation.domain, expectation.surface);
+    const commonChecks = [
+      {
+        file: assemblyPath,
+        actual: assembly.workspace,
+        expected: expectedFamily,
+        label: 'workspace'
+      },
+      {
+        file: assemblyPath,
+        actual: assembly.sdkOwner,
+        expected: 'sdkwork-notes',
+        label: 'sdkOwner'
+      },
+      {
+        file: assemblyPath,
+        actual: assembly.sdkFamily ?? assembly.workspace,
+        expected: expectedFamily,
+        label: 'sdkFamily'
+      },
+      {
+        file: assemblyPath,
+        actual: assembly.apiAuthority,
+        expected: expectedAuthority,
+        label: 'apiAuthority'
+      },
+      {
+        file: assemblyPath,
+        actual: assembly.generationInputSpec,
+        expected: expectation.generationInputSpec,
+        label: 'generationInputSpec'
+      },
+      {
+        file: manifestPath,
+        actual: manifest.sdkName,
+        expected: expectedFamily,
+        label: 'sdkName'
+      },
+      {
+        file: manifestPath,
+        actual: manifest.sdkOwner,
+        expected: 'sdkwork-notes',
+        label: 'sdkOwner'
+      },
+      {
+        file: manifestPath,
+        actual: manifest.sdkFamily,
+        expected: expectedFamily,
+        label: 'sdkFamily'
+      },
+      {
+        file: manifestPath,
+        actual: manifest.apiAuthority,
+        expected: expectedAuthority,
+        label: 'apiAuthority'
+      },
+      {
+        file: manifestPath,
+        actual: manifest.generationInputSpec,
+        expected: expectation.generationInputSpec,
+        label: 'generationInputSpec'
+      },
+      {
+        file: componentSpecPath,
+        actual: componentSpec.component?.name,
+        expected: expectedFamily,
+        label: 'component.name'
+      },
+      {
+        file: componentSpecPath,
+        actual: componentSpec.contracts?.apiAuthority?.name,
+        expected: expectedAuthority,
+        label: 'contracts.apiAuthority.name'
+      },
+      {
+        file: componentSpecPath,
+        actual: componentSpec.contracts?.apiAuthority?.prefix,
+        expected: expectation.apiPrefix,
+        label: 'contracts.apiAuthority.prefix'
+      }
+    ];
+
+    for (const check of commonChecks) {
+      if (check.actual === check.expected) {
+        continue;
+      }
+      const code = check.label.includes('apiAuthority')
+        ? 'SDK_AUTHORITY_NAME_MISMATCH'
+        : 'SDK_FAMILY_METADATA_MISMATCH';
+      pushFinding(
+        findings,
+        code,
+        check.file,
+        `${sdkFamilyFromDirectory(expectation.familyDir)} ${check.label} must be ${check.expected}, got ${check.actual ?? 'missing'}.`
+      );
+    }
+
+    if (!dependenciesMatch(assembly.sdkDependencies, manifest.sdkDependencies)) {
+      pushFinding(
+        findings,
+        'SDK_DEPENDENCY_METADATA_MISMATCH',
+        manifestPath,
+        `${expectation.sdkFamily} sdkDependencies must match .sdkwork-assembly.json exactly.`
+      );
+    }
+
+    if (!dependenciesMatch(assembly.sdkDependencies, componentSpec.contracts?.sdkDependencies)) {
+      pushFinding(
+        findings,
+        'SDK_DEPENDENCY_METADATA_MISMATCH',
+        componentSpecPath,
+        `${expectation.sdkFamily} contracts.sdkDependencies must match .sdkwork-assembly.json exactly.`
+      );
+    }
+
+    if (!dependenciesMatch(dependencyApiExportsFrom(assembly), dependencyApiExportsFrom(manifest))) {
+      pushFinding(
+        findings,
+        'SDK_DEPENDENCY_EXPORT_METADATA_MISMATCH',
+        manifestPath,
+        `${expectation.sdkFamily} dependencyApiExports must match .sdkwork-assembly.json exactly.`
+      );
+    }
+
+    if (!dependenciesMatch(dependencyApiExportsFrom(assembly), dependencyApiExportsFrom(componentSpec))) {
+      pushFinding(
+        findings,
+        'SDK_DEPENDENCY_EXPORT_METADATA_MISMATCH',
+        componentSpecPath,
+        `${expectation.sdkFamily} contracts.dependencyApiExports must match .sdkwork-assembly.json exactly.`
+      );
     }
   }
 }
@@ -1080,12 +1489,15 @@ export async function verifyNotesContractFoundation({ rootDir = process.cwd() } 
   const findings = [];
   await verifyForbiddenNames(rootDir, findings);
   await verifyOpenApi(rootDir, findings);
+  await verifyRouteManifestMetadata(rootDir, findings);
+  await verifyRouteComponentSpecMetadata(rootDir, findings);
   await verifyAppApiImplementedHeaderContracts(rootDir, findings);
   await verifyAppApiImplementedBodyContracts(rootDir, findings);
   await verifyImplementedQueryContextContracts(rootDir, findings);
   await verifyImplementedSchemaValueContracts(rootDir, findings);
   await verifyDriveVersionReferenceContracts(rootDir, findings);
   await verifySdkDependencies(rootDir, findings);
+  await verifySdkFamilyMetadata(rootDir, findings);
   await verifyForbiddenSdkFamilyDirectories(rootDir, findings);
   return {
     ok: findings.length === 0,

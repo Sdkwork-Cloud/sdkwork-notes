@@ -6,7 +6,7 @@ This directory declares the public/domain integration SDK family generated from 
 
 Status:
 
-- Authority: `sdkwork-notes.open`
+- Authority: `sdkwork-notes-open-api`
 - SDK family: `sdkwork-notes-sdk`
 - API prefix: `/notes/v3/api`
 - Standard profile: `sdkwork-v3`

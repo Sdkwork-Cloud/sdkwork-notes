@@ -43,7 +43,7 @@ function openApi(
   };
 }
 
-function operation(operationId = 'pages.list') {
+function operation(operationId = 'pages.list', apiAuthority = 'sdkwork-notes-open-api') {
   return {
     summary: 'Fixture operation',
     operationId,
@@ -53,7 +53,7 @@ function operation(operationId = 'pages.list') {
       200: { description: 'OK' }
     },
     'x-sdkwork-owner': 'sdkwork-notes',
-    'x-sdkwork-api-authority': 'sdkwork-notes-open-api'
+    'x-sdkwork-api-authority': apiAuthority
   };
 }
 
@@ -346,12 +346,12 @@ async function createFixture(options = {}) {
     openApi({
       [options.appPath ?? '/app/v3/api/notes/pages']: {
         get: withTemporaryContextQuery(
-          operation(options.appOperationId ?? 'pages.list'),
+          operation(options.appOperationId ?? 'pages.list', 'sdkwork-notes-app-api'),
           { omitContext: options.omitAppQueryContextContracts }
         )
       },
       '/app/v3/api/notes/ai_jobs': {
-        post: withIdempotencyKeyHeader(operation('aiJobs.create'), {
+        post: withIdempotencyKeyHeader(operation('aiJobs.create', 'sdkwork-notes-app-api'), {
           omitHeader: options.omitAppIdempotencyKeyHeader
         })
       }
@@ -395,7 +395,7 @@ async function createFixture(options = {}) {
     openApi({
       [options.backendPath ?? '/backend/v3/api/notes/pages']: {
         get: withTemporaryContextQuery(
-          operation(options.backendOperationId ?? 'aiJobs.admin.list'),
+          operation(options.backendOperationId ?? 'aiJobs.admin.list', 'sdkwork-notes-backend-api'),
           { omitContext: options.omitBackendQueryContextContracts }
         )
       }

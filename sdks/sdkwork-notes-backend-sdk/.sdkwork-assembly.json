@@ -8,7 +8,7 @@
   "derivedSpecs": {
     "default": "../../generated/openapi/notes-backend-api.openapi.json"
   },
-  "apiAuthority": "sdkwork-notes.backend",
+  "apiAuthority": "sdkwork-notes-backend-api",
   "discoverySurface": {
     "sdkTarget": "backend",
     "apiPrefix": "/backend/v3/api",

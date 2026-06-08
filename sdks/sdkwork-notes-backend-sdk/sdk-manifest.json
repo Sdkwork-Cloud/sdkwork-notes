@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "sdkName": "sdkwork-notes-backend-sdk",
   "sdkOwner": "sdkwork-notes",
-  "apiAuthority": "sdkwork-notes.backend",
+  "apiAuthority": "sdkwork-notes-backend-api",
   "sdkFamily": "sdkwork-notes-backend-sdk",
   "sdkType": "backend",
   "apiPrefix": "/backend/v3/api",

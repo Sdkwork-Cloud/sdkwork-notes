@@ -6,7 +6,7 @@ This directory declares the backend-admin SDK family generated from `../../gener
 
 Status:
 
-- Authority: `sdkwork-notes.backend`
+- Authority: `sdkwork-notes-backend-api`
 - SDK family: `sdkwork-notes-backend-sdk`
 - API prefix: `/backend/v3/api`
 - Standard profile: `sdkwork-v3`

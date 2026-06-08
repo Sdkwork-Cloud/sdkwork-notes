@@ -64,7 +64,7 @@ fn backend_route_manifest_matches_backend_openapi_ai_job_operations() {
         );
         assert_eq!(
             openapi_operation["x-sdkwork-api-authority"],
-            "sdkwork-notes.backend"
+            "sdkwork-notes-backend-api"
         );
         assert_eq!(route["auth"]["mode"], "dual-token");
     }
