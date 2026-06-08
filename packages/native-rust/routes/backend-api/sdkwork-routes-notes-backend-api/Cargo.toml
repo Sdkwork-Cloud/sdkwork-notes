@@ -1,0 +1,17 @@
+[package]
+name = "sdkwork-routes-notes-backend-api"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+axum.workspace = true
+http.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sdkwork-notes-product.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+async-trait.workspace = true
+tower.workspace = true

@@ -1,0 +1,1363 @@
+use crate::domain::{
+    AcceptAiSuggestionCommand, AiFeedback, AiFeedbackPage, AiJob, AiJobPage, AiJobSource,
+    AiSuggestion, AiSuggestionPage, ApplyAiSuggestionCommand, ClaimAiJobCommand,
+    CompleteAiJobCommand, CreateAiFeedbackCommand, CreateAiJobCommand, CreatePageCommand,
+    CreateWorkspaceCommand, DriveVersionPage, ListAiJobsQuery, ListAiSuggestionFeedbackQuery,
+    ListPageAiSuggestionsQuery, NewAiFeedback, NewAiJob, NewAiJobSource, NewAiSuggestion, NewPage,
+    NewWorkspace, NotesActorContext, Page, PageContent, PageInfo, PageMetadataPatch, PageSummary,
+    PageSummaryPage, RejectAiSuggestionCommand, SearchResult, SearchResultPage,
+    UpdatePageContentCommand, UpdatePageMetadataCommand, Workspace, WorkspaceBootstrap,
+    WorkspacePage,
+};
+use crate::error::NotesProductError;
+use crate::ports::{
+    CreateDrivePageContentCommand, DrivePageContentPort, ListDrivePageContentVersionsCommand,
+    NotesRepository, ReadDrivePageContentCommand, UpdateDrivePageContentCommand,
+};
+
+#[derive(Clone)]
+pub struct NotesService<R, D>
+where
+    R: NotesRepository,
+    D: DrivePageContentPort,
+{
+    repository: R,
+    drive: D,
+}
+
+impl<R, D> NotesService<R, D>
+where
+    R: NotesRepository,
+    D: DrivePageContentPort,
+{
+    pub fn new(repository: R, drive: D) -> Self {
+        Self { repository, drive }
+    }
+
+    pub async fn create_workspace(
+        &self,
+        command: CreateWorkspaceCommand,
+    ) -> Result<Workspace, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let workspace_id = normalize_required_string("workspace id", &command.id)?;
+        let owner_subject_type = normalize_owner_subject_type(&command.owner_subject_type)?;
+        let owner_subject_id =
+            normalize_required_string("owner subject id", &command.owner_subject_id)?;
+        let name = normalize_required_string("workspace name", &command.name)?;
+        validate_max_chars("workspace name", &name, 120)?;
+        let description = normalize_optional_string(command.description);
+        if let Some(description) = description.as_deref() {
+            validate_max_chars("workspace description", description, 2000)?;
+        }
+        let drive_space_id = normalize_required_string("drive space id", &command.drive_space_id)?;
+        let default_page_content_type = normalize_required_string(
+            "default page content type",
+            &command.default_page_content_type,
+        )?;
+        validate_max_chars("default page content type", &default_page_content_type, 255)?;
+        let default_page_schema_version = normalize_required_string(
+            "default page schema version",
+            &command.default_page_schema_version,
+        )?;
+        validate_max_chars(
+            "default page schema version",
+            &default_page_schema_version,
+            32,
+        )?;
+        let ai_index_policy_code =
+            normalize_required_string("AI index policy code", &command.ai_index_policy_code)?;
+        validate_max_chars("AI index policy code", &ai_index_policy_code, 64)?;
+
+        self.repository
+            .insert_workspace(NewWorkspace {
+                id: workspace_id,
+                context,
+                owner_subject_type,
+                owner_subject_id,
+                name,
+                description,
+                drive_space_id,
+                default_page_content_type,
+                default_page_schema_version,
+                ai_index_policy_code,
+            })
+            .await
+    }
+
+    pub async fn create_page(&self, command: CreatePageCommand) -> Result<Page, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let page_id = normalize_required_string("page id", &command.id)?;
+        let title = normalize_required_string("page title", &command.title)?;
+        if title.chars().count() > 200 {
+            return Err(NotesProductError::Validation(
+                "page title must be at most 200 characters".to_string(),
+            ));
+        }
+        let workspace_id = normalize_required_string("workspace id", &command.workspace_id)?;
+        let parent_page_id = normalize_optional_string(command.parent_page_id);
+        let folder_drive_node_id = normalize_optional_string(command.folder_drive_node_id);
+        if parent_page_id.is_some() && folder_drive_node_id.is_some() {
+            return Err(NotesProductError::Validation(
+                "parentPageId and folderDriveNodeId cannot both be set".to_string(),
+            ));
+        }
+        let content_type = normalize_required_string("content type", &command.content_type)?;
+        let content_schema_version =
+            normalize_required_string("content schema version", &command.content_schema_version)?;
+        if !command.initial_content.is_object() {
+            return Err(NotesProductError::Validation(
+                "initialContent must be an object".to_string(),
+            ));
+        }
+
+        let workspace = self
+            .repository
+            .find_workspace(&context, &workspace_id)
+            .await?;
+        if let Some(parent_page_id) = parent_page_id.as_deref() {
+            let parent_page = self.repository.find_page(&context, parent_page_id).await?;
+            if parent_page.workspace_id != workspace.id {
+                return Err(NotesProductError::NotFound(
+                    "parent page not found in workspace".to_string(),
+                ));
+            }
+        }
+        let drive_snapshot = self
+            .drive
+            .create_page_content(CreateDrivePageContentCommand {
+                tenant_id: context.tenant_id.clone(),
+                organization_id: context.organization_id.clone(),
+                operator_id: context.operator_id.clone(),
+                workspace_id: workspace.id.clone(),
+                page_id: page_id.clone(),
+                title: title.clone(),
+                drive_space_id: workspace.drive_space_id.clone(),
+                parent_page_id: parent_page_id.clone(),
+                folder_drive_node_id: folder_drive_node_id.clone(),
+                content: command.initial_content,
+                content_type: content_type.clone(),
+                content_schema_version: content_schema_version.clone(),
+                change_summary: normalize_optional_string(command.change_summary),
+            })
+            .await?;
+
+        self.repository
+            .insert_page(NewPage {
+                id: page_id,
+                context,
+                workspace_id: workspace.id,
+                title,
+                page_kind: command.page_kind,
+                parent_page_id,
+                folder_drive_node_id,
+                drive_snapshot,
+            })
+            .await
+    }
+
+    pub async fn get_page(
+        &self,
+        context: &NotesActorContext,
+        page_id: &str,
+    ) -> Result<Page, NotesProductError> {
+        let context = normalize_actor_context(context.clone())?;
+        let page_id = normalize_required_string("page id", page_id)?;
+        self.repository.find_page(&context, &page_id).await
+    }
+
+    pub async fn list_workspaces(
+        &self,
+        query: crate::domain::ListWorkspacesQuery,
+    ) -> Result<WorkspacePage, NotesProductError> {
+        let context = normalize_actor_context(query.context)?;
+        let page = normalize_page(query.page)?;
+        let page_size = normalize_page_size(query.page_size)?;
+        let mut items = self
+            .repository
+            .list_workspaces(&context, page, page_size)
+            .await?;
+        let page_info = page_info_from_extra_item(&mut items, page, page_size);
+
+        Ok(WorkspacePage { items, page_info })
+    }
+
+    pub async fn list_pages(
+        &self,
+        query: crate::domain::ListPagesQuery,
+    ) -> Result<PageSummaryPage, NotesProductError> {
+        let context = normalize_actor_context(query.context)?;
+        let workspace_id = normalize_required_string("workspace id", &query.workspace_id)?;
+        let page = normalize_page(query.page)?;
+        let page_size = normalize_page_size(query.page_size)?;
+
+        self.repository
+            .find_workspace(&context, &workspace_id)
+            .await?;
+
+        let q = query
+            .q
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty());
+        let mut pages = self
+            .repository
+            .list_pages(&context, &workspace_id, page, page_size, q)
+            .await?;
+        let page_info = page_info_from_extra_item(&mut pages, page, page_size);
+        let items = pages.into_iter().map(PageSummary::from).collect();
+
+        Ok(PageSummaryPage { items, page_info })
+    }
+
+    pub async fn get_workspace_bootstrap(
+        &self,
+        context: &NotesActorContext,
+        workspace_id: &str,
+    ) -> Result<WorkspaceBootstrap, NotesProductError> {
+        let context = normalize_actor_context(context.clone())?;
+        let workspace_id = normalize_required_string("workspace id", workspace_id)?;
+        let workspace = self
+            .repository
+            .find_workspace(&context, &workspace_id)
+            .await?;
+        let root_pages = self
+            .repository
+            .list_root_pages(&context, &workspace_id, 200)
+            .await?
+            .into_iter()
+            .map(PageSummary::from)
+            .collect::<Vec<_>>();
+        let change_token = workspace_change_token(&workspace, &root_pages);
+
+        Ok(WorkspaceBootstrap {
+            workspace,
+            root_pages,
+            object_types: built_in_object_types(),
+            change_token: Some(change_token),
+        })
+    }
+
+    pub async fn update_page_metadata(
+        &self,
+        command: UpdatePageMetadataCommand,
+    ) -> Result<Page, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let page_id = normalize_required_string("page id", &command.page_id)?;
+        let current = self.repository.find_page(&context, &page_id).await?;
+
+        if let Some(expected_version) = command.expected_version.as_deref() {
+            let expected_version = normalize_required_string("expectedVersion", expected_version)?
+                .parse::<i64>()
+                .map_err(|_| {
+                    NotesProductError::Validation(
+                        "expectedVersion must be an int64 string".to_string(),
+                    )
+                })?;
+            if expected_version != current.version {
+                return Err(NotesProductError::Conflict(
+                    "page version has changed".to_string(),
+                ));
+            }
+        }
+
+        if command.title.is_none()
+            && command.favorite.is_none()
+            && command.archive_status.is_none()
+            && command.publish_status.is_none()
+        {
+            return Ok(current);
+        }
+
+        let title = command
+            .title
+            .map(|value| normalize_required_string("page title", &value))
+            .transpose()?
+            .unwrap_or_else(|| current.title.clone());
+        if title.chars().count() > 200 {
+            return Err(NotesProductError::Validation(
+                "page title must be at most 200 characters".to_string(),
+            ));
+        }
+
+        let archive_status = command
+            .archive_status
+            .map(|value| normalize_required_string("archiveStatus", &value))
+            .transpose()?
+            .unwrap_or_else(|| current.archive_status.clone());
+        if !matches!(archive_status.as_str(), "active" | "archived") {
+            return Err(NotesProductError::Validation(
+                "archiveStatus is invalid".to_string(),
+            ));
+        }
+
+        let publish_status = command
+            .publish_status
+            .map(|value| normalize_required_string("publishStatus", &value))
+            .transpose()?
+            .unwrap_or_else(|| current.publish_status.clone());
+        if !matches!(
+            publish_status.as_str(),
+            "private" | "published" | "unlisted"
+        ) {
+            return Err(NotesProductError::Validation(
+                "publishStatus is invalid".to_string(),
+            ));
+        }
+
+        self.repository
+            .update_page_metadata(
+                &context,
+                &page_id,
+                &PageMetadataPatch {
+                    title,
+                    favorite: command.favorite.unwrap_or(current.favorite),
+                    archive_status,
+                    publish_status,
+                },
+            )
+            .await
+    }
+
+    pub async fn update_page_content(
+        &self,
+        command: UpdatePageContentCommand,
+    ) -> Result<PageContent, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let page_id = normalize_required_string("page id", &command.page_id)?;
+        let content_type = normalize_required_string("content type", &command.content_type)?;
+        let content_schema_version =
+            normalize_required_string("content schema version", &command.content_schema_version)?;
+        if !command.content.is_object() {
+            return Err(NotesProductError::Validation(
+                "content must be an object".to_string(),
+            ));
+        }
+        let expected_drive_version_id =
+            normalize_optional_string(command.expected_drive_version_id);
+        let page = self.repository.find_page(&context, &page_id).await?;
+        let drive_snapshot = self
+            .drive
+            .update_page_content(UpdateDrivePageContentCommand {
+                tenant_id: context.tenant_id.clone(),
+                organization_id: context.organization_id.clone(),
+                operator_id: context.operator_id.clone(),
+                workspace_id: page.workspace_id.clone(),
+                page_id: page.id.clone(),
+                drive_space_id: page.drive_space_id.clone(),
+                drive_node_id: page.drive_node_id.clone(),
+                drive_uri: page.drive_uri.clone(),
+                current_drive_version_id: page.current_drive_version_id.clone(),
+                content: command.content,
+                content_type,
+                content_schema_version,
+                change_summary: normalize_optional_string(command.change_summary),
+                expected_drive_version_id,
+                create_checkpoint: command.create_checkpoint,
+            })
+            .await?;
+
+        self.repository
+            .update_page_drive_snapshot(&context, &page.id, &drive_snapshot)
+            .await?;
+
+        Ok(PageContent {
+            page_id: page.id,
+            drive_node_id: drive_snapshot.drive_node_id,
+            drive_version_id: drive_snapshot.drive_version_id,
+            drive_version_no: drive_snapshot.drive_version_no,
+            content_type: drive_snapshot.content_type,
+            content_schema_version: drive_snapshot.content_schema_version,
+            content: drive_snapshot.content,
+        })
+    }
+
+    pub async fn get_page_content(
+        &self,
+        context: &NotesActorContext,
+        page_id: &str,
+    ) -> Result<PageContent, NotesProductError> {
+        let context = normalize_actor_context(context.clone())?;
+        let page_id = normalize_required_string("page id", page_id)?;
+        let page = self.repository.find_page(&context, &page_id).await?;
+        let drive_snapshot = self
+            .drive
+            .read_page_content(ReadDrivePageContentCommand {
+                tenant_id: context.tenant_id.clone(),
+                organization_id: context.organization_id.clone(),
+                page_id: page.id.clone(),
+                drive_space_id: page.drive_space_id.clone(),
+                drive_node_id: page.drive_node_id.clone(),
+                drive_uri: page.drive_uri.clone(),
+                current_drive_version_id: page.current_drive_version_id.clone(),
+            })
+            .await?;
+
+        Ok(PageContent {
+            page_id: page.id,
+            drive_node_id: drive_snapshot.drive_node_id,
+            drive_version_id: drive_snapshot.drive_version_id,
+            drive_version_no: drive_snapshot.drive_version_no,
+            content_type: drive_snapshot.content_type,
+            content_schema_version: drive_snapshot.content_schema_version,
+            content: drive_snapshot.content,
+        })
+    }
+
+    pub async fn list_page_versions(
+        &self,
+        query: crate::domain::ListPageVersionsQuery,
+    ) -> Result<DriveVersionPage, NotesProductError> {
+        let context = normalize_actor_context(query.context)?;
+        let page_id = normalize_required_string("page id", &query.page_id)?;
+        let page_number = normalize_page(query.page)?;
+        let page_size = normalize_page_size(query.page_size)?;
+        let page = self.repository.find_page(&context, &page_id).await?;
+
+        self.drive
+            .list_page_content_versions(ListDrivePageContentVersionsCommand {
+                tenant_id: context.tenant_id,
+                organization_id: context.organization_id,
+                page_id: page.id,
+                drive_space_id: page.drive_space_id,
+                drive_node_id: page.drive_node_id,
+                drive_uri: page.drive_uri,
+                current_drive_version_id: page.current_drive_version_id,
+                page: page_number,
+                page_size,
+            })
+            .await
+    }
+
+    pub async fn query_search(
+        &self,
+        query: crate::domain::SearchQuery,
+    ) -> Result<SearchResultPage, NotesProductError> {
+        let context = normalize_actor_context(query.context)?;
+        let page = normalize_page(query.page)?;
+        let page_size = normalize_page_size(query.page_size)?;
+        let q = query
+            .q
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty());
+
+        if q.is_some_and(|value| value.chars().count() > 200) {
+            return Err(NotesProductError::Validation(
+                "q must be at most 200 characters".to_string(),
+            ));
+        }
+
+        let workspace_id = query
+            .workspace_id
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty());
+
+        let mut pages = self
+            .repository
+            .search_pages(&context, workspace_id, q, page, page_size)
+            .await?;
+        let page_info = page_info_from_extra_item(&mut pages, page, page_size);
+        let items = pages
+            .into_iter()
+            .map(|page| search_result_from_page(page, q))
+            .collect();
+
+        Ok(SearchResultPage { items, page_info })
+    }
+
+    pub async fn create_ai_job(
+        &self,
+        command: CreateAiJobCommand,
+    ) -> Result<AiJob, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let workspace_id = normalize_required_string("workspace id", &command.workspace_id)?;
+        let idempotency_key =
+            normalize_required_string("idempotency key", &command.idempotency_key)?;
+        let job_type = normalize_ai_job_type(&command.job_type)?;
+        let target_type = normalize_ai_target_type(&command.target_type)?;
+        let target_id = command
+            .target_id
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty());
+        let prompt_snapshot = command
+            .prompt
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty());
+        if prompt_snapshot
+            .as_ref()
+            .is_some_and(|value| value.chars().count() > 8000)
+        {
+            return Err(NotesProductError::Validation(
+                "prompt must be at most 8000 characters".to_string(),
+            ));
+        }
+        let context_policy_snapshot = command
+            .context_policy
+            .unwrap_or_else(|| serde_json::json!({}));
+        if !context_policy_snapshot.is_object() {
+            return Err(NotesProductError::Validation(
+                "contextPolicy must be an object".to_string(),
+            ));
+        }
+
+        validate_ai_target(&target_type, target_id.as_deref())?;
+        let request_payload_hash = ai_job_payload_hash(
+            &workspace_id,
+            &job_type,
+            &target_type,
+            target_id.as_deref(),
+            prompt_snapshot.as_deref(),
+            &context_policy_snapshot,
+        )?;
+
+        if let Some(existing) = self
+            .repository
+            .find_ai_job_by_idempotency_key(&context, &idempotency_key)
+            .await?
+        {
+            if existing.request_payload_hash == request_payload_hash {
+                return Ok(existing);
+            }
+            return Err(NotesProductError::Conflict(
+                "idempotency key was already used for a different AI job request".to_string(),
+            ));
+        }
+
+        let workspace = self
+            .repository
+            .find_workspace(&context, &workspace_id)
+            .await?;
+        let sources = self
+            .ai_job_sources_for_target(&context, &workspace.id, &target_type, target_id.as_deref())
+            .await?;
+        let job_id = stable_ai_job_id(&context, &idempotency_key, &request_payload_hash);
+
+        self.repository
+            .insert_ai_job(NewAiJob {
+                id: job_id,
+                context,
+                workspace_id: workspace.id,
+                job_type,
+                target_type,
+                target_id,
+                prompt_snapshot,
+                context_policy_snapshot,
+                status: "queued".to_string(),
+                idempotency_key,
+                request_payload_hash,
+                sources,
+            })
+            .await
+    }
+
+    pub async fn list_ai_jobs(
+        &self,
+        query: ListAiJobsQuery,
+    ) -> Result<AiJobPage, NotesProductError> {
+        let context = normalize_actor_context(query.context)?;
+        let page = normalize_page(query.page)?;
+        let page_size = normalize_page_size(query.page_size)?;
+        let workspace_id = query
+            .workspace_id
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty());
+        let mut items = self
+            .repository
+            .list_ai_jobs(&context, workspace_id, page, page_size)
+            .await?;
+        let page_info = page_info_from_extra_item(&mut items, page, page_size);
+
+        Ok(AiJobPage { items, page_info })
+    }
+
+    pub async fn get_ai_job(
+        &self,
+        context: &NotesActorContext,
+        ai_job_id: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        let context = normalize_actor_context(context.clone())?;
+        let ai_job_id = normalize_required_string("AI job id", ai_job_id)?;
+        self.repository.find_ai_job(&context, &ai_job_id).await
+    }
+
+    pub async fn cancel_ai_job(
+        &self,
+        context: &NotesActorContext,
+        ai_job_id: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        let context = normalize_actor_context(context.clone())?;
+        let ai_job_id = normalize_required_string("AI job id", ai_job_id)?;
+        self.repository.cancel_ai_job(&context, &ai_job_id).await
+    }
+
+    pub async fn claim_ai_job(
+        &self,
+        command: ClaimAiJobCommand,
+    ) -> Result<AiJob, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let ai_job_id = normalize_required_string("AI job id", &command.ai_job_id)?;
+        self.repository.claim_ai_job(&context, &ai_job_id).await
+    }
+
+    pub async fn complete_ai_job(
+        &self,
+        command: CompleteAiJobCommand,
+    ) -> Result<AiJob, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let ai_job_id = normalize_required_string("AI job id", &command.ai_job_id)?;
+        if command.suggestions.is_empty() {
+            return Err(NotesProductError::Validation(
+                "suggestions must not be empty".to_string(),
+            ));
+        }
+
+        let job = self.repository.find_ai_job(&context, &ai_job_id).await?;
+        if job.status != "running" {
+            return Err(NotesProductError::Conflict(
+                "AI job must be running before completion".to_string(),
+            ));
+        }
+        let sources = self
+            .repository
+            .list_ai_job_sources(&context, &ai_job_id)
+            .await?;
+
+        let mut new_suggestions = Vec::with_capacity(command.suggestions.len());
+        for (index, suggestion) in command.suggestions.into_iter().enumerate() {
+            let suggestion_type = normalize_ai_suggestion_type(&suggestion.suggestion_type)?;
+            if !suggestion.payload.is_object() {
+                return Err(NotesProductError::Validation(
+                    "suggestion payload must be an object".to_string(),
+                ));
+            }
+            let page_id = suggestion
+                .page_id
+                .map(|value| value.trim().to_string())
+                .filter(|value| !value.is_empty())
+                .or_else(|| page_id_from_ai_job(&job, &sources))
+                .ok_or_else(|| {
+                    NotesProductError::Validation(
+                        "pageId is required for this suggestion".to_string(),
+                    )
+                })?;
+            let page = self.repository.find_page(&context, &page_id).await?;
+            if page.workspace_id != job.workspace_id {
+                return Err(NotesProductError::NotFound(
+                    "page not found in AI job workspace".to_string(),
+                ));
+            }
+            let source = source_for_page(&sources, &page_id);
+            let payload_hash = serde_json::to_string(&suggestion.payload).map_err(|error| {
+                NotesProductError::Internal(format!(
+                    "serialize AI suggestion payload failed: {error}"
+                ))
+            })?;
+            let id = stable_ai_suggestion_id(
+                &context,
+                &job.id,
+                &page_id,
+                &suggestion_type,
+                index,
+                &payload_hash,
+            );
+            new_suggestions.push(NewAiSuggestion {
+                id,
+                context: context.clone(),
+                workspace_id: job.workspace_id.clone(),
+                page_id,
+                ai_job_id: job.id.clone(),
+                suggestion_type,
+                payload: suggestion.payload,
+                source_drive_node_id: source.and_then(|source| source.drive_node_id.clone()),
+                source_drive_version_id: source.and_then(|source| source.drive_version_id.clone()),
+                source_drive_version_no: source.and_then(|source| source.drive_version_no),
+            });
+        }
+
+        self.repository
+            .complete_ai_job(&context, &ai_job_id, new_suggestions)
+            .await
+    }
+
+    pub async fn list_page_ai_suggestions(
+        &self,
+        query: ListPageAiSuggestionsQuery,
+    ) -> Result<AiSuggestionPage, NotesProductError> {
+        let context = normalize_actor_context(query.context)?;
+        let page_id = normalize_required_string("page id", &query.page_id)?;
+        let page = normalize_page(query.page)?;
+        let page_size = normalize_page_size(query.page_size)?;
+        self.repository.find_page(&context, &page_id).await?;
+
+        let mut items = self
+            .repository
+            .list_page_ai_suggestions(&context, &page_id, page, page_size)
+            .await?;
+        let page_info = page_info_from_extra_item(&mut items, page, page_size);
+
+        Ok(AiSuggestionPage { items, page_info })
+    }
+
+    pub async fn accept_ai_suggestion(
+        &self,
+        command: AcceptAiSuggestionCommand,
+    ) -> Result<AiSuggestion, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let ai_suggestion_id =
+            normalize_required_string("AI suggestion id", &command.ai_suggestion_id)?;
+        self.decide_ai_suggestion(&context, &ai_suggestion_id, "accepted", "rejected")
+            .await
+    }
+
+    pub async fn reject_ai_suggestion(
+        &self,
+        command: RejectAiSuggestionCommand,
+    ) -> Result<AiSuggestion, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let ai_suggestion_id =
+            normalize_required_string("AI suggestion id", &command.ai_suggestion_id)?;
+        self.decide_ai_suggestion(&context, &ai_suggestion_id, "rejected", "accepted")
+            .await
+    }
+
+    pub async fn apply_ai_suggestion(
+        &self,
+        command: ApplyAiSuggestionCommand,
+    ) -> Result<PageContent, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let ai_suggestion_id =
+            normalize_required_string("AI suggestion id", &command.ai_suggestion_id)?;
+        let expected_drive_version_id =
+            normalize_optional_string(command.expected_drive_version_id);
+        let suggestion = self
+            .repository
+            .find_ai_suggestion(&context, &ai_suggestion_id)
+            .await?;
+
+        match suggestion.status.as_str() {
+            "applied" => {
+                return self.get_page_content(&context, &suggestion.page_id).await;
+            }
+            "accepted" => {}
+            "proposed" => {
+                return Err(NotesProductError::Conflict(
+                    "AI suggestion must be accepted before apply".to_string(),
+                ));
+            }
+            "rejected" | "dismissed" => {
+                return Err(NotesProductError::Conflict(
+                    "AI suggestion decision is already terminal".to_string(),
+                ));
+            }
+            other => {
+                return Err(NotesProductError::Internal(format!(
+                    "invalid persisted AI suggestion status: {other}"
+                )));
+            }
+        }
+
+        let page = self
+            .repository
+            .find_page(&context, &suggestion.page_id)
+            .await?;
+        if page.workspace_id != suggestion.workspace_id {
+            return Err(NotesProductError::NotFound(
+                "page not found in AI suggestion workspace".to_string(),
+            ));
+        }
+        if let Some(source_drive_version_id) = suggestion.source_drive_version_id.as_deref() {
+            if page.current_drive_version_id.as_deref() != Some(source_drive_version_id) {
+                return Err(NotesProductError::Conflict(
+                    "AI suggestion source Drive version is stale".to_string(),
+                ));
+            }
+        }
+        if let Some(source_drive_version_no) = suggestion.source_drive_version_no {
+            if page.current_drive_version_no != Some(source_drive_version_no) {
+                return Err(NotesProductError::Conflict(
+                    "AI suggestion source Drive version is stale".to_string(),
+                ));
+            }
+        }
+        if let Some(expected_drive_version_id) = expected_drive_version_id.as_deref() {
+            if page.current_drive_version_id.as_deref() != Some(expected_drive_version_id) {
+                return Err(NotesProductError::Conflict(
+                    "page Drive version has changed".to_string(),
+                ));
+            }
+        }
+
+        let content = suggestion.payload.get("content").ok_or_else(|| {
+            NotesProductError::Validation("suggestion payload content is required".to_string())
+        })?;
+        if !content.is_object() {
+            return Err(NotesProductError::Validation(
+                "suggestion payload content must be an object".to_string(),
+            ));
+        }
+        let content = content.clone();
+        let content_type = optional_payload_string(&suggestion.payload, "contentType")?
+            .unwrap_or_else(|| page.content_type.clone());
+        let content_schema_version =
+            optional_payload_string(&suggestion.payload, "contentSchemaVersion")?
+                .unwrap_or_else(|| page.content_schema_version.clone());
+
+        let drive_snapshot = self
+            .drive
+            .update_page_content(UpdateDrivePageContentCommand {
+                tenant_id: context.tenant_id.clone(),
+                organization_id: context.organization_id.clone(),
+                operator_id: context.operator_id.clone(),
+                workspace_id: page.workspace_id.clone(),
+                page_id: page.id.clone(),
+                drive_space_id: page.drive_space_id.clone(),
+                drive_node_id: page.drive_node_id.clone(),
+                drive_uri: page.drive_uri.clone(),
+                current_drive_version_id: page.current_drive_version_id.clone(),
+                content,
+                content_type,
+                content_schema_version,
+                change_summary: Some(format!("Apply AI suggestion {}", suggestion.id)),
+                expected_drive_version_id: expected_drive_version_id
+                    .or_else(|| suggestion.source_drive_version_id.clone()),
+                create_checkpoint: command.create_checkpoint,
+            })
+            .await?;
+
+        self.repository
+            .update_page_drive_snapshot(&context, &page.id, &drive_snapshot)
+            .await?;
+        let applied_suggestion = self
+            .repository
+            .apply_ai_suggestion(&context, &suggestion.id)
+            .await?;
+        if applied_suggestion.status != "applied" {
+            return Err(NotesProductError::Conflict(
+                "AI suggestion status changed before apply completed".to_string(),
+            ));
+        }
+
+        Ok(PageContent {
+            page_id: page.id,
+            drive_node_id: drive_snapshot.drive_node_id,
+            drive_version_id: drive_snapshot.drive_version_id,
+            drive_version_no: drive_snapshot.drive_version_no,
+            content_type: drive_snapshot.content_type,
+            content_schema_version: drive_snapshot.content_schema_version,
+            content: drive_snapshot.content,
+        })
+    }
+
+    pub async fn create_ai_feedback(
+        &self,
+        command: CreateAiFeedbackCommand,
+    ) -> Result<AiFeedback, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let ai_suggestion_id =
+            normalize_required_string("AI suggestion id", &command.ai_suggestion_id)?;
+        let feedback_type = normalize_ai_feedback_type(&command.feedback_type)?;
+        let feedback_text = command
+            .feedback_text
+            .map(|value| value.trim().to_string())
+            .filter(|value| !value.is_empty());
+        if feedback_text
+            .as_ref()
+            .is_some_and(|value| value.chars().count() > 2000)
+        {
+            return Err(NotesProductError::Validation(
+                "feedbackText must be at most 2000 characters".to_string(),
+            ));
+        }
+
+        let suggestion = self
+            .repository
+            .find_ai_suggestion(&context, &ai_suggestion_id)
+            .await?;
+        let feedback_id = stable_ai_feedback_id(
+            &context,
+            &suggestion.id,
+            &feedback_type,
+            feedback_text.as_deref(),
+        );
+
+        match self
+            .repository
+            .find_ai_feedback(&context, &feedback_id)
+            .await
+        {
+            Ok(existing) => return Ok(existing),
+            Err(NotesProductError::NotFound(_)) => {}
+            Err(error) => return Err(error),
+        }
+
+        self.repository
+            .insert_ai_feedback(NewAiFeedback {
+                id: feedback_id,
+                context,
+                workspace_id: suggestion.workspace_id,
+                job_id: suggestion.ai_job_id,
+                suggestion_id: Some(suggestion.id),
+                feedback_type,
+                feedback_text,
+            })
+            .await
+    }
+
+    pub async fn list_ai_suggestion_feedback(
+        &self,
+        query: ListAiSuggestionFeedbackQuery,
+    ) -> Result<AiFeedbackPage, NotesProductError> {
+        let context = normalize_actor_context(query.context)?;
+        let ai_suggestion_id =
+            normalize_required_string("AI suggestion id", &query.ai_suggestion_id)?;
+        let page = normalize_page(query.page)?;
+        let page_size = normalize_page_size(query.page_size)?;
+        self.repository
+            .find_ai_suggestion(&context, &ai_suggestion_id)
+            .await?;
+
+        let mut items = self
+            .repository
+            .list_ai_suggestion_feedback(&context, &ai_suggestion_id, page, page_size)
+            .await?;
+        let page_info = page_info_from_extra_item(&mut items, page, page_size);
+
+        Ok(AiFeedbackPage { items, page_info })
+    }
+
+    async fn ai_job_sources_for_target(
+        &self,
+        context: &NotesActorContext,
+        workspace_id: &str,
+        target_type: &str,
+        target_id: Option<&str>,
+    ) -> Result<Vec<NewAiJobSource>, NotesProductError> {
+        if target_type != "page" {
+            return Ok(Vec::new());
+        }
+
+        let page_id = target_id.expect("page target validation should require target id");
+        let page = self.repository.find_page(context, page_id).await?;
+        if page.workspace_id != workspace_id {
+            return Err(NotesProductError::NotFound(
+                "page not found in workspace".to_string(),
+            ));
+        }
+
+        Ok(vec![NewAiJobSource {
+            id: stable_ai_job_source_id(
+                context,
+                workspace_id,
+                "page",
+                &page.id,
+                page.current_drive_version_id.as_deref(),
+                page.current_drive_version_no,
+            ),
+            source_type: "page".to_string(),
+            source_id: Some(page.id.clone()),
+            drive_node_id: Some(page.drive_node_id),
+            drive_version_id: page.current_drive_version_id,
+            drive_version_no: page.current_drive_version_no,
+            permission_snapshot_hash: stable_permission_snapshot_hash(
+                context,
+                workspace_id,
+                "page",
+                &page.id,
+            ),
+        }])
+    }
+
+    async fn decide_ai_suggestion(
+        &self,
+        context: &NotesActorContext,
+        ai_suggestion_id: &str,
+        target_status: &str,
+        conflicting_status: &str,
+    ) -> Result<AiSuggestion, NotesProductError> {
+        require_non_empty("AI suggestion id", ai_suggestion_id)?;
+        let current = self
+            .repository
+            .find_ai_suggestion(context, ai_suggestion_id)
+            .await?;
+        match current.status.as_str() {
+            "proposed" => {
+                self.repository
+                    .decide_ai_suggestion(context, ai_suggestion_id, target_status)
+                    .await
+            }
+            status if status == target_status => Ok(current),
+            status if status == conflicting_status => Err(NotesProductError::Conflict(
+                "AI suggestion decision is already terminal".to_string(),
+            )),
+            other => Err(NotesProductError::Conflict(format!(
+                "AI suggestion status cannot be decided from {other}"
+            ))),
+        }
+    }
+}
+
+fn require_non_empty(field: &str, value: &str) -> Result<(), NotesProductError> {
+    if value.trim().is_empty() {
+        return Err(NotesProductError::Validation(format!(
+            "{field} is required"
+        )));
+    }
+    Ok(())
+}
+
+fn normalize_required_string(field: &str, value: &str) -> Result<String, NotesProductError> {
+    require_non_empty(field, value)?;
+    Ok(value.trim().to_string())
+}
+
+fn normalize_actor_context(
+    context: NotesActorContext,
+) -> Result<NotesActorContext, NotesProductError> {
+    Ok(NotesActorContext {
+        tenant_id: normalize_required_string("tenant id", &context.tenant_id)?,
+        organization_id: normalize_required_string("organization id", &context.organization_id)?,
+        operator_id: normalize_required_string("operator id", &context.operator_id)?,
+    })
+}
+
+fn normalize_optional_string(value: Option<String>) -> Option<String> {
+    value
+        .map(|value| value.trim().to_string())
+        .filter(|value| !value.is_empty())
+}
+
+fn validate_max_chars(field: &str, value: &str, max_chars: usize) -> Result<(), NotesProductError> {
+    if value.chars().count() > max_chars {
+        return Err(NotesProductError::Validation(format!(
+            "{field} must be at most {max_chars} characters"
+        )));
+    }
+    Ok(())
+}
+
+fn normalize_owner_subject_type(value: &str) -> Result<String, NotesProductError> {
+    let value = normalize_required_string("owner subject type", value)?;
+    if matches!(value.as_str(), "user" | "group" | "organization" | "app") {
+        return Ok(value);
+    }
+    Err(NotesProductError::Validation(
+        "ownerSubjectType is invalid".to_string(),
+    ))
+}
+
+fn normalize_ai_job_type(value: &str) -> Result<String, NotesProductError> {
+    let value = normalize_required_string("job type", value)?;
+    if matches!(
+        value.as_str(),
+        "summarize" | "rewrite" | "extract_tasks" | "answer" | "organize" | "generate"
+    ) {
+        return Ok(value);
+    }
+    Err(NotesProductError::Validation(
+        "jobType is invalid".to_string(),
+    ))
+}
+
+fn normalize_ai_target_type(value: &str) -> Result<String, NotesProductError> {
+    let value = normalize_required_string("target type", value)?;
+    if matches!(
+        value.as_str(),
+        "page" | "collection" | "workspace" | "selection"
+    ) {
+        return Ok(value);
+    }
+    Err(NotesProductError::Validation(
+        "targetType is invalid".to_string(),
+    ))
+}
+
+fn normalize_ai_suggestion_type(value: &str) -> Result<String, NotesProductError> {
+    let value = normalize_required_string("suggestion type", value)?;
+    if matches!(
+        value.as_str(),
+        "summary" | "rewrite" | "tag" | "property_update" | "link_create" | "task_create"
+    ) {
+        return Ok(value);
+    }
+    Err(NotesProductError::Validation(
+        "suggestionType is invalid".to_string(),
+    ))
+}
+
+fn normalize_ai_feedback_type(value: &str) -> Result<String, NotesProductError> {
+    let value = normalize_required_string("feedback type", value)?;
+    if matches!(
+        value.as_str(),
+        "accepted" | "rejected" | "edited" | "helpful" | "not_helpful"
+    ) {
+        return Ok(value);
+    }
+    Err(NotesProductError::Validation(
+        "feedbackType is invalid".to_string(),
+    ))
+}
+
+fn optional_payload_string(
+    payload: &serde_json::Value,
+    field: &str,
+) -> Result<Option<String>, NotesProductError> {
+    let Some(value) = payload.get(field) else {
+        return Ok(None);
+    };
+    let Some(value) = value.as_str() else {
+        return Err(NotesProductError::Validation(format!(
+            "suggestion payload {field} must be a string"
+        )));
+    };
+    let value = value.trim();
+    if value.is_empty() {
+        return Ok(None);
+    }
+    Ok(Some(value.to_string()))
+}
+
+fn validate_ai_target(target_type: &str, target_id: Option<&str>) -> Result<(), NotesProductError> {
+    match target_type {
+        "page" | "collection" if target_id.is_none() => Err(NotesProductError::Validation(
+            "targetId is required for this targetType".to_string(),
+        )),
+        _ => Ok(()),
+    }
+}
+
+fn ai_job_payload_hash(
+    workspace_id: &str,
+    job_type: &str,
+    target_type: &str,
+    target_id: Option<&str>,
+    prompt: Option<&str>,
+    context_policy: &serde_json::Value,
+) -> Result<String, NotesProductError> {
+    let payload = serde_json::json!({
+        "workspaceId": workspace_id,
+        "jobType": job_type,
+        "targetType": target_type,
+        "targetId": target_id,
+        "prompt": prompt,
+        "contextPolicy": context_policy,
+    });
+    let serialized = serde_json::to_string(&payload).map_err(|error| {
+        NotesProductError::Internal(format!("serialize AI job payload failed: {error}"))
+    })?;
+    Ok(format!("fnv1a64:{:016x}", fnv1a64(serialized.as_bytes())))
+}
+
+fn stable_ai_job_id(
+    context: &NotesActorContext,
+    idempotency_key: &str,
+    request_payload_hash: &str,
+) -> String {
+    let raw = format!(
+        "{}:{}:{}:{}:{}",
+        context.tenant_id,
+        context.organization_id,
+        context.operator_id,
+        idempotency_key,
+        request_payload_hash
+    );
+    format!("ai-job-{:016x}", fnv1a64(raw.as_bytes()))
+}
+
+fn stable_ai_job_source_id(
+    context: &NotesActorContext,
+    workspace_id: &str,
+    source_type: &str,
+    source_id: &str,
+    drive_version_id: Option<&str>,
+    drive_version_no: Option<i64>,
+) -> String {
+    let raw = format!(
+        "{}:{}:{}:{}:{}:{}:{}",
+        context.tenant_id,
+        context.organization_id,
+        workspace_id,
+        source_type,
+        source_id,
+        drive_version_id.unwrap_or(""),
+        drive_version_no.unwrap_or_default()
+    );
+    format!("ai-job-source-{:016x}", fnv1a64(raw.as_bytes()))
+}
+
+fn stable_ai_suggestion_id(
+    context: &NotesActorContext,
+    ai_job_id: &str,
+    page_id: &str,
+    suggestion_type: &str,
+    index: usize,
+    payload_hash: &str,
+) -> String {
+    let raw = format!(
+        "{}:{}:{}:{}:{}:{}:{}:{}",
+        context.tenant_id,
+        context.organization_id,
+        context.operator_id,
+        ai_job_id,
+        page_id,
+        suggestion_type,
+        index,
+        payload_hash
+    );
+    format!("ai-suggestion-{:016x}", fnv1a64(raw.as_bytes()))
+}
+
+fn stable_ai_feedback_id(
+    context: &NotesActorContext,
+    ai_suggestion_id: &str,
+    feedback_type: &str,
+    feedback_text: Option<&str>,
+) -> String {
+    let raw = format!(
+        "{}:{}:{}:{}:{}:{}",
+        context.tenant_id,
+        context.organization_id,
+        context.operator_id,
+        ai_suggestion_id,
+        feedback_type,
+        feedback_text.unwrap_or("")
+    );
+    format!("ai-feedback-{:016x}", fnv1a64(raw.as_bytes()))
+}
+
+fn page_id_from_ai_job(job: &AiJob, sources: &[AiJobSource]) -> Option<String> {
+    if job.target_type == "page" {
+        if let Some(target_id) = job.target_id.clone() {
+            return Some(target_id);
+        }
+    }
+
+    sources
+        .iter()
+        .find(|source| source.source_type == "page")
+        .and_then(|source| source.source_id.clone())
+}
+
+fn source_for_page<'a>(sources: &'a [AiJobSource], page_id: &str) -> Option<&'a AiJobSource> {
+    sources
+        .iter()
+        .find(|source| source.source_type == "page" && source.source_id.as_deref() == Some(page_id))
+        .or_else(|| sources.iter().find(|source| source.source_type == "page"))
+}
+
+fn stable_permission_snapshot_hash(
+    context: &NotesActorContext,
+    workspace_id: &str,
+    source_type: &str,
+    source_id: &str,
+) -> String {
+    let raw = format!(
+        "{}:{}:{}:{}:{}",
+        context.tenant_id, context.organization_id, workspace_id, source_type, source_id
+    );
+    format!("permission:fnv1a64:{:016x}", fnv1a64(raw.as_bytes()))
+}
+
+fn fnv1a64(bytes: &[u8]) -> u64 {
+    let mut hash = 0xcbf29ce484222325_u64;
+    for byte in bytes {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(0x100000001b3);
+    }
+    hash
+}
+
+fn normalize_page(page: i64) -> Result<i64, NotesProductError> {
+    if page < 1 {
+        return Err(NotesProductError::Validation(
+            "page must be greater than or equal to 1".to_string(),
+        ));
+    }
+    Ok(page)
+}
+
+fn normalize_page_size(page_size: i64) -> Result<i64, NotesProductError> {
+    if !(1..=200).contains(&page_size) {
+        return Err(NotesProductError::Validation(
+            "page_size must be between 1 and 200".to_string(),
+        ));
+    }
+    Ok(page_size)
+}
+
+fn page_info_from_extra_item<T>(items: &mut Vec<T>, page: i64, page_size: i64) -> PageInfo {
+    let has_more = items.len() > page_size as usize;
+    if has_more {
+        items.truncate(page_size as usize);
+    }
+
+    PageInfo {
+        page,
+        page_size,
+        has_more,
+        next_cursor: None,
+    }
+}
+
+fn built_in_object_types() -> Vec<crate::domain::ObjectTypeSummary> {
+    [
+        ("doc", "Document"),
+        ("article", "Article"),
+        ("code", "Code"),
+        ("log", "Log"),
+        ("database", "Database"),
+        ("canvas", "Canvas"),
+    ]
+    .into_iter()
+    .map(|(code, name)| crate::domain::ObjectTypeSummary {
+        id: format!("notes-object-type-{code}"),
+        code: code.to_string(),
+        name: name.to_string(),
+    })
+    .collect()
+}
+
+fn workspace_change_token(workspace: &Workspace, root_pages: &[PageSummary]) -> String {
+    let latest_page_update = root_pages
+        .iter()
+        .map(|page| page.updated_at.as_str())
+        .max()
+        .unwrap_or(workspace.updated_at.as_str());
+    format!(
+        "{}:{}:{}",
+        workspace.id, workspace.version, latest_page_update
+    )
+}
+
+fn search_result_from_page(page: Page, q: Option<&str>) -> SearchResult {
+    let source_drive_version_no = page
+        .current_drive_version_no
+        .map(|version_no| version_no.to_string())
+        .unwrap_or_else(|| "0".to_string());
+    let source_drive_version_id = page.current_drive_version_id.clone();
+    let highlights = search_highlights(&page, q);
+
+    SearchResult {
+        page: PageSummary::from(page),
+        highlights,
+        source_drive_version_id,
+        source_drive_version_no,
+    }
+}
+
+fn search_highlights(page: &Page, q: Option<&str>) -> Vec<String> {
+    let Some(q) = q else {
+        return Vec::new();
+    };
+    let q = q.to_lowercase();
+    if page.title.to_lowercase().contains(&q) {
+        return vec![page.title.clone()];
+    }
+    if let Some(snippet) = page.snippet.as_ref() {
+        if snippet.to_lowercase().contains(&q) {
+            return vec![snippet.clone()];
+        }
+    }
+    Vec::new()
+}

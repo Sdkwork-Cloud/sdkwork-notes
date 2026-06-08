@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "sdkName": "sdkwork-notes-sdk",
+  "sdkOwner": "sdkwork-notes",
+  "apiAuthority": "sdkwork-notes.open",
+  "sdkFamily": "sdkwork-notes-sdk",
+  "sdkType": "custom",
+  "apiPrefix": "/notes/v3/api",
+  "generationInputSpec": "../../generated/openapi/notes-open-api.openapi.json",
+  "generatedPackages": {
+    "typescript": {
+      "language": "typescript",
+      "packageName": "sdkwork-notes-sdk-generated-typescript",
+      "generatedOutput": "sdkwork-notes-sdk-typescript/generated/server-openapi"
+    },
+    "rust": {
+      "language": "rust",
+      "packageName": "sdkwork-notes-sdk-generated-rust",
+      "generatedOutput": "sdkwork-notes-sdk-rust/generated/server-openapi"
+    },
+    "java": {
+      "language": "java",
+      "packageName": "sdkwork-notes-sdk-generated-java",
+      "generatedOutput": "sdkwork-notes-sdk-java/generated/server-openapi"
+    },
+    "python": {
+      "language": "python",
+      "packageName": "sdkwork-notes-sdk-generated-python",
+      "generatedOutput": "sdkwork-notes-sdk-python/generated/server-openapi"
+    },
+    "go": {
+      "language": "go",
+      "packageName": "sdkwork-notes-sdk-generated-go",
+      "generatedOutput": "sdkwork-notes-sdk-go/generated/server-openapi"
+    }
+  },
+  "sdkDependencies": [],
+  "dependencyApiExports": [],
+  "dependencyApiSurfaces": [],
+  "generatorName": "sdkwork-sdk-generator",
+  "baseUrl": "http://127.0.0.1:18082",
+  "standardProfile": "sdkwork-v3",
+  "fixedSdkVersion": "0.1.0",
+  "ownerOnlyOperationCount": 11,
+  "managedBy": "sdkwork-notes-contract-foundation"
+}

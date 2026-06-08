@@ -1,0 +1,225 @@
+module: notes
+owner: sdkwork-notes
+domain: content
+contract_version: 0.1.0
+description: Core SDKWork Notes workspace and page metadata contracts. Durable page bytes, folders, assets, and versions are Drive-owned.
+tables:
+  - table: notes_workspace
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Notes workspace metadata and binding to a Drive notes space.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: owner_subject_type, type: varchar(32), required: true, constraints: ["enum: [user, group, organization, app]"] }
+      - { name: owner_subject_id, type: varchar(128), required: true }
+      - { name: name, type: varchar(255), required: true }
+      - { name: description, type: text, nullable: true }
+      - { name: drive_space_id, type: varchar(64), required: true, description: Stable Drive space id. Drive owns the space lifecycle. }
+      - { name: default_page_content_type, type: varchar(255), required: true, default: "application/vnd.sdkwork.notes.page+json" }
+      - { name: default_page_schema_version, type: varchar(32), required: true, default: "1" }
+      - { name: ai_index_policy_code, type: varchar(64), required: true, default: "default" }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, archived, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_workspace_drive_space
+        unique: true
+        columns: [tenant_id, drive_space_id]
+      - name: ix_notes_workspace_owner
+        columns: [tenant_id, organization_id, owner_subject_type, owner_subject_id, lifecycle_status]
+
+  - table: notes_page
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Page business metadata. Page content and versions are Drive file facts referenced by drive_* columns.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true, references: notes_workspace.id }
+      - { name: title, type: varchar(512), required: true }
+      - { name: page_kind, type: varchar(32), required: true, constraints: ["enum: [doc, article, code, log, database, canvas]"] }
+      - { name: parent_page_id, type: varchar(64), nullable: true, references: notes_page.id }
+      - { name: folder_drive_node_id, type: varchar(64), nullable: true, description: Optional Drive folder node used by the folder facade. }
+      - { name: drive_space_id, type: varchar(64), required: true }
+      - { name: drive_node_id, type: varchar(64), required: true }
+      - { name: drive_uri, type: varchar(255), required: true }
+      - { name: current_drive_version_id, type: varchar(64), nullable: true }
+      - { name: current_drive_version_no, type: bigint, nullable: true }
+      - { name: content_type, type: varchar(255), required: true }
+      - { name: content_schema_version, type: varchar(32), required: true }
+      - { name: content_hash, type: varchar(128), nullable: true }
+      - { name: snippet, type: text, nullable: true }
+      - { name: icon, type: varchar(128), nullable: true }
+      - { name: cover_asset_id, type: varchar(64), nullable: true }
+      - { name: favorite, type: boolean, required: true, default: false }
+      - { name: archive_status, type: varchar(32), required: true, constraints: ["enum: [active, archived]"] }
+      - { name: publish_status, type: varchar(32), required: true, constraints: ["enum: [private, published, unlisted]"] }
+      - { name: word_count, type: bigint, required: true, default: 0 }
+      - { name: task_count, type: bigint, required: true, default: 0 }
+      - { name: drive_lifecycle_status_snapshot, type: varchar(32), nullable: true, description: Rebuildable Drive node lifecycle snapshot for list filtering. }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+      - { name: deleted_at, type: timestamp, nullable: true }
+    indexes:
+      - name: ux_notes_page_drive_node
+        unique: true
+        columns: [tenant_id, drive_node_id]
+      - name: ix_notes_page_workspace_recent
+        columns: [tenant_id, organization_id, workspace_id, lifecycle_status, updated_at, id]
+      - name: ix_notes_page_folder
+        columns: [tenant_id, organization_id, workspace_id, folder_drive_node_id, lifecycle_status, updated_at, id]
+      - name: ix_notes_page_parent
+        columns: [tenant_id, organization_id, workspace_id, parent_page_id, lifecycle_status, updated_at, id]
+
+  - table: notes_tag
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Workspace-local tag dictionary.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true, references: notes_workspace.id }
+      - { name: name, type: varchar(128), required: true }
+      - { name: color, type: varchar(32), nullable: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_tag_workspace_name_live
+        unique: true
+        columns: [tenant_id, organization_id, workspace_id, name]
+        predicate: lifecycle_status = 'active'
+
+  - table: notes_page_tag
+    profile: relation_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Page-to-tag relation.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true, references: notes_page.id }
+      - { name: tag_id, type: varchar(64), required: true, references: notes_tag.id }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_page_tag_pair
+        unique: true
+        columns: [tenant_id, workspace_id, page_id, tag_id]
+      - name: ix_notes_page_tag_tag
+        columns: [tenant_id, workspace_id, tag_id, page_id]
+
+  - table: notes_page_asset
+    profile: relation_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Business relation from a page/block to a Drive-backed asset. Drive owns the asset bytes and lifecycle.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true, references: notes_page.id }
+      - { name: block_id, type: varchar(128), nullable: true }
+      - { name: asset_role, type: varchar(32), required: true, constraints: ["enum: [cover, image, attachment, audio, video, embed]"] }
+      - { name: drive_space_id, type: varchar(64), required: true }
+      - { name: drive_node_id, type: varchar(64), required: true }
+      - { name: drive_uri, type: varchar(255), required: true }
+      - { name: media_resource_snapshot, type: json, nullable: true }
+      - { name: sort_order, type: bigint, required: true, default: 0 }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ix_notes_page_asset_page
+        columns: [tenant_id, organization_id, workspace_id, page_id, lifecycle_status, sort_order]
+      - name: ix_notes_page_asset_drive_node
+        columns: [tenant_id, drive_node_id, lifecycle_status]
+
+  - table: notes_page_link
+    profile: relation_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Page graph edge for mentions, backlinks, embeds, references, and parent relationships.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: source_page_id, type: varchar(64), required: true, references: notes_page.id }
+      - { name: target_page_id, type: varchar(64), required: true, references: notes_page.id }
+      - { name: source_block_id, type: varchar(128), nullable: true }
+      - { name: link_type, type: varchar(32), required: true, constraints: ["enum: [mention, backlink, embed, reference, parent]"] }
+      - { name: anchor_snapshot, type: json, nullable: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+    indexes:
+      - name: ix_notes_page_link_source
+        columns: [tenant_id, organization_id, workspace_id, source_page_id, lifecycle_status]
+      - name: ix_notes_page_link_target
+        columns: [tenant_id, organization_id, workspace_id, target_page_id, lifecycle_status]
+
+  - table: notes_page_alias
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: User, import, or AI-proposed page aliases used for search and unlinked mention detection.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true, references: notes_page.id }
+      - { name: alias_text, type: varchar(255), required: true }
+      - { name: alias_normalized, type: varchar(255), required: true }
+      - { name: source, type: varchar(32), required: true, constraints: ["enum: [user, ai, import]"] }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+    indexes:
+      - name: ix_notes_page_alias_lookup
+        columns: [tenant_id, organization_id, workspace_id, alias_normalized, lifecycle_status]
+
+  - table: notes_template
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Workspace template metadata. Template content is a Drive-backed file.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: name, type: varchar(255), required: true }
+      - { name: description, type: text, nullable: true }
+      - { name: object_type_id, type: varchar(64), nullable: true }
+      - { name: template_drive_node_id, type: varchar(64), required: true }
+      - { name: template_drive_uri, type: varchar(255), required: true }
+      - { name: config_json, type: json, nullable: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }

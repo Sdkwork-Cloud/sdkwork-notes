@@ -1,0 +1,1628 @@
+{
+  "openapi": "3.1.2",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "SDKWork Notes Backend API",
+    "version": "0.1.0",
+    "description": "Backend/admin authority skeleton for SDKWork Notes governance, diagnostics, projection repair, and operational jobs. Drive provider, quota, object, upload session, and version retention administration remains owned by Drive backend APIs."
+  },
+  "servers": [
+    {
+      "url": "/backend/v3/api",
+      "description": "SDKWork Backend API root"
+    }
+  ],
+  "tags": [
+    {
+      "name": "notes",
+      "description": "AI-native Notes backend-admin surface."
+    }
+  ],
+  "paths": {
+    "/backend/v3/api/notes/workspaces": {
+      "get": {
+        "summary": "List Notes workspaces for backend-admin governance.",
+        "operationId": "workspaces.admin.list",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          },
+          {
+            "$ref": "#/components/parameters/SearchQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace admin page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAdminPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "workspaces",
+        "x-sdkwork-permission": "notes.backend.workspaces.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.workspace.list"
+      }
+    },
+    "/backend/v3/api/notes/workspaces/{workspaceId}": {
+      "get": {
+        "summary": "Retrieve backend-admin workspace diagnostics.",
+        "operationId": "workspaces.admin.retrieve",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace admin details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "workspaces",
+        "x-sdkwork-permission": "notes.backend.workspaces.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.workspace.retrieve"
+      },
+      "patch": {
+        "summary": "Update backend-admin workspace governance fields.",
+        "operationId": "workspaces.admin.update",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateWorkspaceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated workspace admin details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceAdmin"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "workspaces",
+        "x-sdkwork-permission": "notes.backend.workspaces.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.workspace.update"
+      }
+    },
+    "/backend/v3/api/notes/workspaces/{workspaceId}/projection_rebuild": {
+      "post": {
+        "summary": "Queue a projection rebuild for a Notes workspace.",
+        "operationId": "workspaces.projection.rebuild",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RebuildProjectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Projection rebuild job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "workspaces",
+        "x-sdkwork-permission": "notes.backend.projections.rebuild",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.projection.rebuild",
+        "x-sdkwork-idempotent": true
+      }
+    },
+    "/backend/v3/api/notes/index_jobs": {
+      "get": {
+        "summary": "List Notes index and projection jobs.",
+        "operationId": "indexJobs.list",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          },
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Index job page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexJobPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "indexJobs",
+        "x-sdkwork-permission": "notes.backend.index_jobs.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.index_job.list"
+      },
+      "post": {
+        "summary": "Create an index or projection job.",
+        "operationId": "indexJobs.create",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIndexJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Created index job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "indexJobs",
+        "x-sdkwork-permission": "notes.backend.index_jobs.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.index_job.create",
+        "x-sdkwork-idempotent": true
+      }
+    },
+    "/backend/v3/api/notes/index_jobs/{indexJobId}": {
+      "get": {
+        "summary": "Retrieve an index or projection job.",
+        "operationId": "indexJobs.retrieve",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IndexJobIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Index job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "indexJobs",
+        "x-sdkwork-permission": "notes.backend.index_jobs.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.index_job.retrieve"
+      }
+    },
+    "/backend/v3/api/notes/ai_jobs": {
+      "get": {
+        "summary": "List AI jobs for backend-admin review.",
+        "operationId": "aiJobs.admin.list",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          },
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI job page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiJobPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiJobs",
+        "x-sdkwork-permission": "notes.backend.ai_jobs.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_job.list"
+      }
+    },
+    "/backend/v3/api/notes/ai_jobs/{aiJobId}": {
+      "get": {
+        "summary": "Retrieve backend-admin AI job details.",
+        "operationId": "aiJobs.admin.retrieve",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AiJobIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI job details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiJobs",
+        "x-sdkwork-permission": "notes.backend.ai_jobs.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_job.retrieve"
+      }
+    },
+    "/backend/v3/api/notes/ai_jobs/{aiJobId}/cancel": {
+      "post": {
+        "summary": "Cancel a running AI job through backend-admin controls.",
+        "operationId": "aiJobs.cancel",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AiJobIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canceled AI job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiJobs",
+        "x-sdkwork-permission": "notes.backend.ai_jobs.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_job.cancel"
+      }
+    },
+    "/backend/v3/api/notes/diagnostics/drive_orphans": {
+      "get": {
+        "summary": "List Notes metadata records with missing or inconsistent Drive bindings.",
+        "operationId": "diagnostics.driveOrphans.list",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive orphan diagnostic page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveOrphanDiagnosticPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "diagnostics",
+        "x-sdkwork-permission": "notes.backend.diagnostics.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.diagnostics.drive_orphans.list"
+      },
+      "post": {
+        "summary": "Queue repair for Notes metadata records with inconsistent Drive bindings.",
+        "operationId": "diagnostics.driveOrphans.repair",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepairDriveOrphansRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Repair job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "diagnostics",
+        "x-sdkwork-permission": "notes.backend.diagnostics.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.diagnostics.drive_orphans.repair",
+        "x-sdkwork-idempotent": true
+      }
+    },
+    "/backend/v3/api/notes/ai_jobs/{aiJobId}/claim": {
+      "post": {
+        "summary": "Claim a queued AI job for backend worker execution.",
+        "operationId": "aiJobs.claim",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AiJobIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claimed AI job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiJobs",
+        "x-sdkwork-permission": "notes.backend.ai_jobs.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_job.claim"
+      }
+    },
+    "/backend/v3/api/notes/ai_jobs/{aiJobId}/complete": {
+      "post": {
+        "summary": "Complete a running AI job and persist reviewable suggestions.",
+        "operationId": "aiJobs.complete",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AiJobIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteAiJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed AI job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiJobs",
+        "x-sdkwork-permission": "notes.backend.ai_jobs.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_job.complete"
+      }
+    },
+    "/backend/v3/api/notes/ai_suggestions/{aiSuggestionId}/accept": {
+      "post": {
+        "summary": "Accept an AI suggestion through backend-admin controls.",
+        "operationId": "aiSuggestions.accept",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AiSuggestionIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSuggestionDecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Accepted AI suggestion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiSuggestion"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiSuggestions",
+        "x-sdkwork-permission": "notes.backend.ai_suggestions.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_suggestion.accept"
+      }
+    },
+    "/backend/v3/api/notes/ai_suggestions/{aiSuggestionId}/reject": {
+      "post": {
+        "summary": "Reject an AI suggestion through backend-admin controls.",
+        "operationId": "aiSuggestions.reject",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AiSuggestionIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSuggestionDecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rejected AI suggestion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiSuggestion"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiSuggestions",
+        "x-sdkwork-permission": "notes.backend.ai_suggestions.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_suggestion.reject"
+      }
+    },
+    "/backend/v3/api/notes/ai_suggestions/{aiSuggestionId}/apply": {
+      "post": {
+        "summary": "Apply an accepted AI suggestion through backend-admin controls.",
+        "operationId": "aiSuggestions.apply",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AiSuggestionIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiSuggestionApplyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Applied AI suggestion page content result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageContent"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiSuggestions",
+        "x-sdkwork-permission": "notes.backend.ai_suggestions.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_suggestion.apply"
+      }
+    },
+    "/backend/v3/api/notes/ai_suggestions/{aiSuggestionId}/feedback": {
+      "get": {
+        "summary": "List AI suggestion feedback for backend-admin quality review.",
+        "operationId": "aiSuggestions.feedback.list",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AiSuggestionIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "AI feedback page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiFeedbackPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.backend",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "aiSuggestions.feedback",
+        "x-sdkwork-permission": "notes.backend.ai_suggestions.feedback.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.backend.ai_suggestion.feedback.list"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AuthToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "AccessToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Access-Token"
+      }
+    },
+    "parameters": {
+      "WorkspaceIdPath": {
+        "name": "workspaceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "WorkspaceIdQuery": {
+        "name": "workspace_id",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "IndexJobIdPath": {
+        "name": "indexJobId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "AiJobIdPath": {
+        "name": "aiJobId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PageQuery": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "PageSizeQuery": {
+        "name": "page_size",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "default": 20
+        }
+      },
+      "SearchQuery": {
+        "name": "q",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "AiSuggestionIdPath": {
+        "name": "aiSuggestionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "ProblemDetailResponse": {
+        "description": "Problem detail error.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetail"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "FieldError": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "ProblemDetail": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "type",
+          "title",
+          "status"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri-reference"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 599
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            }
+          }
+        }
+      },
+      "PageInfo": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page",
+          "pageSize",
+          "hasMore"
+        ],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkspaceAdmin": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "tenantId",
+          "organizationId",
+          "name",
+          "driveSpaceId",
+          "lifecycleStatus"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "driveSpaceId": {
+            "type": "string"
+          },
+          "aiIndexPolicyCode": {
+            "type": "string"
+          },
+          "pageCount": {
+            "type": "string"
+          },
+          "projectionLagCount": {
+            "type": "string"
+          },
+          "lifecycleStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkspaceAdminPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkspaceAdmin"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "IndexJob": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workspaceId",
+          "jobType",
+          "status",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "jobType": {
+            "type": "string"
+          },
+          "targetType": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "IndexJobPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndexJob"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "AiJob": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workspaceId",
+          "jobType",
+          "targetType",
+          "status",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "jobType": {
+            "type": "string"
+          },
+          "targetType": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "sourceCount": {
+            "type": "string"
+          },
+          "suggestionCount": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AiJobPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiJob"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "DriveOrphanDiagnostic": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pageId",
+          "workspaceId",
+          "driveNodeId",
+          "diagnosticCode"
+        ],
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "driveNodeId": {
+            "type": "string"
+          },
+          "diagnosticCode": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      },
+      "DriveOrphanDiagnosticPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DriveOrphanDiagnostic"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "AdminUpdateWorkspaceRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "aiIndexPolicyCode": {
+            "type": "string"
+          },
+          "lifecycleStatus": {
+            "type": "string"
+          },
+          "expectedVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "RebuildProjectionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "projectionType"
+        ],
+        "properties": {
+          "projectionType": {
+            "type": "string",
+            "enum": [
+              "search",
+              "outline",
+              "semantic",
+              "insight",
+              "all"
+            ]
+          },
+          "pageId": {
+            "type": "string"
+          },
+          "force": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateIndexJobRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspaceId",
+          "jobType"
+        ],
+        "properties": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "jobType": {
+            "type": "string"
+          },
+          "targetType": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "string"
+          }
+        }
+      },
+      "RepairDriveOrphansRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "pageIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dryRun": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "CompleteAiJobRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "suggestions"
+        ],
+        "properties": {
+          "suggestions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/CompleteAiSuggestionInput"
+            }
+          }
+        }
+      },
+      "CompleteAiSuggestionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "suggestionType",
+          "payload"
+        ],
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "suggestionType": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "rewrite",
+              "tag",
+              "property_update",
+              "link_create",
+              "task_create"
+            ]
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "AiSuggestionDecisionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenantId",
+          "organizationId",
+          "operatorId"
+        ],
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "operatorId": {
+            "type": "string"
+          }
+        }
+      },
+      "AiSuggestionApplyRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenantId",
+          "organizationId",
+          "operatorId"
+        ],
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "operatorId": {
+            "type": "string"
+          },
+          "expectedDriveVersionId": {
+            "type": "string"
+          },
+          "createCheckpoint": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      },
+      "PageContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pageId",
+          "driveNodeId",
+          "driveVersionId",
+          "driveVersionNo",
+          "contentType",
+          "content"
+        ],
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "driveNodeId": {
+            "type": "string"
+          },
+          "driveVersionId": {
+            "type": "string"
+          },
+          "driveVersionNo": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "contentSchemaVersion": {
+            "type": "string"
+          },
+          "content": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "AiSuggestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workspaceId",
+          "pageId",
+          "aiJobId",
+          "suggestionType",
+          "status",
+          "payload",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "pageId": {
+            "type": "string"
+          },
+          "aiJobId": {
+            "type": "string"
+          },
+          "suggestionType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "proposed",
+              "accepted",
+              "applied",
+              "rejected",
+              "dismissed"
+            ]
+          },
+          "sourceDriveNodeId": {
+            "type": "string"
+          },
+          "sourceDriveVersionId": {
+            "type": "string"
+          },
+          "sourceDriveVersionNo": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AiFeedback": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workspaceId",
+          "jobId",
+          "feedbackType",
+          "createdBy",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "suggestionId": {
+            "type": "string"
+          },
+          "feedbackType": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "rejected",
+              "edited",
+              "helpful",
+              "not_helpful"
+            ]
+          },
+          "feedbackText": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AiFeedbackPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiFeedback"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      }
+    }
+  }
+}

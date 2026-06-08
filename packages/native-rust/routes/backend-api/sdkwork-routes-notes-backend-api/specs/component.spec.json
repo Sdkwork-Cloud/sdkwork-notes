@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-routes-notes-backend-api",
+    "displayName": "SDKWork Notes Backend API Service",
+    "version": "0.1.0",
+    "type": "web-backend-service",
+    "root": "sdkwork-notes/packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api",
+    "domain": "notes",
+    "capability": "notes",
+    "surface": "backend-api",
+    "languages": [
+      "rust"
+    ],
+    "generated": false,
+    "private": false,
+    "manifests": [
+      "Cargo.toml"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "COMPONENT_SPEC.md",
+      "path": "../../../../../../../sdkwork-specs/COMPONENT_SPEC.md",
+      "purpose": "Local component spec and manifest rules."
+    },
+    {
+      "file": "CODE_STYLE_SPEC.md",
+      "path": "../../../../../../../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "purpose": "Authored source structure and generated-code boundaries."
+    },
+    {
+      "file": "NAMING_SPEC.md",
+      "path": "../../../../../../../sdkwork-specs/NAMING_SPEC.md",
+      "purpose": "Canonical package, route, API, SDK, and component naming."
+    },
+    {
+      "file": "RUST_CODE_SPEC.md",
+      "path": "../../../../../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "purpose": "Rust crate/module layout, route/service boundaries, errors, and tests."
+    },
+    {
+      "file": "API_SPEC.md",
+      "path": "../../../../../../../sdkwork-specs/API_SPEC.md",
+      "purpose": "Backend API prefix, operation, problem detail, and OpenAPI alignment rules."
+    },
+    {
+      "file": "WEB_BACKEND_SPEC.md",
+      "path": "../../../../../../../sdkwork-specs/WEB_BACKEND_SPEC.md",
+      "purpose": "Router/handler/service/repository layering and request context rules."
+    },
+    {
+      "file": "DRIVE_SPEC.md",
+      "path": "../../../../../../../sdkwork-specs/DRIVE_SPEC.md",
+      "purpose": "Drive file/content/version ownership boundary."
+    },
+    {
+      "file": "TEST_SPEC.md",
+      "path": "../../../../../../../sdkwork-specs/TEST_SPEC.md",
+      "purpose": "Required backend, API, Drive boundary, and contract verification."
+    }
+  ],
+  "contracts": {
+    "apiAuthority": {
+      "name": "sdkwork-notes.backend",
+      "prefix": "/backend/v3/api/notes",
+      "authorityOpenApi": "../../generated/openapi/notes-backend-api.openapi.json",
+      "owner": "sdkwork-notes"
+    },
+    "publicExports": [
+      ".",
+      "sdkwork_routes_notes_backend_api::routes::build_router"
+    ],
+    "runtimeEntrypoints": [
+      "sdkwork_routes_notes_backend_api::routes::build_router"
+    ],
+    "routeManifest": "../../../../../../sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json",
+    "sdkClients": [],
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "events": [],
+    "configKeys": []
+  },
+  "integration": {
+    "handlerBoundary": "Backend handlers decode DTOs and call NotesService. Business logic stays in sdkwork-notes-product.",
+    "driveBoundary": "Backend handlers never implement upload, object, or version lifecycle. AI job admin reads Notes-owned AI ledgers only."
+  },
+  "verification": {
+    "commands": [
+      "cargo test -p sdkwork-routes-notes-backend-api",
+      "node --test scripts/verify-notes-rust-service-skeleton.test.mjs"
+    ]
+  },
+  "metadata": {
+    "managedBy": "sdkwork-notes-phase6-backend-ai-job-admin",
+    "standardVersion": "2026-06-08"
+  }
+}

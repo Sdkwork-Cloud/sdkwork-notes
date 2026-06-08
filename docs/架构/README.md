@@ -104,3 +104,24 @@
 - 先建设本地能力层、搜索层和同步基础，再进入版本、协作、AI 与插件阶段。
 - 先保证高内聚、低耦合、易扩展，再追求复杂功能堆叠。
 - 每次后续代码变更都必须回看本文档集并同步修正冻结文档。
+
+## 2026-06-08 Contract Foundation Addendum
+
+This addendum records the AI-native Notes contract foundation without replacing the existing 01-10 architecture baseline. It is a planning and contract skeleton layer only; it does not claim backend code, migrations, or generated SDK transports are implemented.
+
+- AI-native design spec: [../superpowers/specs/2026-06-08-sdkwork-notes-ai-native-design.md](../superpowers/specs/2026-06-08-sdkwork-notes-ai-native-design.md)
+- Contract implementation plan: [../superpowers/plans/2026-06-08-sdkwork-notes-contract-foundation.md](../superpowers/plans/2026-06-08-sdkwork-notes-contract-foundation.md)
+- Schema registry: [../schema-registry/README.md](../schema-registry/README.md)
+- App API skeleton: [../../generated/openapi/notes-app-api.openapi.json](../../generated/openapi/notes-app-api.openapi.json)
+- Open API skeleton: [../../generated/openapi/notes-open-api.openapi.json](../../generated/openapi/notes-open-api.openapi.json)
+- Backend API skeleton: [../../generated/openapi/notes-backend-api.openapi.json](../../generated/openapi/notes-backend-api.openapi.json)
+- App SDK family skeleton: [../../sdks/sdkwork-notes-app-sdk/README.md](../../sdks/sdkwork-notes-app-sdk/README.md)
+- Open SDK family skeleton: [../../sdks/sdkwork-notes-sdk/README.md](../../sdks/sdkwork-notes-sdk/README.md)
+- Backend SDK family skeleton: [../../sdks/sdkwork-notes-backend-sdk/README.md](../../sdks/sdkwork-notes-backend-sdk/README.md)
+- Contract verifier: [../../scripts/verify-notes-contract-foundation.mjs](../../scripts/verify-notes-contract-foundation.mjs)
+
+Contract boundary summary:
+
+- Notes uses `Page` as the core resource and avoids `/notes/notes`, `notes_note`, `notes_note_revision`, and `client.notes.notes.*`.
+- Drive owns content bytes, folders, assets, upload sessions, object storage, and node versions.
+- Notes owns business metadata, object types, properties, collections, views, links, projections, AI governance, import/export, and sync metadata.

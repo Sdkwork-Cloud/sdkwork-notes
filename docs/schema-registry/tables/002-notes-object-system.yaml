@@ -1,0 +1,190 @@
+module: notes
+owner: sdkwork-notes
+domain: content
+contract_version: 0.1.0
+description: Object type, property, collection, and view contracts for structured AI-native knowledge work.
+tables:
+  - table: notes_object_type
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Workspace-scoped object type similar to a supertag or structured page type.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: code, type: varchar(64), required: true }
+      - { name: name, type: varchar(128), required: true }
+      - { name: description, type: text, nullable: true }
+      - { name: icon, type: varchar(128), nullable: true }
+      - { name: color, type: varchar(32), nullable: true }
+      - { name: system_defined, type: boolean, required: true, default: false }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_object_type_code_live
+        unique: true
+        columns: [tenant_id, organization_id, workspace_id, code]
+        predicate: lifecycle_status = 'active'
+
+  - table: notes_property_definition
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Property definition for object types and collection views.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: object_type_id, type: varchar(64), required: true, references: notes_object_type.id }
+      - { name: code, type: varchar(64), required: true }
+      - { name: name, type: varchar(128), required: true }
+      - { name: property_type, type: varchar(32), required: true, constraints: ["enum: [text, number, select, multi_select, date, checkbox, user, page_ref, url, file, formula]"] }
+      - { name: config_json, type: json, nullable: true }
+      - { name: required, type: boolean, required: true, default: false }
+      - { name: searchable, type: boolean, required: true, default: false }
+      - { name: sortable, type: boolean, required: true, default: false }
+      - { name: sort_order, type: bigint, required: true, default: 0 }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_property_definition_code_live
+        unique: true
+        columns: [tenant_id, organization_id, workspace_id, object_type_id, code]
+        predicate: lifecycle_status = 'active'
+
+  - table: notes_page_object_type
+    profile: relation_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Binding between pages and object types.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true }
+      - { name: object_type_id, type: varchar(64), required: true }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_page_object_type_pair
+        unique: true
+        columns: [tenant_id, workspace_id, page_id, object_type_id]
+
+  - table: notes_property_value
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Typed property values for pages. Search/sort indexes are enabled only for selected property definitions.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true }
+      - { name: property_definition_id, type: varchar(64), required: true, references: notes_property_definition.id }
+      - { name: value_text, type: text, nullable: true }
+      - { name: value_number, type: decimal, nullable: true }
+      - { name: value_boolean, type: boolean, nullable: true }
+      - { name: value_datetime, type: timestamp, nullable: true }
+      - { name: value_page_id, type: varchar(64), nullable: true }
+      - { name: value_user_id, type: varchar(128), nullable: true }
+      - { name: value_json, type: json, nullable: true }
+      - { name: source, type: varchar(32), required: true, constraints: ["enum: [user, ai, import, integration]"] }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_property_value_page_definition_live
+        unique: true
+        columns: [tenant_id, workspace_id, page_id, property_definition_id]
+        predicate: lifecycle_status = 'active'
+      - name: ix_notes_property_value_text
+        columns: [tenant_id, organization_id, workspace_id, property_definition_id, value_text]
+      - name: ix_notes_property_value_number
+        columns: [tenant_id, organization_id, workspace_id, property_definition_id, value_number]
+      - name: ix_notes_property_value_datetime
+        columns: [tenant_id, organization_id, workspace_id, property_definition_id, value_datetime]
+
+  - table: notes_collection
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Collection/database over pages.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: name, type: varchar(255), required: true }
+      - { name: description, type: text, nullable: true }
+      - { name: object_type_id, type: varchar(64), nullable: true }
+      - { name: source_scope, type: varchar(32), required: true, constraints: ["enum: [workspace, folder, page_tree, manual]"] }
+      - { name: source_config_json, type: json, nullable: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+
+  - table: notes_collection_item
+    profile: relation_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Manual collection membership. Dynamic collections derive membership from filters and source scope.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: collection_id, type: varchar(64), required: true, references: notes_collection.id }
+      - { name: page_id, type: varchar(64), required: true }
+      - { name: sort_order, type: bigint, required: true, default: 0 }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_collection_item_pair
+        unique: true
+        columns: [tenant_id, collection_id, page_id]
+      - name: ix_notes_collection_item_list
+        columns: [tenant_id, organization_id, workspace_id, collection_id, lifecycle_status, sort_order]
+
+  - table: notes_view
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Saved collection view configuration.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: collection_id, type: varchar(64), required: true, references: notes_collection.id }
+      - { name: name, type: varchar(255), required: true }
+      - { name: view_type, type: varchar(32), required: true, constraints: ["enum: [list, table, board, calendar, gallery, graph]"] }
+      - { name: config_json, type: json, required: true }
+      - { name: sort_order, type: bigint, required: true, default: 0 }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }

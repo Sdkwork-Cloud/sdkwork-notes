@@ -1,0 +1,105 @@
+module: notes
+owner: sdkwork-notes
+domain: content
+contract_version: 0.1.0
+description: Sync, import, export, and publication business job contracts.
+tables:
+  - table: notes_import_job
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Import job from external or Drive-backed source material.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: source_type, type: varchar(64), required: true }
+      - { name: source_drive_node_id, type: varchar(64), nullable: true }
+      - { name: status, type: varchar(32), required: true, constraints: ["enum: [queued, running, succeeded, failed, canceled]"] }
+      - { name: result_json, type: json, nullable: true }
+      - { name: error_code, type: varchar(64), nullable: true }
+      - { name: error_message, type: text, nullable: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+
+  - table: notes_export_job
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Export job that writes output through Drive.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: target_type, type: varchar(32), required: true, constraints: ["enum: [page, collection, workspace]"] }
+      - { name: target_id, type: varchar(64), nullable: true }
+      - { name: export_format, type: varchar(32), required: true, constraints: ["enum: [markdown, html, pdf, json, zip]"] }
+      - { name: output_drive_node_id, type: varchar(64), nullable: true }
+      - { name: output_drive_uri, type: varchar(255), nullable: true }
+      - { name: status, type: varchar(32), required: true, constraints: ["enum: [queued, running, succeeded, failed, canceled]"] }
+      - { name: result_json, type: json, nullable: true }
+      - { name: error_code, type: varchar(64), nullable: true }
+      - { name: error_message, type: text, nullable: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+
+  - table: notes_publication
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Published page state tied to an immutable Drive version.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true }
+      - { name: publication_status, type: varchar(32), required: true, constraints: ["enum: [draft, published, unpublished]"] }
+      - { name: slug, type: varchar(255), nullable: true }
+      - { name: visibility, type: varchar(32), required: true, constraints: ["enum: [private, workspace, public, unlisted]"] }
+      - { name: published_drive_version_id, type: varchar(64), nullable: true }
+      - { name: published_drive_version_no, type: bigint, nullable: true }
+      - { name: published_at, type: timestamp, nullable: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+
+  - table: notes_sync_mutation_batch
+    profile: ledger_event
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Remote mutation batch for local-first sync replay and idempotency.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: client_id, type: varchar(128), required: true }
+      - { name: device_id, type: varchar(128), required: true }
+      - { name: base_change_token, type: varchar(255), nullable: true }
+      - { name: idempotency_key, type: varchar(128), required: true }
+      - { name: mutation_count, type: bigint, required: true, default: 0 }
+      - { name: status, type: varchar(32), required: true, constraints: ["enum: [accepted, applied, conflict, rejected]"] }
+      - { name: result_json, type: json, nullable: true }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_sync_mutation_batch_idempotency
+        unique: true
+        columns: [tenant_id, workspace_id, client_id, idempotency_key]
+      - name: ix_notes_sync_mutation_batch_status
+        columns: [tenant_id, organization_id, workspace_id, status, created_at]

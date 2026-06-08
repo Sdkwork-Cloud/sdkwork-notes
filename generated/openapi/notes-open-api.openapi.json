@@ -1,0 +1,1096 @@
+{
+  "openapi": "3.1.2",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "SDKWork Notes Open API",
+    "version": "0.1.0",
+    "description": "Public integration authority skeleton for SDKWork Notes. Open API exposes Notes business resources through API-key context and does not expose app login/session or Drive storage internals."
+  },
+  "servers": [
+    {
+      "url": "/notes/v3/api",
+      "description": "SDKWork Notes Open API root"
+    }
+  ],
+  "tags": [
+    {
+      "name": "notes",
+      "description": "AI-native Notes open integration surface."
+    }
+  ],
+  "paths": {
+    "/notes/v3/api/workspaces": {
+      "get": {
+        "summary": "List workspaces available to the API key context.",
+        "operationId": "workspaces.list",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspacePage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "workspaces",
+        "x-sdkwork-permission": "notes.open.workspaces.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.workspace.list"
+      }
+    },
+    "/notes/v3/api/pages": {
+      "get": {
+        "summary": "List pages available to the API key context.",
+        "operationId": "pages.list",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/SearchQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page summary page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageSummaryPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.open.pages.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.page.list"
+      },
+      "post": {
+        "summary": "Create a Drive-backed page through Open API.",
+        "operationId": "pages.create",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.open.pages.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.page.create",
+        "x-sdkwork-idempotent": true
+      }
+    },
+    "/notes/v3/api/pages/{pageId}": {
+      "get": {
+        "summary": "Retrieve page metadata through Open API.",
+        "operationId": "pages.retrieve",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.open.pages.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.page.retrieve"
+      },
+      "patch": {
+        "summary": "Update page metadata through Open API.",
+        "operationId": "pages.update",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated page metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.open.pages.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.page.update"
+      }
+    },
+    "/notes/v3/api/pages/{pageId}/content": {
+      "get": {
+        "summary": "Retrieve Drive-backed page content through the Notes Open API facade.",
+        "operationId": "pages.content.retrieve",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page content envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageContent"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.open.pages.content.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.page.content.retrieve"
+      },
+      "put": {
+        "summary": "Update Drive-backed page content through Open API.",
+        "operationId": "pages.content.update",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePageContentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated page content envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageContent"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.open.pages.content.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.page.content.update",
+        "x-sdkwork-idempotent": true
+      }
+    },
+    "/notes/v3/api/pages/{pageId}/versions": {
+      "get": {
+        "summary": "List Drive node versions for a Notes page.",
+        "operationId": "pages.versions.list",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drive version page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DriveVersionPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.open.pages.versions.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.page.versions.list"
+      }
+    },
+    "/notes/v3/api/search": {
+      "get": {
+        "summary": "Search page projections through Open API.",
+        "operationId": "search.query",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/WorkspaceIdQuery"
+          },
+          {
+            "$ref": "#/components/parameters/SearchQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageQuery"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search result page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "search",
+        "x-sdkwork-permission": "notes.open.search.query",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.search.query"
+      }
+    },
+    "/notes/v3/api/exports": {
+      "post": {
+        "summary": "Create an export job for pages, collections, or a workspace.",
+        "operationId": "exports.create",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted export job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "exports",
+        "x-sdkwork-permission": "notes.open.exports.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.export.create",
+        "x-sdkwork-idempotent": true
+      }
+    },
+    "/notes/v3/api/exports/{exportId}": {
+      "get": {
+        "summary": "Retrieve export job status.",
+        "operationId": "exports.retrieve",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ExportIdPath"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes.open",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "exports",
+        "x-sdkwork-permission": "notes.open.exports.read",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.export.retrieve"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "parameters": {
+      "WorkspaceIdQuery": {
+        "name": "workspace_id",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PageIdPath": {
+        "name": "pageId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "ExportIdPath": {
+        "name": "exportId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PageQuery": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "PageSizeQuery": {
+        "name": "page_size",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "default": 20
+        }
+      },
+      "SearchQuery": {
+        "name": "q",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "maxLength": 200
+        }
+      }
+    },
+    "responses": {
+      "ProblemDetailResponse": {
+        "description": "Problem detail error.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/ProblemDetail"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "FieldError": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "ProblemDetail": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "type",
+          "title",
+          "status"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri-reference"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 599
+          },
+          "detail": {
+            "type": "string"
+          },
+          "instance": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldError"
+            }
+          }
+        }
+      },
+      "PageInfo": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page",
+          "pageSize",
+          "hasMore"
+        ],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "nextCursor": {
+            "type": "string"
+          }
+        }
+      },
+      "Workspace": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "driveSpaceId",
+          "lifecycleStatus"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "driveSpaceId": {
+            "type": "string"
+          },
+          "lifecycleStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "WorkspacePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Workspace"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "PageSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workspaceId",
+          "title",
+          "driveNodeId",
+          "currentDriveVersionNo"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "snippet": {
+            "type": "string"
+          },
+          "driveNodeId": {
+            "type": "string"
+          },
+          "currentDriveVersionNo": {
+            "type": "string"
+          }
+        }
+      },
+      "Page": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PageSummary"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "driveSpaceId",
+              "driveUri",
+              "contentType",
+              "lifecycleStatus"
+            ],
+            "properties": {
+              "driveSpaceId": {
+                "type": "string"
+              },
+              "driveUri": {
+                "type": "string"
+              },
+              "currentDriveVersionId": {
+                "type": "string"
+              },
+              "contentType": {
+                "type": "string"
+              },
+              "lifecycleStatus": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "PageSummaryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PageSummary"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "PageContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pageId",
+          "driveNodeId",
+          "driveVersionNo",
+          "contentType",
+          "content"
+        ],
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "driveNodeId": {
+            "type": "string"
+          },
+          "driveVersionId": {
+            "type": "string"
+          },
+          "driveVersionNo": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "content": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "DriveVersionSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "driveVersionId",
+          "driveVersionNo",
+          "versionKind",
+          "createdAt"
+        ],
+        "properties": {
+          "driveVersionId": {
+            "type": "string"
+          },
+          "driveVersionNo": {
+            "type": "string"
+          },
+          "versionKind": {
+            "type": "string"
+          },
+          "versionLabel": {
+            "type": "string"
+          },
+          "changeSummary": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DriveVersionPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DriveVersionSummary"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "SearchResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page",
+          "sourceDriveVersionNo"
+        ],
+        "properties": {
+          "page": {
+            "$ref": "#/components/schemas/PageSummary"
+          },
+          "highlights": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourceDriveVersionId": {
+            "type": "string"
+          },
+          "sourceDriveVersionNo": {
+            "type": "string"
+          }
+        }
+      },
+      "SearchResultPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchResult"
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "ExportJob": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workspaceId",
+          "targetType",
+          "exportFormat",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "targetType": {
+            "type": "string"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "exportFormat": {
+            "type": "string"
+          },
+          "outputDriveNodeId": {
+            "type": "string"
+          },
+          "outputDriveUri": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatePageRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspaceId",
+          "title"
+        ],
+        "properties": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "parentPageId": {
+            "type": "string"
+          },
+          "initialContent": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "contentType": {
+            "type": "string",
+            "default": "application/vnd.sdkwork.notes.page+json"
+          }
+        }
+      },
+      "UpdatePageRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "favorite": {
+            "type": "boolean"
+          },
+          "expectedVersion": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdatePageContentRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "content",
+          "contentType"
+        ],
+        "properties": {
+          "content": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "contentSchemaVersion": {
+            "type": "string"
+          },
+          "changeSummary": {
+            "type": "string"
+          },
+          "expectedDriveVersionId": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateExportRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "workspaceId",
+          "targetType",
+          "exportFormat"
+        ],
+        "properties": {
+          "workspaceId": {
+            "type": "string"
+          },
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "page",
+              "collection",
+              "workspace"
+            ]
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "exportFormat": {
+            "type": "string",
+            "enum": [
+              "markdown",
+              "html",
+              "pdf",
+              "json"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

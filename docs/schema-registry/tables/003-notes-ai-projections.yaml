@@ -1,0 +1,211 @@
+module: notes
+owner: sdkwork-notes
+domain: content
+contract_version: 0.1.0
+description: Rebuildable projections and AI governance tables. Projection rows record source Drive versions.
+tables:
+  - table: notes_page_search_projection
+    profile: projection
+    system_of_record: false
+    write_owner: sdkwork-notes-indexer
+    description: Rebuildable full-text search document for a Drive-backed page version.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true }
+      - { name: drive_node_id, type: varchar(64), required: true }
+      - { name: source_drive_version_id, type: varchar(64), required: true }
+      - { name: source_drive_version_no, type: bigint, required: true }
+      - { name: title_snapshot, type: varchar(512), required: true }
+      - { name: plain_text, type: text, required: true }
+      - { name: snippet, type: text, nullable: true }
+      - { name: tags_snapshot, type: json, nullable: true }
+      - { name: object_types_snapshot, type: json, nullable: true }
+      - { name: property_values_snapshot, type: json, nullable: true }
+      - { name: language, type: varchar(32), nullable: true }
+      - { name: index_status, type: varchar(32), required: true, constraints: ["enum: [pending, indexed, failed]"] }
+      - { name: indexed_at, type: timestamp, nullable: true }
+      - { name: rebuild_version, type: bigint, required: true, default: 1 }
+    indexes:
+      - name: ix_notes_page_search_projection_status
+        columns: [tenant_id, organization_id, workspace_id, index_status, indexed_at]
+
+  - table: notes_page_outline_projection
+    profile: projection
+    system_of_record: false
+    write_owner: sdkwork-notes-indexer
+    description: Rebuildable outline and task summary projection.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true }
+      - { name: source_drive_version_id, type: varchar(64), required: true }
+      - { name: source_drive_version_no, type: bigint, required: true }
+      - { name: outline_json, type: json, required: true }
+      - { name: task_summary_json, type: json, nullable: true }
+      - { name: indexed_at, type: timestamp, nullable: true }
+      - { name: rebuild_version, type: bigint, required: true, default: 1 }
+
+  - table: notes_semantic_index_projection
+    profile: projection
+    system_of_record: false
+    write_owner: sdkwork-notes-indexer
+    description: Rebuildable semantic chunk reference. Vector payload may live in a shared vector service and be referenced by embedding_vector_ref.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true }
+      - { name: chunk_id, type: varchar(128), required: true }
+      - { name: source_drive_version_id, type: varchar(64), required: true }
+      - { name: source_drive_version_no, type: bigint, required: true }
+      - { name: chunk_text_hash, type: varchar(128), required: true }
+      - { name: chunk_text_preview, type: text, nullable: true }
+      - { name: embedding_provider, type: varchar(64), required: true }
+      - { name: embedding_model, type: varchar(128), required: true }
+      - { name: embedding_vector_ref, type: varchar(255), required: true }
+      - { name: permission_snapshot_hash, type: varchar(128), required: true }
+      - { name: index_status, type: varchar(32), required: true, constraints: ["enum: [pending, indexed, failed]"] }
+      - { name: indexed_at, type: timestamp, nullable: true }
+      - { name: rebuild_version, type: bigint, required: true, default: 1 }
+    indexes:
+      - name: ix_notes_semantic_index_page_version
+        columns: [tenant_id, organization_id, workspace_id, page_id, source_drive_version_no]
+      - name: ix_notes_semantic_index_status
+        columns: [tenant_id, organization_id, workspace_id, index_status, indexed_at]
+
+  - table: notes_page_insight_projection
+    profile: projection
+    system_of_record: false
+    write_owner: sdkwork-notes-ai-worker
+    description: Rebuildable AI insights for one page version.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true }
+      - { name: source_drive_version_id, type: varchar(64), required: true }
+      - { name: source_drive_version_no, type: bigint, required: true }
+      - { name: summary, type: text, nullable: true }
+      - { name: keywords, type: json, nullable: true }
+      - { name: action_items, type: json, nullable: true }
+      - { name: entities, type: json, nullable: true }
+      - { name: questions, type: json, nullable: true }
+      - { name: insight_status, type: varchar(32), required: true, constraints: ["enum: [pending, generated, failed]"] }
+      - { name: generated_by_job_id, type: varchar(64), nullable: true }
+      - { name: generated_at, type: timestamp, nullable: true }
+      - { name: rebuild_version, type: bigint, required: true, default: 1 }
+
+  - table: notes_ai_job
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: AI command/job ledger. AI edits must normally produce reviewable suggestions instead of silent mutations.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: job_type, type: varchar(32), required: true, constraints: ["enum: [summarize, rewrite, extract_tasks, answer, organize, generate]"] }
+      - { name: target_type, type: varchar(32), required: true, constraints: ["enum: [page, collection, workspace, selection]"] }
+      - { name: target_id, type: varchar(64), nullable: true }
+      - { name: prompt_snapshot, type: text, nullable: true }
+      - { name: context_policy_snapshot, type: json, required: true }
+      - { name: model_provider, type: varchar(64), nullable: true }
+      - { name: model_name, type: varchar(128), nullable: true }
+      - { name: status, type: varchar(32), required: true, constraints: ["enum: [queued, running, succeeded, failed, canceled]"] }
+      - { name: result_json, type: json, nullable: true }
+      - { name: error_code, type: varchar(64), nullable: true }
+      - { name: error_message, type: text, nullable: true }
+      - { name: idempotency_key, type: varchar(255), required: true }
+      - { name: request_payload_hash, type: varchar(128), required: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ux_notes_ai_job_idempotency
+        unique: true
+        columns: [tenant_id, organization_id, created_by, idempotency_key]
+      - name: ix_notes_ai_job_status
+        columns: [tenant_id, organization_id, workspace_id, status, created_at]
+
+  - table: notes_ai_job_source
+    profile: ledger_event
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Source/citation facts consumed by an AI job. Initial command creation records target page Drive version provenance; workers may append expanded retrieval sources later.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: job_id, type: varchar(64), required: true, references: notes_ai_job.id }
+      - { name: source_type, type: varchar(32), required: true, constraints: ["enum: [page, collection, workspace, uploaded_context]"] }
+      - { name: source_id, type: varchar(64), nullable: true }
+      - { name: drive_node_id, type: varchar(64), nullable: true }
+      - { name: drive_version_id, type: varchar(64), nullable: true }
+      - { name: drive_version_no, type: bigint, nullable: true }
+      - { name: excerpt_hash, type: varchar(128), nullable: true }
+      - { name: permission_snapshot_hash, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+
+  - table: notes_ai_suggestion
+    profile: tenant_entity
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: Reviewable AI suggestion ledger produced by completed AI jobs. Accepted suggestions are applied through normal page/property/link mutations and Drive-backed page content updates.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: page_id, type: varchar(64), required: true, references: notes_page.id }
+      - { name: ai_job_id, type: varchar(64), required: true, references: notes_ai_job.id }
+      - { name: suggestion_type, type: varchar(32), required: true, constraints: ["enum: [summary, rewrite, tag, property_update, link_create, task_create]"] }
+      - { name: status, type: varchar(32), required: true, constraints: ["enum: [proposed, accepted, applied, rejected, dismissed]"] }
+      - { name: source_drive_node_id, type: varchar(64), nullable: true }
+      - { name: source_drive_version_id, type: varchar(64), nullable: true }
+      - { name: source_drive_version_no, type: bigint, nullable: true }
+      - { name: payload_json, type: json, required: true }
+      - { name: lifecycle_status, type: varchar(32), required: true, constraints: ["enum: [active, deleted]"] }
+      - { name: version, type: bigint, required: true, constraints: ["min: 1"] }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: updated_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+      - { name: updated_at, type: timestamp, required: true }
+    indexes:
+      - name: ix_notes_ai_suggestion_page_status
+        columns: [tenant_id, organization_id, page_id, status, created_at]
+      - name: ix_notes_ai_suggestion_job
+        columns: [tenant_id, organization_id, ai_job_id, created_at]
+
+  - table: notes_ai_feedback
+    profile: ledger_event
+    system_of_record: true
+    write_owner: sdkwork-notes-product
+    description: User feedback ledger for AI suggestion quality loops. It records governance signals only and does not own Drive content, versions, model calls, or training export.
+    columns:
+      - { name: id, type: varchar(64), constraints: [primary_key] }
+      - { name: tenant_id, type: varchar(64), required: true }
+      - { name: organization_id, type: varchar(64), required: true, default: "0" }
+      - { name: workspace_id, type: varchar(64), required: true }
+      - { name: job_id, type: varchar(64), required: true, references: notes_ai_job.id }
+      - { name: suggestion_id, type: varchar(64), nullable: true, references: notes_ai_suggestion.id }
+      - { name: feedback_type, type: varchar(32), required: true, constraints: ["enum: [accepted, rejected, edited, helpful, not_helpful]"] }
+      - { name: feedback_text, type: text, nullable: true }
+      - { name: created_by, type: varchar(128), required: true }
+      - { name: created_at, type: timestamp, required: true }
+    indexes:
+      - name: ix_notes_ai_feedback_suggestion
+        columns: [tenant_id, organization_id, suggestion_id, created_at]
+      - name: ix_notes_ai_feedback_job
+        columns: [tenant_id, organization_id, job_id, created_at]
