@@ -53,7 +53,7 @@ function operation(operationId = 'pages.list') {
       200: { description: 'OK' }
     },
     'x-sdkwork-owner': 'sdkwork-notes',
-    'x-sdkwork-api-authority': 'sdkwork-notes.open'
+    'x-sdkwork-api-authority': 'sdkwork-notes-open-api'
   };
 }
 
@@ -528,6 +528,154 @@ test('rejects Backend API AiJob status without an enum matching implemented job 
   try {
     const result = await verifyNotesContractFoundation({ rootDir });
     assert.ok(result.findings.some((finding) => finding.code === 'OPENAPI_AI_JOB_STATUS_ENUM_MISMATCH'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects route manifests whose package, capability, authority, or component spec drift from SDKWork route rules', async () => {
+  const rootDir = await createFixture();
+  try {
+    await writeJson(
+      path.join(rootDir, 'sdks/_route-manifests/app-api/sdkwork-routes-pages-app-api.route-manifest.json'),
+      {
+        schemaVersion: 1,
+        kind: 'sdkwork.route.manifest',
+        packageName: 'sdkwork-routes-pages-app-api',
+        surface: 'app-api',
+        owner: 'sdkwork-notes',
+        domain: 'notes',
+        capability: 'notes',
+        apiAuthority: 'sdkwork-notes.app',
+        sdkFamily: 'sdkwork-notes-app-sdk',
+        prefix: '/app/v3/api',
+        source: {
+          crateRoot: 'packages/native-rust/routes/app-api/sdkwork-routes-pages-app-api',
+          crateImport: 'sdkwork_routes_pages_app_api'
+        },
+        routes: [
+          {
+            method: 'GET',
+            path: '/app/v3/api/notes/pages',
+            operationId: 'pages.list',
+            tags: ['notes'],
+            auth: { mode: 'dual-token', required: true },
+            handler: {
+              module: 'sdkwork_routes_pages_app_api::handlers',
+              name: 'list_pages'
+            },
+            schemas: {
+              request: null,
+              response: 'PageSummaryPage',
+              problem: 'ProblemDetail'
+            },
+            ownership: {
+              owner: 'sdkwork-notes',
+              apiAuthority: 'sdkwork-notes.app'
+            }
+          }
+        ]
+      }
+    );
+
+    await writeJson(
+      path.join(rootDir, 'packages/native-rust/routes/app-api/sdkwork-routes-pages-app-api/specs/component.spec.json'),
+      {
+        schemaVersion: 1,
+        kind: 'sdkwork.component.spec',
+        component: {
+          name: 'sdkwork-routes-pages-app-api',
+          domain: 'notes',
+          capability: 'pages',
+          surface: 'app-api'
+        },
+        contracts: {
+          apiAuthority: {
+            name: 'sdkwork-notes.app',
+            prefix: '/app/v3/api/notes'
+          },
+          routeManifest: '../../../../../../sdks/_route-manifests/app-api/sdkwork-routes-pages-app-api.route-manifest.json',
+          sdkDependencies: [],
+          dependencyApiExports: [],
+          dependencyApiSurfaces: []
+        }
+      }
+    );
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'ROUTE_MANIFEST_METADATA_MISMATCH'));
+    assert.ok(result.findings.some((finding) => finding.code === 'ROUTE_COMPONENT_SPEC_MISMATCH'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects SDK family metadata that declares a historical authority alias as the primary authority name', async () => {
+  const rootDir = await createFixture();
+  try {
+    await writeJson(
+      path.join(rootDir, 'sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json'),
+      {
+        workspace: 'sdkwork-notes-app-sdk',
+        sdkOwner: 'sdkwork-notes',
+        sdkFamily: 'sdkwork-notes-app-sdk',
+        apiAuthority: 'sdkwork-notes.app',
+        generationInputSpec: '../../generated/openapi/notes-app-api.openapi.json',
+        sdkDependencies: [
+          {
+            workspace: 'sdkwork-drive-app-sdk',
+            generatedTransportImportPolicy: 'forbidden'
+          }
+        ],
+        dependencyApiExports: []
+      }
+    );
+    await writeJson(
+      path.join(rootDir, 'sdks/sdkwork-notes-app-sdk/sdk-manifest.json'),
+      {
+        sdkName: 'sdkwork-notes-app-sdk',
+        sdkOwner: 'sdkwork-notes',
+        sdkFamily: 'sdkwork-notes-app-sdk',
+        apiAuthority: 'sdkwork-notes.app',
+        generationInputSpec: '../../generated/openapi/notes-app-api.openapi.json',
+        sdkDependencies: [
+          {
+            workspace: 'sdkwork-drive-app-sdk',
+            generatedTransportImportPolicy: 'forbidden'
+          }
+        ],
+        dependencyApiExports: []
+      }
+    );
+    await writeJson(
+      path.join(rootDir, 'sdks/sdkwork-notes-app-sdk/specs/component.spec.json'),
+      {
+        schemaVersion: 1,
+        kind: 'sdkwork.component.spec',
+        component: {
+          name: 'sdkwork-notes-app-sdk',
+          domain: 'notes',
+          capability: 'notes'
+        },
+        contracts: {
+          apiAuthority: {
+            name: 'sdkwork-notes.app',
+            prefix: '/app/v3/api'
+          },
+          sdkDependencies: [
+            {
+              workspace: 'sdkwork-drive-app-sdk',
+              generatedTransportImportPolicy: 'forbidden'
+            }
+          ],
+          dependencyApiExports: [],
+          dependencyApiSurfaces: []
+        }
+      }
+    );
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'SDK_AUTHORITY_NAME_MISMATCH'));
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }
