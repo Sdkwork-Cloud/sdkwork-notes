@@ -34,6 +34,15 @@ CREATE INDEX IF NOT EXISTS ix_notes_workspace_owner
         lifecycle_status
     );
 
+CREATE INDEX IF NOT EXISTS ix_notes_workspace_recent
+    ON notes_workspace (
+        tenant_id,
+        organization_id,
+        lifecycle_status,
+        updated_at,
+        id
+    );
+
 CREATE TABLE IF NOT EXISTS notes_page (
     id TEXT PRIMARY KEY,
     tenant_id TEXT NOT NULL,
@@ -46,8 +55,8 @@ CREATE TABLE IF NOT EXISTS notes_page (
     drive_space_id TEXT NOT NULL,
     drive_node_id TEXT NOT NULL,
     drive_uri TEXT NOT NULL,
-    current_drive_version_id TEXT,
-    current_drive_version_no INTEGER,
+    current_drive_version_id TEXT NOT NULL,
+    current_drive_version_no INTEGER NOT NULL,
     content_type TEXT NOT NULL,
     content_schema_version TEXT NOT NULL DEFAULT '1',
     content_hash TEXT,
@@ -72,7 +81,7 @@ CREATE TABLE IF NOT EXISTS notes_page (
     CHECK (length(trim(title)) BETWEEN 1 AND 512),
     CHECK (page_kind IN ('doc', 'article', 'code', 'log', 'database', 'canvas')),
     CHECK (drive_uri = 'drive://spaces/' || drive_space_id || '/nodes/' || drive_node_id),
-    CHECK (current_drive_version_no IS NULL OR current_drive_version_no >= 1),
+    CHECK (current_drive_version_no >= 1),
     CHECK (favorite IN (0, 1)),
     CHECK (archive_status IN ('active', 'archived')),
     CHECK (publish_status IN ('private', 'published', 'unlisted')),
@@ -115,6 +124,48 @@ CREATE INDEX IF NOT EXISTS ix_notes_page_parent
         lifecycle_status,
         updated_at,
         id
+    );
+
+CREATE TABLE IF NOT EXISTS notes_page_search_projection (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    organization_id TEXT NOT NULL DEFAULT '0',
+    workspace_id TEXT NOT NULL,
+    page_id TEXT NOT NULL,
+    drive_node_id TEXT NOT NULL,
+    source_drive_version_id TEXT NOT NULL,
+    source_drive_version_no INTEGER NOT NULL,
+    title_snapshot TEXT NOT NULL,
+    plain_text TEXT NOT NULL,
+    snippet TEXT,
+    tags_snapshot TEXT,
+    object_types_snapshot TEXT,
+    property_values_snapshot TEXT,
+    language TEXT,
+    index_status TEXT NOT NULL DEFAULT 'pending',
+    indexed_at TEXT,
+    rebuild_version INTEGER NOT NULL DEFAULT 1,
+    FOREIGN KEY (page_id) REFERENCES notes_page(id) ON DELETE CASCADE,
+    CHECK (source_drive_version_no >= 1),
+    CHECK (index_status IN ('pending', 'indexed', 'failed')),
+    CHECK (rebuild_version >= 1)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_notes_page_search_projection_page_version
+    ON notes_page_search_projection (
+        tenant_id,
+        organization_id,
+        page_id,
+        source_drive_version_id
+    );
+
+CREATE INDEX IF NOT EXISTS ix_notes_page_search_projection_status
+    ON notes_page_search_projection (
+        tenant_id,
+        organization_id,
+        workspace_id,
+        index_status,
+        indexed_at
     );
 
 CREATE TABLE IF NOT EXISTS notes_ai_job (

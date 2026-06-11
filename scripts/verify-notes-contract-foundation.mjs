@@ -78,6 +78,11 @@ const REQUIRED_PAGE_DRIVE_FIELDS = [
   'current_drive_version_no'
 ];
 
+const REQUIRED_PAGE_CURRENT_DRIVE_VERSION_FIELDS = [
+  'current_drive_version_id',
+  'current_drive_version_no'
+];
+
 const REQUIRED_AI_SOURCE_DRIVE_VERSION_FIELDS = [
   'source_drive_version_id',
   'source_drive_version_no',
@@ -91,6 +96,14 @@ const REQUIRED_AI_JOB_STATUS_VALUES = [
   'succeeded',
   'failed',
   'canceled'
+];
+
+const REQUIRED_AI_SUGGESTION_STATUS_VALUES = [
+  'proposed',
+  'accepted',
+  'applied',
+  'rejected',
+  'dismissed'
 ];
 
 const APP_BODY_SCHEMA_REQUIREMENTS = [
@@ -160,6 +173,16 @@ const APP_BODY_SCHEMA_REQUIREMENTS = [
     required: ['tenantId', 'organizationId', 'operatorId', 'content']
   },
   {
+    schemaName: 'RestorePageVersionRequest',
+    properties: [
+      'tenantId',
+      'organizationId',
+      'operatorId',
+      'expectedCurrentDriveVersionId'
+    ],
+    required: ['tenantId', 'organizationId', 'operatorId']
+  },
+  {
     schemaName: 'CreateAiJobRequest',
     properties: [
       'tenantId',
@@ -207,6 +230,61 @@ const APP_BODY_SCHEMA_REQUIREMENTS = [
       'feedbackText'
     ],
     required: ['tenantId', 'organizationId', 'operatorId', 'feedbackType']
+  }
+];
+
+const TEMPORARY_CONTEXT_BODY_PROPERTIES = new Set([
+  'tenantId',
+  'organizationId',
+  'operatorId'
+]);
+
+const OPEN_BODY_SCHEMA_REQUIREMENTS = [
+  {
+    schemaName: 'CreatePageRequest',
+    properties: [
+      'workspaceId',
+      'title',
+      'parentPageId',
+      'initialContent',
+      'contentType',
+      'contentSchemaVersion'
+    ],
+    required: ['workspaceId', 'title']
+  },
+  {
+    schemaName: 'UpdatePageContentRequest',
+    properties: [
+      'content',
+      'contentType',
+      'contentSchemaVersion',
+      'changeSummary',
+      'expectedDriveVersionId'
+    ],
+    required: ['content']
+  }
+];
+
+const PAGE_CONTENT_METADATA_FIELD_CONSTRAINTS = [
+  {
+    schemaName: 'CreatePageRequest',
+    propertyName: 'contentType',
+    maxLength: 255
+  },
+  {
+    schemaName: 'CreatePageRequest',
+    propertyName: 'contentSchemaVersion',
+    maxLength: 32
+  },
+  {
+    schemaName: 'UpdatePageContentRequest',
+    propertyName: 'contentType',
+    maxLength: 255
+  },
+  {
+    schemaName: 'UpdatePageContentRequest',
+    propertyName: 'contentSchemaVersion',
+    maxLength: 32
   }
 ];
 
@@ -533,21 +611,57 @@ function schemaProperties(openapi, schema, visited = new Set()) {
   return properties;
 }
 
+function schemaRequiredProperties(openapi, schema, visited = new Set()) {
+  if (!schema || typeof schema !== 'object') {
+    return new Set();
+  }
+
+  if (typeof schema.$ref === 'string') {
+    const refName = schema.$ref.match(/^#\/components\/schemas\/(.+)$/)?.[1];
+    if (!refName || visited.has(refName)) {
+      return new Set();
+    }
+    visited.add(refName);
+    return schemaRequiredProperties(openapi, openapi.components?.schemas?.[refName], visited);
+  }
+
+  const required = new Set(Array.isArray(schema.required) ? schema.required : []);
+  for (const child of schema.allOf ?? []) {
+    for (const propertyName of schemaRequiredProperties(openapi, child, visited)) {
+      required.add(propertyName);
+    }
+  }
+  return required;
+}
+
 function missingSchemaProperties(openapi, schemaName, requiredProperties) {
   const properties = schemaProperties(openapi, openapi.components?.schemas?.[schemaName]);
   return requiredProperties.filter((propertyName) => !properties.has(propertyName));
 }
 
+function missingRequiredSchemaProperties(openapi, schemaName, requiredProperties) {
+  const properties = schemaRequiredProperties(openapi, openapi.components?.schemas?.[schemaName]);
+  return requiredProperties.filter((propertyName) => !properties.has(propertyName));
+}
+
 function verifyOpenApiSchemaProperties({ findings, file, openapi, schemaName, requiredProperties, code }) {
   const missing = missingSchemaProperties(openapi, schemaName, requiredProperties);
-  if (missing.length === 0) {
+  const missingRequired = missingRequiredSchemaProperties(openapi, schemaName, requiredProperties);
+  if (missing.length === 0 && missingRequired.length === 0) {
     return;
+  }
+  const details = [];
+  if (missing.length > 0) {
+    details.push(`missing properties ${missing.join(', ')}`);
+  }
+  if (missingRequired.length > 0) {
+    details.push(`not required ${missingRequired.join(', ')}`);
   }
   pushFinding(
     findings,
     code,
     file,
-    `${schemaName} must expose Drive version reference properties: ${missing.join(', ')}.`
+    `${schemaName} must expose and require Drive version reference properties: ${details.join('; ')}.`
   );
 }
 
@@ -585,9 +699,69 @@ function verifySchemaStringEnum({ findings, file, openapi, schemaName, propertyN
   );
 }
 
+function schemaRegistryColumnLine(text, columnName) {
+  const escaped = columnName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const linePattern = new RegExp(`^\\s*-\\s*(?:\\{\\s*)?name:\\s*${escaped}(?:\\s|,|\\}|$).*`, 'm');
+  return text.match(linePattern)?.[0] ?? null;
+}
+
+function verifySchemaRegistryRequiredColumns({ findings, file, text, tableName, columnNames, code }) {
+  for (const columnName of columnNames) {
+    const line = schemaRegistryColumnLine(text, columnName);
+    if (!line) {
+      continue;
+    }
+
+    const marksRequired = /\brequired:\s*true\b/.test(line);
+    const marksNullable = /\bnullable:\s*true\b/.test(line);
+    if (marksRequired && !marksNullable) {
+      continue;
+    }
+
+    const details = [];
+    if (!marksRequired) {
+      details.push('required: true');
+    }
+    if (marksNullable) {
+      details.push('not nullable: true');
+    }
+    pushFinding(
+      findings,
+      code,
+      file,
+      `${tableName}.${columnName} must be non-null because Notes pages are always backed by a current Drive file version (${details.join(', ')}).`
+    );
+  }
+}
+
 function requiredSchemaProperties(openapi, schemaName) {
-  const schema = openapi.components?.schemas?.[schemaName];
-  return new Set(Array.isArray(schema?.required) ? schema.required : []);
+  return schemaRequiredProperties(openapi, openapi.components?.schemas?.[schemaName]);
+}
+
+function schemaProperty(openapi, schemaName, propertyName) {
+  return openapi.components?.schemas?.[schemaName]?.properties?.[propertyName] ?? null;
+}
+
+function verifySchemaPropertyMaxLength({
+  findings,
+  file,
+  openapi,
+  schemaName,
+  propertyName,
+  maxLength,
+  code
+}) {
+  const property = schemaProperty(openapi, schemaName, propertyName);
+  if (property?.maxLength === maxLength) {
+    return;
+  }
+
+  pushFinding(
+    findings,
+    code,
+    file,
+    `${schemaName}.${propertyName} maxLength must be ${maxLength} to match service validation and Notes DB constraints.`
+  );
 }
 
 function resolveOpenApiParameter(openapi, parameter) {
@@ -682,9 +856,14 @@ async function verifyAppApiImplementedBodyContracts(rootDir, findings) {
       requirement.properties
     );
     if (missingProperties.length > 0) {
+      const code = missingProperties.every((propertyName) =>
+        TEMPORARY_CONTEXT_BODY_PROPERTIES.has(propertyName)
+      )
+        ? 'APP_BODY_CONTEXT_CONTRACT_MISSING'
+        : 'APP_BODY_CONTRACT_MISSING';
       pushFinding(
         findings,
-        'APP_BODY_CONTEXT_CONTRACT_MISSING',
+        code,
         file,
         `${requirement.schemaName} must expose fields required by the implemented App API DTO: ${missingProperties.join(', ')}.`
       );
@@ -713,6 +892,74 @@ async function verifyAppApiImplementedBodyContracts(rootDir, findings) {
         `${requirement.schemaName} must not require fields that the implemented App API DTO accepts as optional/defaulted: ${unexpectedRequired.join(', ')}.`
       );
     }
+  }
+
+  for (const constraint of PAGE_CONTENT_METADATA_FIELD_CONSTRAINTS) {
+    verifySchemaPropertyMaxLength({
+      findings,
+      file,
+      openapi,
+      ...constraint,
+      code: 'APP_BODY_FIELD_CONSTRAINT_MISMATCH'
+    });
+  }
+}
+
+async function verifyOpenApiImplementedBodyContracts(rootDir, findings) {
+  const file = 'generated/openapi/notes-open-api.openapi.json';
+  if (!(await pathExists(path.join(rootDir, file)))) {
+    return;
+  }
+
+  const openapi = await readJson(rootDir, file);
+  for (const requirement of OPEN_BODY_SCHEMA_REQUIREMENTS) {
+    const missingProperties = missingSchemaProperties(
+      openapi,
+      requirement.schemaName,
+      requirement.properties
+    );
+    if (missingProperties.length > 0) {
+      pushFinding(
+        findings,
+        'OPEN_BODY_CONTRACT_MISSING',
+        file,
+        `${requirement.schemaName} must expose fields required by the implemented Open API semantics: ${missingProperties.join(', ')}.`
+      );
+    }
+
+    const requiredProperties = requiredSchemaProperties(openapi, requirement.schemaName);
+    const missingRequired = requirement.required.filter(
+      (propertyName) => !requiredProperties.has(propertyName)
+    );
+    if (missingRequired.length > 0) {
+      pushFinding(
+        findings,
+        'OPEN_BODY_CONTRACT_MISSING',
+        file,
+        `${requirement.schemaName} must require fields needed by the implemented Open API semantics: ${missingRequired.join(', ')}.`
+      );
+    }
+
+    const unexpectedRequired = [...requiredProperties]
+      .filter((propertyName) => !requirement.required.includes(propertyName));
+    if (unexpectedRequired.length > 0) {
+      pushFinding(
+        findings,
+        'OPEN_BODY_REQUIRED_CONTRACT_MISMATCH',
+        file,
+        `${requirement.schemaName} must not require fields that the implemented Open API semantics accept as optional/defaulted: ${unexpectedRequired.join(', ')}.`
+      );
+    }
+  }
+
+  for (const constraint of PAGE_CONTENT_METADATA_FIELD_CONSTRAINTS) {
+    verifySchemaPropertyMaxLength({
+      findings,
+      file,
+      openapi,
+      ...constraint,
+      code: 'OPEN_BODY_FIELD_CONSTRAINT_MISMATCH'
+    });
   }
 }
 
@@ -786,6 +1033,15 @@ async function verifyImplementedSchemaValueContracts(rootDir, findings) {
       propertyName: 'status',
       expectedValues: REQUIRED_AI_JOB_STATUS_VALUES,
       code: 'OPENAPI_AI_JOB_STATUS_ENUM_MISMATCH'
+    });
+    verifySchemaStringEnum({
+      findings,
+      file,
+      openapi,
+      schemaName: 'AiSuggestion',
+      propertyName: 'status',
+      expectedValues: REQUIRED_AI_SUGGESTION_STATUS_VALUES,
+      code: 'OPENAPI_AI_SUGGESTION_STATUS_ENUM_MISMATCH'
     });
   }
 }
@@ -1296,6 +1552,14 @@ async function verifyDriveVersionReferenceContracts(rootDir, findings) {
       `notes_page must persist Drive content/version references: ${missingPageFields.join(', ')}.`
     );
   }
+  verifySchemaRegistryRequiredColumns({
+    findings,
+    file: NOTES_CORE_SCHEMA,
+    text: coreText,
+    tableName: 'notes_page',
+    columnNames: REQUIRED_PAGE_CURRENT_DRIVE_VERSION_FIELDS,
+    code: 'NOTES_PAGE_DRIVE_VERSION_FIELDS_NULLABLE'
+  });
 
   const aiProjectionText = await pathExists(path.join(rootDir, NOTES_AI_PROJECTIONS_SCHEMA))
     ? await readText(rootDir, NOTES_AI_PROJECTIONS_SCHEMA)
@@ -1328,7 +1592,7 @@ async function verifyDriveVersionReferenceContracts(rootDir, findings) {
       file: authority.file,
       openapi,
       schemaName: 'Page',
-      requiredProperties: ['driveSpaceId', 'driveUri', 'currentDriveVersionId'],
+      requiredProperties: ['driveSpaceId', 'driveUri', 'currentDriveVersionId', 'contentSchemaVersion'],
       code: 'OPENAPI_PAGE_DRIVE_VERSION_FIELDS_MISSING'
     });
     verifyOpenApiSchemaProperties({
@@ -1336,7 +1600,15 @@ async function verifyDriveVersionReferenceContracts(rootDir, findings) {
       file: authority.file,
       openapi,
       schemaName: 'PageContent',
-      requiredProperties: ['driveNodeId', 'driveVersionId', 'driveVersionNo'],
+      requiredProperties: [
+        'pageId',
+        'driveNodeId',
+        'driveVersionId',
+        'driveVersionNo',
+        'contentType',
+        'contentSchemaVersion',
+        'content'
+      ],
       code: 'OPENAPI_PAGE_CONTENT_DRIVE_VERSION_FIELDS_MISSING'
     });
     verifyOpenApiSchemaProperties({
@@ -1493,6 +1765,7 @@ export async function verifyNotesContractFoundation({ rootDir = process.cwd() } 
   await verifyRouteComponentSpecMetadata(rootDir, findings);
   await verifyAppApiImplementedHeaderContracts(rootDir, findings);
   await verifyAppApiImplementedBodyContracts(rootDir, findings);
+  await verifyOpenApiImplementedBodyContracts(rootDir, findings);
   await verifyImplementedQueryContextContracts(rootDir, findings);
   await verifyImplementedSchemaValueContracts(rootDir, findings);
   await verifyDriveVersionReferenceContracts(rootDir, findings);

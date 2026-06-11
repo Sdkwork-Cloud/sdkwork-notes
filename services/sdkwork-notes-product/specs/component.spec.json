@@ -79,7 +79,7 @@
     "configKeys": []
   },
   "integration": {
-    "driveBoundary": "Page content read/write operations depend on DrivePageContentPort. Notes stores only drive_space_id, drive_node_id, drive_uri, current_drive_version_id, and current_drive_version_no.",
+    "driveBoundary": "Page content read/write, version list, and version restore operations depend on DrivePageContentPort. Notes stores only drive_space_id, drive_node_id, drive_uri, current_drive_version_id, and current_drive_version_no.",
     "persistenceBoundary": "Phase 1 owns notes_workspace and notes_page only. Drive owns file, folder, object, upload, and version lifecycle."
   },
   "verification": {

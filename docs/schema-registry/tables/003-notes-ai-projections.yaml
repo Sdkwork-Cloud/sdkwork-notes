@@ -29,6 +29,9 @@ tables:
       - { name: indexed_at, type: timestamp, nullable: true }
       - { name: rebuild_version, type: bigint, required: true, default: 1 }
     indexes:
+      - name: ux_notes_page_search_projection_page_version
+        unique: true
+        columns: [tenant_id, organization_id, page_id, source_drive_version_id]
       - name: ix_notes_page_search_projection_status
         columns: [tenant_id, organization_id, workspace_id, index_status, indexed_at]
 

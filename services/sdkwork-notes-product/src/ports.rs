@@ -29,6 +29,8 @@ pub trait NotesRepository: Clone + Send + Sync + 'static {
 
     async fn insert_page(&self, page: NewPage) -> Result<Page, NotesProductError>;
 
+    async fn page_id_is_reserved(&self, page_id: &str) -> Result<bool, NotesProductError>;
+
     async fn find_page(
         &self,
         context: &NotesActorContext,
@@ -65,6 +67,7 @@ pub trait NotesRepository: Clone + Send + Sync + 'static {
         context: &NotesActorContext,
         page_id: &str,
         patch: &PageMetadataPatch,
+        expected_version: Option<i64>,
     ) -> Result<Page, NotesProductError>;
 
     async fn update_page_drive_snapshot(
@@ -72,6 +75,7 @@ pub trait NotesRepository: Clone + Send + Sync + 'static {
         context: &NotesActorContext,
         page_id: &str,
         snapshot: &DrivePageContentSnapshot,
+        expected_current_drive_version_id: &str,
     ) -> Result<Page, NotesProductError>;
 
     async fn find_ai_job_by_idempotency_key(
@@ -146,6 +150,9 @@ pub trait NotesRepository: Clone + Send + Sync + 'static {
         &self,
         context: &NotesActorContext,
         ai_suggestion_id: &str,
+        page_id: &str,
+        snapshot: &DrivePageContentSnapshot,
+        expected_current_drive_version_id: &str,
     ) -> Result<AiSuggestion, NotesProductError>;
 
     async fn find_ai_feedback(
@@ -185,6 +192,11 @@ pub trait DrivePageContentPort: Clone + Send + Sync + 'static {
         command: ReadDrivePageContentCommand,
     ) -> Result<DrivePageContentSnapshot, NotesProductError>;
 
+    async fn restore_page_content_version(
+        &self,
+        command: RestoreDrivePageContentVersionCommand,
+    ) -> Result<DrivePageContentSnapshot, NotesProductError>;
+
     async fn list_page_content_versions(
         &self,
         command: ListDrivePageContentVersionsCommand,
@@ -218,7 +230,7 @@ pub struct UpdateDrivePageContentCommand {
     pub drive_space_id: String,
     pub drive_node_id: String,
     pub drive_uri: String,
-    pub current_drive_version_id: Option<String>,
+    pub current_drive_version_id: String,
     pub content: Value,
     pub content_type: String,
     pub content_schema_version: String,
@@ -235,7 +247,21 @@ pub struct ReadDrivePageContentCommand {
     pub drive_space_id: String,
     pub drive_node_id: String,
     pub drive_uri: String,
-    pub current_drive_version_id: Option<String>,
+    pub current_drive_version_id: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct RestoreDrivePageContentVersionCommand {
+    pub tenant_id: String,
+    pub organization_id: String,
+    pub operator_id: String,
+    pub page_id: String,
+    pub drive_space_id: String,
+    pub drive_node_id: String,
+    pub drive_uri: String,
+    pub current_drive_version_id: String,
+    pub drive_version_id: String,
+    pub expected_current_drive_version_id: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -246,7 +272,7 @@ pub struct ListDrivePageContentVersionsCommand {
     pub drive_space_id: String,
     pub drive_node_id: String,
     pub drive_uri: String,
-    pub current_drive_version_id: Option<String>,
+    pub current_drive_version_id: String,
     pub page: i64,
     pub page_size: i64,
 }

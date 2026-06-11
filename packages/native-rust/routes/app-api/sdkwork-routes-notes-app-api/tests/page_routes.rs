@@ -10,7 +10,8 @@ use sdkwork_notes_product::infrastructure::sql::install_sqlite_schema;
 use sdkwork_notes_product::infrastructure::sql::notes_store::SqlNotesStore;
 use sdkwork_notes_product::ports::{
     CreateDrivePageContentCommand, DrivePageContentPort, ListDrivePageContentVersionsCommand,
-    ReadDrivePageContentCommand, UpdateDrivePageContentCommand,
+    ReadDrivePageContentCommand, RestoreDrivePageContentVersionCommand,
+    UpdateDrivePageContentCommand,
 };
 use sdkwork_notes_product::service::NotesService;
 use sdkwork_routes_notes_app_api::routes::build_router;
@@ -217,6 +218,26 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     assert_eq!(page_list_payload["items"].as_array().map(Vec::len), Some(1));
     assert_eq!(page_list_payload["items"][0]["id"], "page-002");
 
+    let oversized_page_query_uri = format!(
+        "/app/v3/api/notes/workspaces/workspace-001/pages?tenantId=tenant-001&organizationId=org-001&page=1&page_size=20&q={}",
+        "x".repeat(201)
+    );
+    let oversized_page_query_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(oversized_page_query_uri)
+                .body(Body::empty())
+                .expect("oversized page query request should be built"),
+        )
+        .await
+        .expect("oversized page query request should be handled");
+    assert_eq!(
+        oversized_page_query_response.status(),
+        StatusCode::BAD_REQUEST
+    );
+
     let metadata_update_response = app
         .clone()
         .oneshot(json_request(
@@ -334,6 +355,29 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     );
     assert_eq!(versions_payload["pageInfo"]["page"], 1);
 
+    let restore_response = app
+        .clone()
+        .oneshot(json_request(
+            Method::POST,
+            "/app/v3/api/notes/pages/page-001/versions/drive-version-page-001-v1/restore",
+            json!({
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "expectedCurrentDriveVersionId": "drive-version-page-001-v2"
+            }),
+        ))
+        .await
+        .expect("restore page version request should be handled");
+    assert_eq!(restore_response.status(), StatusCode::OK);
+    let restore_payload = read_json(restore_response).await;
+    assert_eq!(
+        restore_payload["driveVersionId"].as_str(),
+        Some("drive-version-page-001-v3")
+    );
+    assert_eq!(restore_payload["driveVersionNo"].as_str(), Some("3"));
+    assert_eq!(restore_payload["content"]["blocks"][0]["text"], "hello");
+
     let search_response = app
         .clone()
         .oneshot(
@@ -352,13 +396,33 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     assert_eq!(search_payload["items"][0]["page"]["id"], "page-001");
     assert_eq!(
         search_payload["items"][0]["sourceDriveVersionNo"].as_str(),
-        Some("2")
+        Some("3")
     );
     assert_eq!(
         search_payload["items"][0]["sourceDriveVersionId"].as_str(),
-        Some("drive-version-page-001-v2")
+        Some("drive-version-page-001-v3")
     );
     assert_eq!(search_payload["items"][0]["highlights"][0], "Roadmap v2");
+
+    let oversized_search_query_uri = format!(
+        "/app/v3/api/notes/search?tenantId=tenant-001&organizationId=org-001&workspace_id=workspace-001&q={}&page=1&page_size=20",
+        "x".repeat(201)
+    );
+    let oversized_search_query_response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(oversized_search_query_uri)
+                .body(Body::empty())
+                .expect("oversized search query request should be built"),
+        )
+        .await
+        .expect("oversized search query request should be handled");
+    assert_eq!(
+        oversized_search_query_response.status(),
+        StatusCode::BAD_REQUEST
+    );
 
     let ai_job_response = app
         .clone()
@@ -439,6 +503,117 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("forbidden route request should be handled");
     assert_eq!(forbidden_route_response.status(), StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn app_api_routes_update_content_preserves_existing_content_metadata_when_omitted() {
+    sqlx::any::install_default_drivers();
+    let pool = AnyPoolOptions::new()
+        .max_connections(1)
+        .connect("sqlite::memory:")
+        .await
+        .expect("sqlite in-memory pool should be created");
+    install_sqlite_schema(&pool)
+        .await
+        .expect("notes sqlite schema should install");
+
+    let service = NotesService::new(
+        SqlNotesStore::new(pool),
+        FakeDrivePageContentPort::default(),
+    );
+    let app = build_router(service);
+
+    let workspace_response = app
+        .clone()
+        .oneshot(json_request(
+            Method::POST,
+            "/app/v3/api/notes/workspaces",
+            json!({
+                "id": "workspace-custom-metadata",
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "ownerSubjectType": "user",
+                "ownerSubjectId": "user-001",
+                "name": "Canvas Lab",
+                "driveSpaceId": "drive-space-custom-metadata"
+            }),
+        ))
+        .await
+        .expect("workspace request should be handled");
+    assert_eq!(workspace_response.status(), StatusCode::CREATED);
+
+    let create_page_response = app
+        .clone()
+        .oneshot(json_request(
+            Method::POST,
+            "/app/v3/api/notes/workspaces/workspace-custom-metadata/pages",
+            json!({
+                "id": "page-canvas-001",
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "title": "Canvas",
+                "initialContent": { "nodes": [{ "id": "node-1", "type": "text" }] },
+                "contentType": "application/vnd.sdkwork.notes.canvas+json",
+                "contentSchemaVersion": "2"
+            }),
+        ))
+        .await
+        .expect("create page request should be handled");
+    assert_eq!(create_page_response.status(), StatusCode::CREATED);
+    let create_page_payload = read_json(create_page_response).await;
+    assert_eq!(
+        create_page_payload["contentType"].as_str(),
+        Some("application/vnd.sdkwork.notes.canvas+json")
+    );
+    assert_eq!(
+        create_page_payload["contentSchemaVersion"].as_str(),
+        Some("2")
+    );
+
+    let update_response = app
+        .clone()
+        .oneshot(json_request(
+            Method::PUT,
+            "/app/v3/api/notes/pages/page-canvas-001/content",
+            json!({
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "content": { "nodes": [{ "id": "node-1", "type": "text", "text": "updated" }] },
+                "expectedDriveVersionId": "drive-version-page-canvas-001-v1"
+            }),
+        ))
+        .await
+        .expect("update content request should be handled");
+    assert_eq!(update_response.status(), StatusCode::OK);
+    let update_payload = read_json(update_response).await;
+    assert_eq!(
+        update_payload["contentType"].as_str(),
+        Some("application/vnd.sdkwork.notes.canvas+json")
+    );
+    assert_eq!(update_payload["contentSchemaVersion"].as_str(), Some("2"));
+
+    let page_response = app
+        .oneshot(
+            Request::builder()
+                .method(Method::GET)
+                .uri(
+                    "/app/v3/api/notes/pages/page-canvas-001?tenantId=tenant-001&organizationId=org-001",
+                )
+                .body(Body::empty())
+                .expect("page request should be built"),
+        )
+        .await
+        .expect("page request should be handled");
+    assert_eq!(page_response.status(), StatusCode::OK);
+    let page_payload = read_json(page_response).await;
+    assert_eq!(
+        page_payload["contentType"].as_str(),
+        Some("application/vnd.sdkwork.notes.canvas+json")
+    );
+    assert_eq!(page_payload["contentSchemaVersion"].as_str(), Some("2"));
 }
 
 #[tokio::test]
@@ -990,6 +1165,7 @@ async fn read_json(response: axum::response::Response) -> serde_json::Value {
 #[derive(Clone, Default)]
 struct FakeDrivePageContentPort {
     records: Arc<Mutex<BTreeMap<String, DrivePageContentSnapshot>>>,
+    versions: Arc<Mutex<BTreeMap<String, Vec<DrivePageContentSnapshot>>>>,
 }
 
 #[async_trait]
@@ -1018,7 +1194,13 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
         self.records
             .lock()
             .await
-            .insert(command.page_id, snapshot.clone());
+            .insert(command.page_id.clone(), snapshot.clone());
+        self.versions
+            .lock()
+            .await
+            .entry(command.page_id)
+            .or_default()
+            .push(snapshot.clone());
         Ok(snapshot)
     }
 
@@ -1043,7 +1225,13 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
         self.records
             .lock()
             .await
-            .insert(command.page_id, snapshot.clone());
+            .insert(command.page_id.clone(), snapshot.clone());
+        self.versions
+            .lock()
+            .await
+            .entry(command.page_id)
+            .or_default()
+            .push(snapshot.clone());
         Ok(snapshot)
     }
 
@@ -1061,6 +1249,55 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
                     "page content not found".to_string(),
                 )
             })
+    }
+
+    async fn restore_page_content_version(
+        &self,
+        command: RestoreDrivePageContentVersionCommand,
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+        let source = self
+            .versions
+            .lock()
+            .await
+            .get(&command.page_id)
+            .and_then(|versions| {
+                versions
+                    .iter()
+                    .find(|snapshot| snapshot.drive_version_id == command.drive_version_id)
+                    .cloned()
+            })
+            .ok_or_else(|| {
+                sdkwork_notes_product::error::NotesProductError::NotFound(
+                    "page content version not found".to_string(),
+                )
+            })?;
+        let next_version_no = self
+            .versions
+            .lock()
+            .await
+            .get(&command.page_id)
+            .and_then(|versions| {
+                versions
+                    .iter()
+                    .map(|snapshot| snapshot.drive_version_no)
+                    .max()
+            })
+            .unwrap_or(0)
+            + 1;
+        let mut snapshot = source;
+        snapshot.drive_version_id = format!("drive-version-{}-v{next_version_no}", command.page_id);
+        snapshot.drive_version_no = next_version_no;
+        self.records
+            .lock()
+            .await
+            .insert(command.page_id.clone(), snapshot.clone());
+        self.versions
+            .lock()
+            .await
+            .entry(command.page_id)
+            .or_default()
+            .push(snapshot.clone());
+        Ok(snapshot)
     }
 
     async fn list_page_content_versions(

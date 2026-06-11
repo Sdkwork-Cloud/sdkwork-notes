@@ -144,8 +144,8 @@ function appTemporaryContextRequestSchemas({ omitContext = false } = {}) {
         parentPageId: { type: 'string' },
         folderDriveNodeId: { type: 'string' },
         initialContent: { type: 'object', additionalProperties: true },
-        contentType: { type: 'string' },
-        contentSchemaVersion: { type: 'string' },
+        contentType: { type: 'string', maxLength: 255 },
+        contentSchemaVersion: { type: 'string', maxLength: 32 },
         changeSummary: { type: 'string' }
       }
     },
@@ -169,11 +169,20 @@ function appTemporaryContextRequestSchemas({ omitContext = false } = {}) {
       properties: {
         ...contextProperties,
         content: { type: 'object', additionalProperties: true },
-        contentType: { type: 'string' },
-        contentSchemaVersion: { type: 'string' },
+        contentType: { type: 'string', maxLength: 255 },
+        contentSchemaVersion: { type: 'string', maxLength: 32 },
         changeSummary: { type: 'string' },
         expectedDriveVersionId: { type: 'string' },
         createCheckpoint: { type: 'boolean' }
+      }
+    },
+    RestorePageVersionRequest: {
+      type: 'object',
+      additionalProperties: false,
+      required: contextRequired,
+      properties: {
+        ...contextProperties,
+        expectedCurrentDriveVersionId: { type: 'string' }
       }
     },
     CreateAiJobRequest: {
@@ -221,11 +230,42 @@ function appTemporaryContextRequestSchemas({ omitContext = false } = {}) {
   };
 }
 
+function openApiRequestSchemas() {
+  return {
+    CreatePageRequest: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['workspaceId', 'title'],
+      properties: {
+        workspaceId: { type: 'string' },
+        title: { type: 'string' },
+        parentPageId: { type: 'string' },
+        initialContent: { type: 'object', additionalProperties: true },
+        contentType: { type: 'string', maxLength: 255 },
+        contentSchemaVersion: { type: 'string', maxLength: 32 }
+      }
+    },
+    UpdatePageContentRequest: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['content'],
+      properties: {
+        content: { type: 'object', additionalProperties: true },
+        contentType: { type: 'string', maxLength: 255 },
+        contentSchemaVersion: { type: 'string', maxLength: 32 },
+        changeSummary: { type: 'string' },
+        expectedDriveVersionId: { type: 'string' }
+      }
+    }
+  };
+}
+
 async function createFixture(options = {}) {
   const rootDir = await mkdtemp(path.join(tmpdir(), 'notes-contract-'));
   const driveVersionSchemas = options.omitDriveVersionContracts ? {} : {
     PageSummary: {
       type: 'object',
+      required: ['driveNodeId', 'currentDriveVersionNo'],
       properties: {
         driveNodeId: { type: 'string' },
         currentDriveVersionNo: { type: 'string' }
@@ -236,24 +276,40 @@ async function createFixture(options = {}) {
         { $ref: '#/components/schemas/PageSummary' },
         {
           type: 'object',
+          required: ['driveSpaceId', 'driveUri', 'currentDriveVersionId', 'contentSchemaVersion'],
           properties: {
             driveSpaceId: { type: 'string' },
             driveUri: { type: 'string' },
-            currentDriveVersionId: { type: 'string' }
+            currentDriveVersionId: { type: 'string' },
+            contentSchemaVersion: { type: 'string' }
           }
         }
       ]
     },
     PageContent: {
       type: 'object',
+      required: [
+        'pageId',
+        'driveNodeId',
+        'driveVersionId',
+        'driveVersionNo',
+        'contentType',
+        'contentSchemaVersion',
+        'content'
+      ],
       properties: {
+        pageId: { type: 'string' },
         driveNodeId: { type: 'string' },
         driveVersionId: { type: 'string' },
-        driveVersionNo: { type: 'string' }
+        driveVersionNo: { type: 'string' },
+        contentType: { type: 'string' },
+        contentSchemaVersion: { type: 'string' },
+        content: { type: 'object', additionalProperties: true }
       }
     },
     DriveVersionSummary: {
       type: 'object',
+      required: ['driveVersionId', 'driveVersionNo'],
       properties: {
         driveVersionId: { type: 'string' },
         driveVersionNo: { type: 'string' }
@@ -282,6 +338,38 @@ async function createFixture(options = {}) {
       result: { type: 'object', additionalProperties: true },
       sourceCount: { type: 'string' },
       suggestionCount: { type: 'string' },
+      createdAt: { type: 'string', format: 'date-time' }
+    }
+  };
+  const aiSuggestionStatusProperty = options.omitAiSuggestionStatusEnum
+    ? { type: 'string' }
+    : {
+      type: 'string',
+      enum: ['proposed', 'accepted', 'applied', 'rejected', 'dismissed']
+    };
+  const aiSuggestionSchema = {
+    type: 'object',
+    additionalProperties: false,
+    required: [
+      'id',
+      'workspaceId',
+      'pageId',
+      'aiJobId',
+      'suggestionType',
+      'status',
+      'payload',
+      'createdAt'
+    ],
+    properties: {
+      id: { type: 'string' },
+      workspaceId: { type: 'string' },
+      pageId: { type: 'string' },
+      aiJobId: { type: 'string' },
+      suggestionType: { type: 'string' },
+      status: options.wrongAiSuggestionStatusEnum
+        ? { type: 'string', enum: ['queued', 'running', 'succeeded', 'failed', 'canceled'] }
+        : aiSuggestionStatusProperty,
+      payload: { type: 'object', additionalProperties: true },
       createdAt: { type: 'string', format: 'date-time' }
     }
   };
@@ -315,8 +403,8 @@ async function createFixture(options = {}) {
           '      - name: drive_space_id',
           '      - name: drive_node_id',
           '      - name: drive_uri',
-          '      - name: current_drive_version_id',
-          '      - name: current_drive_version_no',
+          '      - { name: current_drive_version_id, required: true }',
+          '      - { name: current_drive_version_no, required: true }',
           ''
         ].join('\n')
     )
@@ -361,6 +449,7 @@ async function createFixture(options = {}) {
     }, {
       ...driveVersionSchemas,
       AiJob: aiJobSchema,
+      AiSuggestion: aiSuggestionSchema,
       ...appTemporaryContextRequestSchemas({
         omitContext: options.omitAppBodyContextContracts
       })
@@ -386,8 +475,14 @@ async function createFixture(options = {}) {
     openApi({
       [options.openPath ?? '/notes/v3/api/pages']: {
         get: operation(options.openOperationId ?? 'pages.list')
+      },
+      '/notes/v3/api/pages/{pageId}/content': {
+        put: operation('pages.content.update')
       }
-    }, undefined, driveVersionSchemas)
+    }, undefined, {
+      ...driveVersionSchemas,
+      ...openApiRequestSchemas()
+    })
   );
 
   await writeJson(
@@ -404,7 +499,8 @@ async function createFixture(options = {}) {
       AccessToken: { type: 'apiKey', in: 'header', name: 'Access-Token' }
     }, {
       ...driveVersionSchemas,
-      AiJob: aiJobSchema
+      AiJob: aiJobSchema,
+      AiSuggestion: aiSuggestionSchema
     })
   );
 
@@ -509,6 +605,64 @@ test('rejects missing Drive version references in Notes schema and OpenAPI contr
   }
 });
 
+test('rejects nullable current Drive version refs on notes_page schema registry contracts', async () => {
+  const rootDir = await createFixture({
+    schemaText: [
+      'module: notes',
+      'tables:',
+      '  - name: notes_page',
+      '    columns:',
+      '      - { name: drive_space_id, required: true }',
+      '      - { name: drive_node_id, required: true }',
+      '      - { name: drive_uri, required: true }',
+      '      - { name: current_drive_version_id, nullable: true }',
+      '      - { name: current_drive_version_no, nullable: true }',
+      ''
+    ].join('\n')
+  });
+  try {
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'NOTES_PAGE_DRIVE_VERSION_FIELDS_NULLABLE'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects OpenAPI Drive version reference fields that are present but not required', async () => {
+  const rootDir = await createFixture();
+  try {
+    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const openapi = JSON.parse(await readFile(file, 'utf8'));
+    openapi.components.schemas.PageContent.required =
+      openapi.components.schemas.PageContent.required.filter((field) => (
+        field !== 'driveVersionId' && field !== 'contentSchemaVersion'
+      ));
+    await writeJson(file, openapi);
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'OPENAPI_PAGE_CONTENT_DRIVE_VERSION_FIELDS_MISSING'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects OpenAPI page metadata missing content schema version required by Drive-backed page content', async () => {
+  const rootDir = await createFixture();
+  try {
+    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const openapi = JSON.parse(await readFile(file, 'utf8'));
+    const pageExtension = openapi.components.schemas.Page.allOf[1];
+    pageExtension.required = pageExtension.required.filter((field) => field !== 'contentSchemaVersion');
+    delete pageExtension.properties.contentSchemaVersion;
+    await writeJson(file, openapi);
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'OPENAPI_PAGE_DRIVE_VERSION_FIELDS_MISSING'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
 test('rejects App API AiJob status enum that does not match implemented job lifecycle states', async () => {
   const rootDir = await createFixture({
     wrongAiJobStatusEnum: true
@@ -528,6 +682,30 @@ test('rejects Backend API AiJob status without an enum matching implemented job 
   try {
     const result = await verifyNotesContractFoundation({ rootDir });
     assert.ok(result.findings.some((finding) => finding.code === 'OPENAPI_AI_JOB_STATUS_ENUM_MISMATCH'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects App API AiSuggestion status without an enum matching implemented suggestion lifecycle states', async () => {
+  const rootDir = await createFixture({
+    omitAiSuggestionStatusEnum: true
+  });
+  try {
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'OPENAPI_AI_SUGGESTION_STATUS_ENUM_MISMATCH'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects Backend API AiSuggestion status enum that drifts from implemented suggestion lifecycle states', async () => {
+  const rootDir = await createFixture({
+    wrongAiSuggestionStatusEnum: true
+  });
+  try {
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'OPENAPI_AI_SUGGESTION_STATUS_ENUM_MISMATCH'));
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }
@@ -715,6 +893,91 @@ test('rejects app body schemas that require fields defaulted by implemented DTOs
 
     const result = await verifyNotesContractFoundation({ rootDir });
     assert.ok(result.findings.some((finding) => finding.code === 'APP_BODY_REQUIRED_CONTRACT_MISMATCH'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects app restore version schema missing expected current Drive version guard field', async () => {
+  const rootDir = await createFixture();
+  try {
+    const file = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+    const openapi = JSON.parse(await readFile(file, 'utf8'));
+    delete openapi.components.schemas.RestorePageVersionRequest.properties.expectedCurrentDriveVersionId;
+    await writeJson(file, openapi);
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'APP_BODY_CONTRACT_MISSING'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects app page content metadata schemas missing service-backed max length constraints', async () => {
+  const rootDir = await createFixture();
+  try {
+    const file = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+    const openapi = JSON.parse(await readFile(file, 'utf8'));
+    delete openapi.components.schemas.CreatePageRequest.properties.contentType.maxLength;
+    openapi.components.schemas.CreatePageRequest.properties.contentSchemaVersion.maxLength = 255;
+    openapi.components.schemas.UpdatePageContentRequest.properties.contentType.maxLength = 200;
+    delete openapi.components.schemas.UpdatePageContentRequest.properties.contentSchemaVersion.maxLength;
+    await writeJson(file, openapi);
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(
+      result.findings.some((finding) => finding.code === 'APP_BODY_FIELD_CONSTRAINT_MISMATCH')
+    );
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects open-api content update schemas that require metadata preserved by default', async () => {
+  const rootDir = await createFixture();
+  try {
+    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const openapi = JSON.parse(await readFile(file, 'utf8'));
+    openapi.components.schemas.UpdatePageContentRequest.required.push('contentType');
+    await writeJson(file, openapi);
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'OPEN_BODY_REQUIRED_CONTRACT_MISMATCH'));
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects open-api page content metadata schemas missing service-backed max length constraints', async () => {
+  const rootDir = await createFixture();
+  try {
+    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const openapi = JSON.parse(await readFile(file, 'utf8'));
+    delete openapi.components.schemas.CreatePageRequest.properties.contentType.maxLength;
+    openapi.components.schemas.CreatePageRequest.properties.contentSchemaVersion.maxLength = 255;
+    openapi.components.schemas.UpdatePageContentRequest.properties.contentType.maxLength = 200;
+    delete openapi.components.schemas.UpdatePageContentRequest.properties.contentSchemaVersion.maxLength;
+    await writeJson(file, openapi);
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(
+      result.findings.some((finding) => finding.code === 'OPEN_BODY_FIELD_CONSTRAINT_MISMATCH')
+    );
+  } finally {
+    await rm(rootDir, { recursive: true, force: true });
+  }
+});
+
+test('rejects open-api page create schemas missing content schema version for custom content models', async () => {
+  const rootDir = await createFixture();
+  try {
+    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const openapi = JSON.parse(await readFile(file, 'utf8'));
+    delete openapi.components.schemas.CreatePageRequest.properties.contentSchemaVersion;
+    await writeJson(file, openapi);
+
+    const result = await verifyNotesContractFoundation({ rootDir });
+    assert.ok(result.findings.some((finding) => finding.code === 'OPEN_BODY_CONTRACT_MISSING'));
   } finally {
     await rm(rootDir, { recursive: true, force: true });
   }

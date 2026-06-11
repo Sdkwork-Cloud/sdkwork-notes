@@ -325,6 +325,37 @@
       }
     },
     {
+      "method": "POST",
+      "path": "/app/v3/api/notes/pages/{pageId}/versions/{driveVersionId}/restore",
+      "operationId": "pages.versions.restore",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.versions.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "restore_page_version"
+      },
+      "schemas": {
+        "request": "RestorePageVersionRequest",
+        "response": "PageContent",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/handlers.rs"
+      }
+    },
+    {
       "method": "GET",
       "path": "/app/v3/api/notes/pages/{pageId}/ai_suggestions",
       "operationId": "pages.aiSuggestions.list",

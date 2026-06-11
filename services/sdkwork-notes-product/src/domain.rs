@@ -78,8 +78,8 @@ pub struct Page {
     pub drive_space_id: String,
     pub drive_node_id: String,
     pub drive_uri: String,
-    pub current_drive_version_id: Option<String>,
-    pub current_drive_version_no: Option<i64>,
+    pub current_drive_version_id: String,
+    pub current_drive_version_no: i64,
     pub content_type: String,
     pub content_schema_version: String,
     pub content_hash: Option<String>,
@@ -120,7 +120,7 @@ pub struct PageSummary {
     pub snippet: Option<String>,
     pub page_kind: PageKind,
     pub drive_node_id: String,
-    pub current_drive_version_no: Option<String>,
+    pub current_drive_version_no: String,
     pub favorite: bool,
     pub updated_at: String,
 }
@@ -134,9 +134,7 @@ impl From<Page> for PageSummary {
             snippet: page.snippet,
             page_kind: page.page_kind,
             drive_node_id: page.drive_node_id,
-            current_drive_version_no: page
-                .current_drive_version_no
-                .map(|version_no| version_no.to_string()),
+            current_drive_version_no: page.current_drive_version_no.to_string(),
             favorite: page.favorite,
             updated_at: page.updated_at,
         }
@@ -343,11 +341,19 @@ pub struct UpdatePageContentCommand {
     pub context: NotesActorContext,
     pub page_id: String,
     pub content: Value,
-    pub content_type: String,
-    pub content_schema_version: String,
+    pub content_type: Option<String>,
+    pub content_schema_version: Option<String>,
     pub change_summary: Option<String>,
     pub expected_drive_version_id: Option<String>,
     pub create_checkpoint: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct RestorePageVersionCommand {
+    pub context: NotesActorContext,
+    pub page_id: String,
+    pub drive_version_id: String,
+    pub expected_current_drive_version_id: Option<String>,
 }
 
 #[derive(Debug, Clone)]

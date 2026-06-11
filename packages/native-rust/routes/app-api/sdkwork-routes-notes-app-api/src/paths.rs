@@ -7,6 +7,8 @@ pub const WORKSPACE_PAGES: &str = "/app/v3/api/notes/workspaces/:workspace_id/pa
 pub const PAGE: &str = "/app/v3/api/notes/pages/:page_id";
 pub const PAGE_CONTENT: &str = "/app/v3/api/notes/pages/:page_id/content";
 pub const PAGE_VERSIONS: &str = "/app/v3/api/notes/pages/:page_id/versions";
+pub const PAGE_VERSION_RESTORE: &str =
+    "/app/v3/api/notes/pages/:page_id/versions/:drive_version_id/restore";
 pub const PAGE_AI_SUGGESTIONS: &str = "/app/v3/api/notes/pages/:page_id/ai_suggestions";
 pub const AI_SUGGESTION_ACCEPT: &str = "/app/v3/api/notes/ai_suggestions/:ai_suggestion_id/accept";
 pub const AI_SUGGESTION_REJECT: &str = "/app/v3/api/notes/ai_suggestions/:ai_suggestion_id/reject";

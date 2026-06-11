@@ -85,7 +85,7 @@
   },
   "integration": {
     "handlerBoundary": "Handlers decode DTOs and call NotesService. Business logic stays in sdkwork-notes-product.",
-    "driveBoundary": "Handlers never implement upload, object, or version lifecycle. Content operations pass through the product DrivePageContentPort."
+    "driveBoundary": "Handlers never implement upload, object, or version lifecycle. Content and page version facade operations pass through the product DrivePageContentPort."
   },
   "verification": {
     "commands": [

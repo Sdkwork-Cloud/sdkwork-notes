@@ -5,14 +5,15 @@ use crate::domain::{
     CreateWorkspaceCommand, DriveVersionPage, ListAiJobsQuery, ListAiSuggestionFeedbackQuery,
     ListPageAiSuggestionsQuery, NewAiFeedback, NewAiJob, NewAiJobSource, NewAiSuggestion, NewPage,
     NewWorkspace, NotesActorContext, Page, PageContent, PageInfo, PageMetadataPatch, PageSummary,
-    PageSummaryPage, RejectAiSuggestionCommand, SearchResult, SearchResultPage,
-    UpdatePageContentCommand, UpdatePageMetadataCommand, Workspace, WorkspaceBootstrap,
-    WorkspacePage,
+    PageSummaryPage, RejectAiSuggestionCommand, RestorePageVersionCommand, SearchResult,
+    SearchResultPage, UpdatePageContentCommand, UpdatePageMetadataCommand, Workspace,
+    WorkspaceBootstrap, WorkspacePage,
 };
 use crate::error::NotesProductError;
 use crate::ports::{
     CreateDrivePageContentCommand, DrivePageContentPort, ListDrivePageContentVersionsCommand,
-    NotesRepository, ReadDrivePageContentCommand, UpdateDrivePageContentCommand,
+    NotesRepository, ReadDrivePageContentCommand, RestoreDrivePageContentVersionCommand,
+    UpdateDrivePageContentCommand,
 };
 
 #[derive(Clone)]
@@ -104,6 +105,7 @@ where
         let content_type = normalize_required_string("content type", &command.content_type)?;
         let content_schema_version =
             normalize_required_string("content schema version", &command.content_schema_version)?;
+        validate_page_content_metadata(&content_type, &content_schema_version)?;
         if !command.initial_content.is_object() {
             return Err(NotesProductError::Validation(
                 "initialContent must be an object".to_string(),
@@ -114,6 +116,20 @@ where
             .repository
             .find_workspace(&context, &workspace_id)
             .await?;
+        if self.repository.page_id_is_reserved(&page_id).await? {
+            return Err(NotesProductError::Conflict(
+                "page already exists".to_string(),
+            ));
+        }
+        match self.repository.find_page(&context, &page_id).await {
+            Ok(_) => {
+                return Err(NotesProductError::Conflict(
+                    "page already exists".to_string(),
+                ));
+            }
+            Err(NotesProductError::NotFound(_)) => {}
+            Err(error) => return Err(error),
+        }
         if let Some(parent_page_id) = parent_page_id.as_deref() {
             let parent_page = self.repository.find_page(&context, parent_page_id).await?;
             if parent_page.workspace_id != workspace.id {
@@ -140,6 +156,20 @@ where
                 change_summary: normalize_optional_string(command.change_summary),
             })
             .await?;
+        validate_drive_snapshot("create page content", &drive_snapshot)?;
+        validate_drive_snapshot_matches_expected_refs(
+            "create page content",
+            &drive_snapshot,
+            Some(&workspace.drive_space_id),
+            None,
+            None,
+        )?;
+        validate_drive_snapshot_matches_expected_content_metadata(
+            "create page content",
+            &drive_snapshot,
+            &content_type,
+            &content_schema_version,
+        )?;
 
         self.repository
             .insert_page(NewPage {
@@ -153,6 +183,13 @@ where
                 drive_snapshot,
             })
             .await
+            .map_err(|error| {
+                notes_persistence_failed_after_drive_write(
+                    "Drive page content create succeeded",
+                    "Notes page was not persisted",
+                    error,
+                )
+            })
     }
 
     pub async fn get_page(
@@ -194,11 +231,7 @@ where
             .find_workspace(&context, &workspace_id)
             .await?;
 
-        let q = query
-            .q
-            .as_deref()
-            .map(str::trim)
-            .filter(|value| !value.is_empty());
+        let q = normalize_optional_query("q", query.q.as_deref())?;
         let mut pages = self
             .repository
             .list_pages(&context, &workspace_id, page, page_size, q)
@@ -244,6 +277,7 @@ where
         let context = normalize_actor_context(command.context)?;
         let page_id = normalize_required_string("page id", &command.page_id)?;
         let current = self.repository.find_page(&context, &page_id).await?;
+        let mut expected_version_for_update = None;
 
         if let Some(expected_version) = command.expected_version.as_deref() {
             let expected_version = normalize_required_string("expectedVersion", expected_version)?
@@ -258,6 +292,7 @@ where
                     "page version has changed".to_string(),
                 ));
             }
+            expected_version_for_update = Some(expected_version);
         }
 
         if command.title.is_none()
@@ -314,6 +349,7 @@ where
                     archive_status,
                     publish_status,
                 },
+                expected_version_for_update,
             )
             .await
     }
@@ -324,17 +360,29 @@ where
     ) -> Result<PageContent, NotesProductError> {
         let context = normalize_actor_context(command.context)?;
         let page_id = normalize_required_string("page id", &command.page_id)?;
-        let content_type = normalize_required_string("content type", &command.content_type)?;
-        let content_schema_version =
-            normalize_required_string("content schema version", &command.content_schema_version)?;
         if !command.content.is_object() {
             return Err(NotesProductError::Validation(
                 "content must be an object".to_string(),
             ));
         }
+        let page = self.repository.find_page(&context, &page_id).await?;
         let expected_drive_version_id =
             normalize_optional_string(command.expected_drive_version_id);
-        let page = self.repository.find_page(&context, &page_id).await?;
+        if let Some(expected_drive_version_id) = expected_drive_version_id.as_deref() {
+            if page.current_drive_version_id != expected_drive_version_id {
+                return Err(NotesProductError::Conflict(
+                    "page Drive version has changed".to_string(),
+                ));
+            }
+        }
+        let drive_expected_drive_version_id = expected_drive_version_id
+            .clone()
+            .unwrap_or_else(|| page.current_drive_version_id.clone());
+        let content_type = normalize_optional_string(command.content_type)
+            .unwrap_or_else(|| page.content_type.clone());
+        let content_schema_version = normalize_optional_string(command.content_schema_version)
+            .unwrap_or_else(|| page.content_schema_version.clone());
+        validate_page_content_metadata(&content_type, &content_schema_version)?;
         let drive_snapshot = self
             .drive
             .update_page_content(UpdateDrivePageContentCommand {
@@ -348,17 +396,49 @@ where
                 drive_uri: page.drive_uri.clone(),
                 current_drive_version_id: page.current_drive_version_id.clone(),
                 content: command.content,
-                content_type,
-                content_schema_version,
+                content_type: content_type.clone(),
+                content_schema_version: content_schema_version.clone(),
                 change_summary: normalize_optional_string(command.change_summary),
-                expected_drive_version_id,
+                expected_drive_version_id: Some(drive_expected_drive_version_id),
                 create_checkpoint: command.create_checkpoint,
             })
             .await?;
+        validate_drive_snapshot("update page content", &drive_snapshot)?;
+        validate_drive_snapshot_matches_expected_refs(
+            "update page content",
+            &drive_snapshot,
+            Some(&page.drive_space_id),
+            Some(&page.drive_node_id),
+            Some(&page.drive_uri),
+        )?;
+        validate_drive_snapshot_advances_expected_version(
+            "update page content",
+            &drive_snapshot,
+            &page.current_drive_version_id,
+            page.current_drive_version_no,
+        )?;
+        validate_drive_snapshot_matches_expected_content_metadata(
+            "update page content",
+            &drive_snapshot,
+            &content_type,
+            &content_schema_version,
+        )?;
 
         self.repository
-            .update_page_drive_snapshot(&context, &page.id, &drive_snapshot)
-            .await?;
+            .update_page_drive_snapshot(
+                &context,
+                &page.id,
+                &drive_snapshot,
+                &page.current_drive_version_id,
+            )
+            .await
+            .map_err(|error| {
+                notes_persistence_failed_after_drive_write(
+                    "Drive page content update succeeded",
+                    "Notes page pointer was not advanced",
+                    error,
+                )
+            })?;
 
         Ok(PageContent {
             page_id: page.id,
@@ -391,6 +471,26 @@ where
                 current_drive_version_id: page.current_drive_version_id.clone(),
             })
             .await?;
+        validate_drive_snapshot("read page content", &drive_snapshot)?;
+        validate_drive_snapshot_matches_expected_refs(
+            "read page content",
+            &drive_snapshot,
+            Some(&page.drive_space_id),
+            Some(&page.drive_node_id),
+            Some(&page.drive_uri),
+        )?;
+        validate_drive_snapshot_matches_expected_version(
+            "read page content",
+            &drive_snapshot,
+            &page.current_drive_version_id,
+            page.current_drive_version_no,
+        )?;
+        validate_drive_snapshot_matches_expected_content_metadata(
+            "read page content",
+            &drive_snapshot,
+            &page.content_type,
+            &page.content_schema_version,
+        )?;
 
         Ok(PageContent {
             page_id: page.id,
@@ -413,7 +513,8 @@ where
         let page_size = normalize_page_size(query.page_size)?;
         let page = self.repository.find_page(&context, &page_id).await?;
 
-        self.drive
+        let versions = self
+            .drive
             .list_page_content_versions(ListDrivePageContentVersionsCommand {
                 tenant_id: context.tenant_id,
                 organization_id: context.organization_id,
@@ -425,7 +526,90 @@ where
                 page: page_number,
                 page_size,
             })
+            .await?;
+        validate_drive_version_page("list page versions", &versions, page_number, page_size)?;
+        Ok(versions)
+    }
+
+    pub async fn restore_page_version(
+        &self,
+        command: RestorePageVersionCommand,
+    ) -> Result<PageContent, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let page_id = normalize_required_string("page id", &command.page_id)?;
+        let drive_version_id =
+            normalize_required_string("driveVersionId", &command.drive_version_id)?;
+        let expected_current_drive_version_id =
+            normalize_optional_string(command.expected_current_drive_version_id);
+        let page = self.repository.find_page(&context, &page_id).await?;
+        if let Some(expected_current_drive_version_id) =
+            expected_current_drive_version_id.as_deref()
+        {
+            if page.current_drive_version_id != expected_current_drive_version_id {
+                return Err(NotesProductError::Conflict(
+                    "page Drive version has changed".to_string(),
+                ));
+            }
+        }
+        let drive_expected_current_drive_version_id = expected_current_drive_version_id
+            .clone()
+            .unwrap_or_else(|| page.current_drive_version_id.clone());
+
+        let drive_snapshot = self
+            .drive
+            .restore_page_content_version(RestoreDrivePageContentVersionCommand {
+                tenant_id: context.tenant_id.clone(),
+                organization_id: context.organization_id.clone(),
+                operator_id: context.operator_id.clone(),
+                page_id: page.id.clone(),
+                drive_space_id: page.drive_space_id.clone(),
+                drive_node_id: page.drive_node_id.clone(),
+                drive_uri: page.drive_uri.clone(),
+                current_drive_version_id: page.current_drive_version_id.clone(),
+                drive_version_id,
+                expected_current_drive_version_id: Some(drive_expected_current_drive_version_id),
+            })
+            .await?;
+        validate_drive_snapshot("restore page version", &drive_snapshot)?;
+        validate_drive_snapshot_matches_expected_refs(
+            "restore page version",
+            &drive_snapshot,
+            Some(&page.drive_space_id),
+            Some(&page.drive_node_id),
+            Some(&page.drive_uri),
+        )?;
+        validate_drive_snapshot_advances_expected_version(
+            "restore page version",
+            &drive_snapshot,
+            &page.current_drive_version_id,
+            page.current_drive_version_no,
+        )?;
+
+        self.repository
+            .update_page_drive_snapshot(
+                &context,
+                &page.id,
+                &drive_snapshot,
+                &page.current_drive_version_id,
+            )
             .await
+            .map_err(|error| {
+                notes_persistence_failed_after_drive_write(
+                    "Drive page content restore succeeded",
+                    "Notes page pointer was not advanced",
+                    error,
+                )
+            })?;
+
+        Ok(PageContent {
+            page_id: page.id,
+            drive_node_id: drive_snapshot.drive_node_id,
+            drive_version_id: drive_snapshot.drive_version_id,
+            drive_version_no: drive_snapshot.drive_version_no,
+            content_type: drive_snapshot.content_type,
+            content_schema_version: drive_snapshot.content_schema_version,
+            content: drive_snapshot.content,
+        })
     }
 
     pub async fn query_search(
@@ -435,17 +619,7 @@ where
         let context = normalize_actor_context(query.context)?;
         let page = normalize_page(query.page)?;
         let page_size = normalize_page_size(query.page_size)?;
-        let q = query
-            .q
-            .as_deref()
-            .map(str::trim)
-            .filter(|value| !value.is_empty());
-
-        if q.is_some_and(|value| value.chars().count() > 200) {
-            return Err(NotesProductError::Validation(
-                "q must be at most 200 characters".to_string(),
-            ));
-        }
+        let q = normalize_optional_query("q", query.q.as_deref())?;
 
         let workspace_id = query
             .workspace_id
@@ -533,10 +707,11 @@ where
             .await?;
         let job_id = stable_ai_job_id(&context, &idempotency_key, &request_payload_hash);
 
-        self.repository
+        match self
+            .repository
             .insert_ai_job(NewAiJob {
                 id: job_id,
-                context,
+                context: context.clone(),
                 workspace_id: workspace.id,
                 job_type,
                 target_type,
@@ -544,11 +719,27 @@ where
                 prompt_snapshot,
                 context_policy_snapshot,
                 status: "queued".to_string(),
-                idempotency_key,
-                request_payload_hash,
+                idempotency_key: idempotency_key.clone(),
+                request_payload_hash: request_payload_hash.clone(),
                 sources,
             })
             .await
+        {
+            Ok(job) => Ok(job),
+            Err(NotesProductError::Conflict(message)) => {
+                if let Some(existing) = self
+                    .repository
+                    .find_ai_job_by_idempotency_key(&context, &idempotency_key)
+                    .await?
+                {
+                    if existing.request_payload_hash == request_payload_hash {
+                        return Ok(existing);
+                    }
+                }
+                Err(NotesProductError::Conflict(message))
+            }
+            Err(error) => Err(error),
+        }
     }
 
     pub async fn list_ai_jobs(
@@ -649,6 +840,11 @@ where
                 ));
             }
             let source = source_for_page(&sources, &page_id);
+            if has_page_sources(&sources) && source.is_none() {
+                return Err(NotesProductError::Validation(
+                    "suggestion pageId must match an AI job page source".to_string(),
+                ));
+            }
             let payload_hash = serde_json::to_string(&suggestion.payload).map_err(|error| {
                 NotesProductError::Internal(format!(
                     "serialize AI suggestion payload failed: {error}"
@@ -768,21 +964,21 @@ where
             ));
         }
         if let Some(source_drive_version_id) = suggestion.source_drive_version_id.as_deref() {
-            if page.current_drive_version_id.as_deref() != Some(source_drive_version_id) {
+            if page.current_drive_version_id != source_drive_version_id {
                 return Err(NotesProductError::Conflict(
                     "AI suggestion source Drive version is stale".to_string(),
                 ));
             }
         }
         if let Some(source_drive_version_no) = suggestion.source_drive_version_no {
-            if page.current_drive_version_no != Some(source_drive_version_no) {
+            if page.current_drive_version_no != source_drive_version_no {
                 return Err(NotesProductError::Conflict(
                     "AI suggestion source Drive version is stale".to_string(),
                 ));
             }
         }
         if let Some(expected_drive_version_id) = expected_drive_version_id.as_deref() {
-            if page.current_drive_version_id.as_deref() != Some(expected_drive_version_id) {
+            if page.current_drive_version_id != expected_drive_version_id {
                 return Err(NotesProductError::Conflict(
                     "page Drive version has changed".to_string(),
                 ));
@@ -803,6 +999,7 @@ where
         let content_schema_version =
             optional_payload_string(&suggestion.payload, "contentSchemaVersion")?
                 .unwrap_or_else(|| page.content_schema_version.clone());
+        validate_page_content_metadata(&content_type, &content_schema_version)?;
 
         let drive_snapshot = self
             .drive
@@ -817,22 +1014,53 @@ where
                 drive_uri: page.drive_uri.clone(),
                 current_drive_version_id: page.current_drive_version_id.clone(),
                 content,
-                content_type,
-                content_schema_version,
+                content_type: content_type.clone(),
+                content_schema_version: content_schema_version.clone(),
                 change_summary: Some(format!("Apply AI suggestion {}", suggestion.id)),
                 expected_drive_version_id: expected_drive_version_id
-                    .or_else(|| suggestion.source_drive_version_id.clone()),
+                    .or_else(|| suggestion.source_drive_version_id.clone())
+                    .or_else(|| Some(page.current_drive_version_id.clone())),
                 create_checkpoint: command.create_checkpoint,
             })
             .await?;
+        validate_drive_snapshot("apply AI suggestion", &drive_snapshot)?;
+        validate_drive_snapshot_matches_expected_refs(
+            "apply AI suggestion",
+            &drive_snapshot,
+            Some(&page.drive_space_id),
+            Some(&page.drive_node_id),
+            Some(&page.drive_uri),
+        )?;
+        validate_drive_snapshot_advances_expected_version(
+            "apply AI suggestion",
+            &drive_snapshot,
+            &page.current_drive_version_id,
+            page.current_drive_version_no,
+        )?;
+        validate_drive_snapshot_matches_expected_content_metadata(
+            "apply AI suggestion",
+            &drive_snapshot,
+            &content_type,
+            &content_schema_version,
+        )?;
 
-        self.repository
-            .update_page_drive_snapshot(&context, &page.id, &drive_snapshot)
-            .await?;
         let applied_suggestion = self
             .repository
-            .apply_ai_suggestion(&context, &suggestion.id)
-            .await?;
+            .apply_ai_suggestion(
+                &context,
+                &suggestion.id,
+                &page.id,
+                &drive_snapshot,
+                &page.current_drive_version_id,
+            )
+            .await
+            .map_err(|error| {
+                notes_persistence_failed_after_drive_write(
+                    "Drive page content update for AI suggestion succeeded",
+                    "Notes AI suggestion apply was not committed",
+                    error,
+                )
+            })?;
         if applied_suggestion.status != "applied" {
             return Err(NotesProductError::Conflict(
                 "AI suggestion status changed before apply completed".to_string(),
@@ -892,10 +1120,11 @@ where
             Err(error) => return Err(error),
         }
 
-        self.repository
+        match self
+            .repository
             .insert_ai_feedback(NewAiFeedback {
-                id: feedback_id,
-                context,
+                id: feedback_id.clone(),
+                context: context.clone(),
                 workspace_id: suggestion.workspace_id,
                 job_id: suggestion.ai_job_id,
                 suggestion_id: Some(suggestion.id),
@@ -903,6 +1132,23 @@ where
                 feedback_text,
             })
             .await
+        {
+            Ok(feedback) => Ok(feedback),
+            Err(NotesProductError::Conflict(message)) => {
+                match self
+                    .repository
+                    .find_ai_feedback(&context, &feedback_id)
+                    .await
+                {
+                    Ok(existing) => Ok(existing),
+                    Err(NotesProductError::NotFound(_)) => {
+                        Err(NotesProductError::Conflict(message))
+                    }
+                    Err(error) => Err(error),
+                }
+            }
+            Err(error) => Err(error),
+        }
     }
 
     pub async fn list_ai_suggestion_feedback(
@@ -938,7 +1184,9 @@ where
             return Ok(Vec::new());
         }
 
-        let page_id = target_id.expect("page target validation should require target id");
+        let page_id = target_id.ok_or_else(|| {
+            NotesProductError::Validation("targetId is required for this targetType".to_string())
+        })?;
         let page = self.repository.find_page(context, page_id).await?;
         if page.workspace_id != workspace_id {
             return Err(NotesProductError::NotFound(
@@ -952,14 +1200,14 @@ where
                 workspace_id,
                 "page",
                 &page.id,
-                page.current_drive_version_id.as_deref(),
-                page.current_drive_version_no,
+                Some(page.current_drive_version_id.as_str()),
+                Some(page.current_drive_version_no),
             ),
             source_type: "page".to_string(),
             source_id: Some(page.id.clone()),
             drive_node_id: Some(page.drive_node_id),
-            drive_version_id: page.current_drive_version_id,
-            drive_version_no: page.current_drive_version_no,
+            drive_version_id: Some(page.current_drive_version_id),
+            drive_version_no: Some(page.current_drive_version_no),
             permission_snapshot_hash: stable_permission_snapshot_hash(
                 context,
                 workspace_id,
@@ -983,9 +1231,22 @@ where
             .await?;
         match current.status.as_str() {
             "proposed" => {
-                self.repository
+                let updated = self
+                    .repository
                     .decide_ai_suggestion(context, ai_suggestion_id, target_status)
-                    .await
+                    .await?;
+                if updated.status == target_status {
+                    return Ok(updated);
+                }
+                if updated.status == conflicting_status {
+                    return Err(NotesProductError::Conflict(
+                        "AI suggestion decision is already terminal".to_string(),
+                    ));
+                }
+                Err(NotesProductError::Conflict(format!(
+                    "AI suggestion status cannot be decided from {}",
+                    updated.status
+                )))
             }
             status if status == target_status => Ok(current),
             status if status == conflicting_status => Err(NotesProductError::Conflict(
@@ -1028,12 +1289,32 @@ fn normalize_optional_string(value: Option<String>) -> Option<String> {
         .filter(|value| !value.is_empty())
 }
 
+fn normalize_optional_query<'a>(
+    field: &str,
+    value: Option<&'a str>,
+) -> Result<Option<&'a str>, NotesProductError> {
+    let value = value.map(str::trim).filter(|value| !value.is_empty());
+    if let Some(value) = value {
+        validate_max_chars(field, value, 200)?;
+    }
+    Ok(value)
+}
+
 fn validate_max_chars(field: &str, value: &str, max_chars: usize) -> Result<(), NotesProductError> {
     if value.chars().count() > max_chars {
         return Err(NotesProductError::Validation(format!(
             "{field} must be at most {max_chars} characters"
         )));
     }
+    Ok(())
+}
+
+fn validate_page_content_metadata(
+    content_type: &str,
+    content_schema_version: &str,
+) -> Result<(), NotesProductError> {
+    validate_max_chars("content type", content_type, 255)?;
+    validate_max_chars("content schema version", content_schema_version, 32)?;
     Ok(())
 }
 
@@ -1125,6 +1406,213 @@ fn validate_ai_target(target_type: &str, target_id: Option<&str>) -> Result<(), 
         )),
         _ => Ok(()),
     }
+}
+
+fn validate_drive_snapshot(
+    context: &str,
+    snapshot: &crate::domain::DrivePageContentSnapshot,
+) -> Result<(), NotesProductError> {
+    for (field, value) in [
+        ("driveSpaceId", snapshot.drive_space_id.as_str()),
+        ("driveNodeId", snapshot.drive_node_id.as_str()),
+        ("driveUri", snapshot.drive_uri.as_str()),
+        ("driveVersionId", snapshot.drive_version_id.as_str()),
+        ("contentType", snapshot.content_type.as_str()),
+        (
+            "contentSchemaVersion",
+            snapshot.content_schema_version.as_str(),
+        ),
+    ] {
+        if value.trim().is_empty() {
+            return Err(NotesProductError::Internal(format!(
+                "Drive snapshot from {context} returned blank {field}"
+            )));
+        }
+    }
+    if snapshot.drive_version_no < 1 {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned invalid driveVersionNo"
+        )));
+    }
+    if snapshot.content_type.chars().count() > 255 {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned oversized contentType"
+        )));
+    }
+    if snapshot.content_schema_version.chars().count() > 32 {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned oversized contentSchemaVersion"
+        )));
+    }
+    if !snapshot.content.is_object() {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned non-object page content"
+        )));
+    }
+    let expected_drive_uri = format!(
+        "drive://spaces/{}/nodes/{}",
+        snapshot.drive_space_id, snapshot.drive_node_id
+    );
+    if snapshot.drive_uri != expected_drive_uri {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned inconsistent driveUri"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_drive_snapshot_matches_expected_refs(
+    context: &str,
+    snapshot: &crate::domain::DrivePageContentSnapshot,
+    expected_drive_space_id: Option<&str>,
+    expected_drive_node_id: Option<&str>,
+    expected_drive_uri: Option<&str>,
+) -> Result<(), NotesProductError> {
+    if let Some(expected_drive_space_id) = expected_drive_space_id {
+        if snapshot.drive_space_id != expected_drive_space_id {
+            return Err(NotesProductError::Internal(format!(
+                "Drive snapshot from {context} returned unexpected driveSpaceId"
+            )));
+        }
+    }
+    if let Some(expected_drive_node_id) = expected_drive_node_id {
+        if snapshot.drive_node_id != expected_drive_node_id {
+            return Err(NotesProductError::Internal(format!(
+                "Drive snapshot from {context} returned unexpected driveNodeId"
+            )));
+        }
+    }
+    if let Some(expected_drive_uri) = expected_drive_uri {
+        if snapshot.drive_uri != expected_drive_uri {
+            return Err(NotesProductError::Internal(format!(
+                "Drive snapshot from {context} returned unexpected driveUri"
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn validate_drive_snapshot_matches_expected_version(
+    context: &str,
+    snapshot: &crate::domain::DrivePageContentSnapshot,
+    expected_drive_version_id: &str,
+    expected_drive_version_no: i64,
+) -> Result<(), NotesProductError> {
+    if snapshot.drive_version_id != expected_drive_version_id {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned unexpected driveVersionId"
+        )));
+    }
+    if snapshot.drive_version_no != expected_drive_version_no {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned unexpected driveVersionNo"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_drive_snapshot_matches_expected_content_metadata(
+    context: &str,
+    snapshot: &crate::domain::DrivePageContentSnapshot,
+    expected_content_type: &str,
+    expected_content_schema_version: &str,
+) -> Result<(), NotesProductError> {
+    if snapshot.content_type != expected_content_type {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned unexpected contentType"
+        )));
+    }
+    if snapshot.content_schema_version != expected_content_schema_version {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} returned unexpected contentSchemaVersion"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_drive_snapshot_advances_expected_version(
+    context: &str,
+    snapshot: &crate::domain::DrivePageContentSnapshot,
+    current_drive_version_id: &str,
+    current_drive_version_no: i64,
+) -> Result<(), NotesProductError> {
+    if snapshot.drive_version_id == current_drive_version_id {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} did not advance driveVersionId"
+        )));
+    }
+    if snapshot.drive_version_no <= current_drive_version_no {
+        return Err(NotesProductError::Internal(format!(
+            "Drive snapshot from {context} did not advance driveVersionNo"
+        )));
+    }
+    Ok(())
+}
+
+fn validate_drive_version_page(
+    context: &str,
+    page: &DriveVersionPage,
+    expected_page: i64,
+    expected_page_size: i64,
+) -> Result<(), NotesProductError> {
+    if page.page_info.page != expected_page {
+        return Err(NotesProductError::Internal(format!(
+            "Drive version page from {context} returned unexpected page"
+        )));
+    }
+    if page.page_info.page_size != expected_page_size {
+        return Err(NotesProductError::Internal(format!(
+            "Drive version page from {context} returned unexpected pageSize"
+        )));
+    }
+    if page.items.len() > expected_page_size as usize {
+        return Err(NotesProductError::Internal(format!(
+            "Drive version page from {context} returned too many items"
+        )));
+    }
+    if page
+        .page_info
+        .next_cursor
+        .as_ref()
+        .is_some_and(|cursor| cursor.trim().is_empty())
+    {
+        return Err(NotesProductError::Internal(format!(
+            "Drive version page from {context} returned blank nextCursor"
+        )));
+    }
+    for version in &page.items {
+        if version.drive_version_id.trim().is_empty() {
+            return Err(NotesProductError::Internal(format!(
+                "Drive version page from {context} returned blank driveVersionId"
+            )));
+        }
+        if version.drive_version_no < 1 {
+            return Err(NotesProductError::Internal(format!(
+                "Drive version page from {context} returned invalid driveVersionNo"
+            )));
+        }
+        if version.version_kind.trim().is_empty() {
+            return Err(NotesProductError::Internal(format!(
+                "Drive version page from {context} returned blank versionKind"
+            )));
+        }
+        if version.created_at.trim().is_empty() {
+            return Err(NotesProductError::Internal(format!(
+                "Drive version page from {context} returned blank createdAt"
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn notes_persistence_failed_after_drive_write(
+    drive_outcome: &str,
+    notes_outcome: &str,
+    error: NotesProductError,
+) -> NotesProductError {
+    NotesProductError::Internal(format!(
+        "{drive_outcome}, but {notes_outcome}; reconciliation is required: {error}"
+    ))
 }
 
 fn ai_job_payload_hash(
@@ -1243,7 +1731,10 @@ fn source_for_page<'a>(sources: &'a [AiJobSource], page_id: &str) -> Option<&'a 
     sources
         .iter()
         .find(|source| source.source_type == "page" && source.source_id.as_deref() == Some(page_id))
-        .or_else(|| sources.iter().find(|source| source.source_type == "page"))
+}
+
+fn has_page_sources(sources: &[AiJobSource]) -> bool {
+    sources.iter().any(|source| source.source_type == "page")
 }
 
 fn stable_permission_snapshot_hash(
@@ -1331,11 +1822,8 @@ fn workspace_change_token(workspace: &Workspace, root_pages: &[PageSummary]) -> 
 }
 
 fn search_result_from_page(page: Page, q: Option<&str>) -> SearchResult {
-    let source_drive_version_no = page
-        .current_drive_version_no
-        .map(|version_no| version_no.to_string())
-        .unwrap_or_else(|| "0".to_string());
-    let source_drive_version_id = page.current_drive_version_id.clone();
+    let source_drive_version_no = page.current_drive_version_no.to_string();
+    let source_drive_version_id = Some(page.current_drive_version_id.clone());
     let highlights = search_highlights(&page, q);
 
     SearchResult {

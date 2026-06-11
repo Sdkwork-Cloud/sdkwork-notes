@@ -161,6 +161,7 @@ test('declares a route manifest artifact aligned with the Notes App OpenAPI auth
     'GET /app/v3/api/notes/pages/{pageId}/content',
     'PUT /app/v3/api/notes/pages/{pageId}/content',
     'GET /app/v3/api/notes/pages/{pageId}/versions',
+    'POST /app/v3/api/notes/pages/{pageId}/versions/{driveVersionId}/restore',
     'GET /app/v3/api/notes/pages/{pageId}/ai_suggestions',
     'POST /app/v3/api/notes/ai_suggestions/{aiSuggestionId}/accept',
     'POST /app/v3/api/notes/ai_suggestions/{aiSuggestionId}/reject',

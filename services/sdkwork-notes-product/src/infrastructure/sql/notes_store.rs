@@ -69,7 +69,7 @@ impl NotesRepository for SqlNotesStore {
              WHERE tenant_id=$1
                AND organization_id=$2
                AND id=$3
-               AND lifecycle_status != 'deleted'
+               AND lifecycle_status IN ('active', 'archived')
              LIMIT 1",
         )
         .bind(&context.tenant_id)
@@ -100,7 +100,7 @@ impl NotesRepository for SqlNotesStore {
              FROM notes_workspace
              WHERE tenant_id=$1
                AND organization_id=$2
-               AND lifecycle_status != 'deleted'
+               AND lifecycle_status IN ('active', 'archived')
              ORDER BY updated_at DESC, id DESC
              LIMIT $3 OFFSET $4",
         )
@@ -155,6 +155,21 @@ impl NotesRepository for SqlNotesStore {
         self.find_page(&page.context, &page.id).await
     }
 
+    async fn page_id_is_reserved(&self, page_id: &str) -> Result<bool, NotesProductError> {
+        let exists: Option<String> = sqlx::query_scalar(
+            "SELECT id
+             FROM notes_page
+             WHERE id=$1
+             LIMIT 1",
+        )
+        .bind(page_id)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(internal_sql_error("check notes_page id reservation failed"))?;
+
+        Ok(exists.is_some())
+    }
+
     async fn find_page(
         &self,
         context: &NotesActorContext,
@@ -172,7 +187,7 @@ impl NotesRepository for SqlNotesStore {
              WHERE tenant_id=$1
                AND organization_id=$2
                AND id=$3
-               AND lifecycle_status != 'deleted'
+               AND lifecycle_status='active'
              LIMIT 1",
         )
         .bind(&context.tenant_id)
@@ -198,7 +213,7 @@ impl NotesRepository for SqlNotesStore {
     ) -> Result<Vec<Page>, NotesProductError> {
         let limit = page_size + 1;
         let offset = (page - 1) * page_size;
-        let like_query = q.map(|value| format!("%{}%", value.to_lowercase()));
+        let like_query = q.map(like_contains_pattern);
         let rows = sqlx::query(
             "SELECT id, tenant_id, organization_id, workspace_id, title, page_kind,
                     parent_page_id, folder_drive_node_id, drive_space_id, drive_node_id,
@@ -211,10 +226,10 @@ impl NotesRepository for SqlNotesStore {
              WHERE tenant_id=$1
                AND organization_id=$2
                AND workspace_id=$3
-               AND lifecycle_status != 'deleted'
+               AND lifecycle_status='active'
                AND ($4 IS NULL
-                    OR lower(title) LIKE $4
-                    OR lower(COALESCE(snippet, '')) LIKE $4)
+                    OR lower(title) LIKE $4 ESCAPE '\\'
+                    OR lower(COALESCE(snippet, '')) LIKE $4 ESCAPE '\\')
              ORDER BY updated_at DESC, id DESC
              LIMIT $5 OFFSET $6",
         )
@@ -251,7 +266,7 @@ impl NotesRepository for SqlNotesStore {
                AND workspace_id=$3
                AND parent_page_id IS NULL
                AND folder_drive_node_id IS NULL
-               AND lifecycle_status != 'deleted'
+               AND lifecycle_status='active'
              ORDER BY updated_at DESC, id DESC
              LIMIT $4",
         )
@@ -276,34 +291,88 @@ impl NotesRepository for SqlNotesStore {
     ) -> Result<Vec<Page>, NotesProductError> {
         let limit = page_size + 1;
         let offset = (page - 1) * page_size;
-        let like_query = q.map(|value| format!("%{}%", value.to_lowercase()));
-        let rows = sqlx::query(
-            "SELECT id, tenant_id, organization_id, workspace_id, title, page_kind,
-                    parent_page_id, folder_drive_node_id, drive_space_id, drive_node_id,
-                    drive_uri, current_drive_version_id, current_drive_version_no,
-                    content_type, content_schema_version, content_hash, snippet, icon,
-                    cover_asset_id, favorite, archive_status, publish_status, word_count,
-                    task_count, drive_lifecycle_status_snapshot, lifecycle_status, version,
-                    created_by, updated_by, created_at, updated_at, deleted_at
-             FROM notes_page
-             WHERE tenant_id=$1
-               AND organization_id=$2
-               AND ($3 IS NULL OR workspace_id=$3)
-               AND lifecycle_status != 'deleted'
-               AND ($4 IS NULL
-                    OR lower(title) LIKE $4
-                    OR lower(COALESCE(snippet, '')) LIKE $4)
-             ORDER BY updated_at DESC, id DESC
-             LIMIT $5 OFFSET $6",
-        )
-        .bind(&context.tenant_id)
-        .bind(&context.organization_id)
-        .bind(workspace_id)
-        .bind(&like_query)
-        .bind(limit)
-        .bind(offset)
-        .fetch_all(&self.pool)
-        .await
+        let like_query = q.map(like_contains_pattern);
+        let rows = if let Some(workspace_id) = workspace_id {
+            sqlx::query(
+                "SELECT p.id, p.tenant_id, p.organization_id, p.workspace_id, p.title, p.page_kind,
+                        p.parent_page_id, p.folder_drive_node_id, p.drive_space_id, p.drive_node_id,
+                        p.drive_uri, p.current_drive_version_id, p.current_drive_version_no,
+                        p.content_type, p.content_schema_version, p.content_hash,
+                        COALESCE(sp.snippet, p.snippet) AS snippet,
+                        p.icon, p.cover_asset_id, p.favorite, p.archive_status, p.publish_status,
+                        p.word_count, p.task_count, p.drive_lifecycle_status_snapshot,
+                        p.lifecycle_status, p.version, p.created_by, p.updated_by, p.created_at,
+                        p.updated_at, p.deleted_at
+                 FROM notes_page p
+                 LEFT JOIN notes_page_search_projection sp
+                   ON sp.tenant_id=p.tenant_id
+                  AND sp.organization_id=p.organization_id
+                  AND sp.workspace_id=p.workspace_id
+                  AND sp.page_id=p.id
+                  AND sp.source_drive_version_id=p.current_drive_version_id
+                  AND sp.source_drive_version_no=p.current_drive_version_no
+                  AND sp.index_status='indexed'
+                 WHERE p.tenant_id=$1
+                   AND p.organization_id=$2
+                   AND p.workspace_id=$3
+                   AND p.lifecycle_status='active'
+                   AND ($4 IS NULL
+                        OR lower(p.title) LIKE $4 ESCAPE '\\'
+                        OR lower(COALESCE(p.snippet, '')) LIKE $4 ESCAPE '\\'
+                        OR lower(COALESCE(sp.title_snapshot, '')) LIKE $4 ESCAPE '\\'
+                        OR lower(COALESCE(sp.plain_text, '')) LIKE $4 ESCAPE '\\'
+                        OR lower(COALESCE(sp.snippet, '')) LIKE $4 ESCAPE '\\')
+                 ORDER BY p.updated_at DESC, p.id DESC
+                 LIMIT $5 OFFSET $6",
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(workspace_id)
+            .bind(&like_query)
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&self.pool)
+            .await
+        } else {
+            sqlx::query(
+                "SELECT p.id, p.tenant_id, p.organization_id, p.workspace_id, p.title, p.page_kind,
+                        p.parent_page_id, p.folder_drive_node_id, p.drive_space_id, p.drive_node_id,
+                        p.drive_uri, p.current_drive_version_id, p.current_drive_version_no,
+                        p.content_type, p.content_schema_version, p.content_hash,
+                        COALESCE(sp.snippet, p.snippet) AS snippet,
+                        p.icon, p.cover_asset_id, p.favorite, p.archive_status, p.publish_status,
+                        p.word_count, p.task_count, p.drive_lifecycle_status_snapshot,
+                        p.lifecycle_status, p.version, p.created_by, p.updated_by, p.created_at,
+                        p.updated_at, p.deleted_at
+                 FROM notes_page p
+                 LEFT JOIN notes_page_search_projection sp
+                   ON sp.tenant_id=p.tenant_id
+                  AND sp.organization_id=p.organization_id
+                  AND sp.workspace_id=p.workspace_id
+                  AND sp.page_id=p.id
+                  AND sp.source_drive_version_id=p.current_drive_version_id
+                  AND sp.source_drive_version_no=p.current_drive_version_no
+                  AND sp.index_status='indexed'
+                 WHERE p.tenant_id=$1
+                   AND p.organization_id=$2
+                   AND p.lifecycle_status='active'
+                   AND ($3 IS NULL
+                        OR lower(p.title) LIKE $3 ESCAPE '\\'
+                        OR lower(COALESCE(p.snippet, '')) LIKE $3 ESCAPE '\\'
+                        OR lower(COALESCE(sp.title_snapshot, '')) LIKE $3 ESCAPE '\\'
+                        OR lower(COALESCE(sp.plain_text, '')) LIKE $3 ESCAPE '\\'
+                        OR lower(COALESCE(sp.snippet, '')) LIKE $3 ESCAPE '\\')
+                 ORDER BY p.updated_at DESC, p.id DESC
+                 LIMIT $4 OFFSET $5",
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(&like_query)
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&self.pool)
+            .await
+        }
         .map_err(internal_sql_error("search notes_page failed"))?;
 
         rows.iter().map(map_page).collect()
@@ -314,6 +383,7 @@ impl NotesRepository for SqlNotesStore {
         context: &NotesActorContext,
         page_id: &str,
         patch: &PageMetadataPatch,
+        expected_version: Option<i64>,
     ) -> Result<Page, NotesProductError> {
         let affected = sqlx::query(
             "UPDATE notes_page
@@ -327,7 +397,8 @@ impl NotesRepository for SqlNotesStore {
              WHERE tenant_id=$6
                AND organization_id=$7
                AND id=$8
-               AND lifecycle_status != 'deleted'",
+               AND lifecycle_status='active'
+               AND ($9 IS NULL OR version=$9)",
         )
         .bind(&patch.title)
         .bind(if patch.favorite { 1_i64 } else { 0_i64 })
@@ -337,12 +408,18 @@ impl NotesRepository for SqlNotesStore {
         .bind(&context.tenant_id)
         .bind(&context.organization_id)
         .bind(page_id)
+        .bind(expected_version)
         .execute(&self.pool)
         .await
         .map_err(internal_sql_error("update notes_page metadata failed"))?
         .rows_affected();
 
         if affected == 0 {
+            if expected_version.is_some() && self.find_page(context, page_id).await.is_ok() {
+                return Err(NotesProductError::Conflict(
+                    "page version has changed".to_string(),
+                ));
+            }
             return Err(NotesProductError::NotFound("page not found".to_string()));
         }
 
@@ -354,6 +431,7 @@ impl NotesRepository for SqlNotesStore {
         context: &NotesActorContext,
         page_id: &str,
         snapshot: &DrivePageContentSnapshot,
+        expected_current_drive_version_id: &str,
     ) -> Result<Page, NotesProductError> {
         let affected = sqlx::query(
             "UPDATE notes_page
@@ -374,7 +452,8 @@ impl NotesRepository for SqlNotesStore {
              WHERE tenant_id=$13
                AND organization_id=$14
                AND id=$15
-               AND lifecycle_status != 'deleted'",
+               AND lifecycle_status='active'
+               AND current_drive_version_id=$16",
         )
         .bind(&snapshot.drive_space_id)
         .bind(&snapshot.drive_node_id)
@@ -391,12 +470,18 @@ impl NotesRepository for SqlNotesStore {
         .bind(&context.tenant_id)
         .bind(&context.organization_id)
         .bind(page_id)
+        .bind(expected_current_drive_version_id)
         .execute(&self.pool)
         .await
         .map_err(internal_sql_error("update notes_page drive refs failed"))?
         .rows_affected();
 
         if affected == 0 {
+            if self.find_page(context, page_id).await.is_ok() {
+                return Err(NotesProductError::Conflict(
+                    "page Drive version has changed".to_string(),
+                ));
+            }
             return Err(NotesProductError::NotFound("page not found".to_string()));
         }
 
@@ -415,7 +500,7 @@ impl NotesRepository for SqlNotesStore {
                AND organization_id=$2
                AND created_by=$3
                AND idempotency_key=$4
-               AND lifecycle_status != 'deleted'
+               AND lifecycle_status='active'
              LIMIT 1",
         )
         .bind(&context.tenant_id)
@@ -521,39 +606,73 @@ impl NotesRepository for SqlNotesStore {
     ) -> Result<Vec<AiJob>, NotesProductError> {
         let limit = page_size + 1;
         let offset = (page - 1) * page_size;
-        let rows = sqlx::query(
-            "SELECT j.id, j.tenant_id, j.organization_id, j.workspace_id, j.job_type,
-                    j.target_type, j.target_id, j.status, j.result_json,
-                    j.idempotency_key, j.request_payload_hash, j.created_by, j.created_at,
-                    COUNT(DISTINCT s.id) AS source_count,
-                    COUNT(DISTINCT sg.id) AS suggestion_count
-             FROM notes_ai_job j
-             LEFT JOIN notes_ai_job_source s
-               ON s.tenant_id=j.tenant_id
-              AND s.organization_id=j.organization_id
-              AND s.job_id=j.id
-             LEFT JOIN notes_ai_suggestion sg
-               ON sg.tenant_id=j.tenant_id
-              AND sg.organization_id=j.organization_id
-              AND sg.ai_job_id=j.id
-              AND sg.lifecycle_status != 'deleted'
-             WHERE j.tenant_id=$1
-               AND j.organization_id=$2
-               AND ($3 IS NULL OR j.workspace_id=$3)
-               AND j.lifecycle_status != 'deleted'
-             GROUP BY j.id, j.tenant_id, j.organization_id, j.workspace_id, j.job_type,
-                      j.target_type, j.target_id, j.status, j.result_json,
-                      j.idempotency_key, j.request_payload_hash, j.created_by, j.created_at
-             ORDER BY j.created_at DESC, j.id DESC
-             LIMIT $4 OFFSET $5",
-        )
-        .bind(&context.tenant_id)
-        .bind(&context.organization_id)
-        .bind(workspace_id)
-        .bind(limit)
-        .bind(offset)
-        .fetch_all(&self.pool)
-        .await
+        let rows = if let Some(workspace_id) = workspace_id {
+            sqlx::query(
+                "SELECT j.id, j.tenant_id, j.organization_id, j.workspace_id, j.job_type,
+                        j.target_type, j.target_id, j.status, j.result_json,
+                        j.idempotency_key, j.request_payload_hash, j.created_by, j.created_at,
+                        COUNT(DISTINCT s.id) AS source_count,
+                        COUNT(DISTINCT sg.id) AS suggestion_count
+                 FROM notes_ai_job j
+                 LEFT JOIN notes_ai_job_source s
+                   ON s.tenant_id=j.tenant_id
+                  AND s.organization_id=j.organization_id
+                  AND s.job_id=j.id
+                 LEFT JOIN notes_ai_suggestion sg
+                   ON sg.tenant_id=j.tenant_id
+                  AND sg.organization_id=j.organization_id
+                  AND sg.ai_job_id=j.id
+                  AND sg.lifecycle_status='active'
+                 WHERE j.tenant_id=$1
+                   AND j.organization_id=$2
+                   AND j.workspace_id=$3
+                   AND j.lifecycle_status='active'
+                 GROUP BY j.id, j.tenant_id, j.organization_id, j.workspace_id, j.job_type,
+                          j.target_type, j.target_id, j.status, j.result_json,
+                          j.idempotency_key, j.request_payload_hash, j.created_by, j.created_at
+                 ORDER BY j.created_at DESC, j.id DESC
+                 LIMIT $4 OFFSET $5",
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(workspace_id)
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&self.pool)
+            .await
+        } else {
+            sqlx::query(
+                "SELECT j.id, j.tenant_id, j.organization_id, j.workspace_id, j.job_type,
+                        j.target_type, j.target_id, j.status, j.result_json,
+                        j.idempotency_key, j.request_payload_hash, j.created_by, j.created_at,
+                        COUNT(DISTINCT s.id) AS source_count,
+                        COUNT(DISTINCT sg.id) AS suggestion_count
+                 FROM notes_ai_job j
+                 LEFT JOIN notes_ai_job_source s
+                   ON s.tenant_id=j.tenant_id
+                  AND s.organization_id=j.organization_id
+                  AND s.job_id=j.id
+                 LEFT JOIN notes_ai_suggestion sg
+                   ON sg.tenant_id=j.tenant_id
+                  AND sg.organization_id=j.organization_id
+                  AND sg.ai_job_id=j.id
+                  AND sg.lifecycle_status='active'
+                 WHERE j.tenant_id=$1
+                   AND j.organization_id=$2
+                   AND j.lifecycle_status='active'
+                 GROUP BY j.id, j.tenant_id, j.organization_id, j.workspace_id, j.job_type,
+                          j.target_type, j.target_id, j.status, j.result_json,
+                          j.idempotency_key, j.request_payload_hash, j.created_by, j.created_at
+                 ORDER BY j.created_at DESC, j.id DESC
+                 LIMIT $3 OFFSET $4",
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&self.pool)
+            .await
+        }
         .map_err(internal_sql_error("list notes_ai_job failed"))?;
 
         rows.iter().map(map_ai_job).collect()
@@ -576,14 +695,14 @@ impl NotesRepository for SqlNotesStore {
               AND s.organization_id=j.organization_id
               AND s.job_id=j.id
              LEFT JOIN notes_ai_suggestion sg
-               ON sg.tenant_id=j.tenant_id
-              AND sg.organization_id=j.organization_id
-              AND sg.ai_job_id=j.id
-              AND sg.lifecycle_status != 'deleted'
+              ON sg.tenant_id=j.tenant_id
+             AND sg.organization_id=j.organization_id
+             AND sg.ai_job_id=j.id
+              AND sg.lifecycle_status='active'
              WHERE j.tenant_id=$1
                AND j.organization_id=$2
                AND j.id=$3
-               AND j.lifecycle_status != 'deleted'
+               AND j.lifecycle_status='active'
              GROUP BY j.id, j.tenant_id, j.organization_id, j.workspace_id, j.job_type,
                       j.target_type, j.target_id, j.status, j.result_json,
                       j.idempotency_key, j.request_payload_hash, j.created_by, j.created_at
@@ -633,7 +752,7 @@ impl NotesRepository for SqlNotesStore {
                AND organization_id=$3
                AND id=$4
                AND status IN ('queued', 'running')
-               AND lifecycle_status != 'deleted'",
+               AND lifecycle_status='active'",
         )
         .bind(&context.operator_id)
         .bind(&context.tenant_id)
@@ -645,7 +764,30 @@ impl NotesRepository for SqlNotesStore {
         .rows_affected();
 
         if affected == 0 {
-            return self.find_ai_job(context, ai_job_id).await;
+            let current = self.find_ai_job(context, ai_job_id).await?;
+            match current.status.as_str() {
+                "canceled" => return Ok(current),
+                "running" => {
+                    return Err(NotesProductError::Conflict(
+                        "AI job is already running".to_string(),
+                    ));
+                }
+                "succeeded" | "failed" => {
+                    return Err(NotesProductError::Conflict(
+                        "AI job is already terminal".to_string(),
+                    ));
+                }
+                "queued" => {
+                    return Err(NotesProductError::Conflict(
+                        "AI job could not be canceled".to_string(),
+                    ));
+                }
+                other => {
+                    return Err(NotesProductError::Internal(format!(
+                        "invalid persisted AI job status: {other}"
+                    )));
+                }
+            }
         }
 
         self.find_ai_job(context, ai_job_id).await
@@ -658,8 +800,12 @@ impl NotesRepository for SqlNotesStore {
     ) -> Result<AiJob, NotesProductError> {
         let current = self.find_ai_job(context, ai_job_id).await?;
         match current.status.as_str() {
-            "running" => return Ok(current),
             "queued" => {}
+            "running" => {
+                return Err(NotesProductError::Conflict(
+                    "AI job is already running".to_string(),
+                ));
+            }
             "succeeded" | "failed" | "canceled" => {
                 return Err(NotesProductError::Conflict(
                     "AI job is already terminal".to_string(),
@@ -682,7 +828,7 @@ impl NotesRepository for SqlNotesStore {
                AND organization_id=$3
                AND id=$4
                AND status='queued'
-               AND lifecycle_status != 'deleted'",
+               AND lifecycle_status='active'",
         )
         .bind(&context.operator_id)
         .bind(&context.tenant_id)
@@ -694,7 +840,29 @@ impl NotesRepository for SqlNotesStore {
         .rows_affected();
 
         if affected == 0 {
-            return self.find_ai_job(context, ai_job_id).await;
+            let current = self.find_ai_job(context, ai_job_id).await?;
+            match current.status.as_str() {
+                "running" => {
+                    return Err(NotesProductError::Conflict(
+                        "AI job is already running".to_string(),
+                    ));
+                }
+                "succeeded" | "failed" | "canceled" => {
+                    return Err(NotesProductError::Conflict(
+                        "AI job is already terminal".to_string(),
+                    ));
+                }
+                "queued" => {
+                    return Err(NotesProductError::Conflict(
+                        "AI job could not be claimed".to_string(),
+                    ));
+                }
+                other => {
+                    return Err(NotesProductError::Internal(format!(
+                        "invalid persisted AI job status: {other}"
+                    )));
+                }
+            }
         }
 
         self.find_ai_job(context, ai_job_id).await
@@ -794,7 +962,7 @@ impl NotesRepository for SqlNotesStore {
                AND organization_id=$4
                AND id=$5
                AND status='running'
-               AND lifecycle_status != 'deleted'",
+               AND lifecycle_status='active'",
         )
         .bind(&result_json)
         .bind(&context.operator_id)
@@ -836,7 +1004,7 @@ impl NotesRepository for SqlNotesStore {
              WHERE tenant_id=$1
                AND organization_id=$2
                AND page_id=$3
-               AND lifecycle_status != 'deleted'
+               AND lifecycle_status='active'
              ORDER BY created_at DESC, id DESC
              LIMIT $4 OFFSET $5",
         )
@@ -865,7 +1033,7 @@ impl NotesRepository for SqlNotesStore {
              WHERE tenant_id=$1
                AND organization_id=$2
                AND id=$3
-               AND lifecycle_status != 'deleted'
+               AND lifecycle_status='active'
              LIMIT 1",
         )
         .bind(&context.tenant_id)
@@ -897,7 +1065,7 @@ impl NotesRepository for SqlNotesStore {
                AND organization_id=$4
                AND id=$5
                AND status='proposed'
-               AND lifecycle_status != 'deleted'",
+               AND lifecycle_status='active'",
         )
         .bind(status)
         .bind(&context.operator_id)
@@ -920,8 +1088,86 @@ impl NotesRepository for SqlNotesStore {
         &self,
         context: &NotesActorContext,
         ai_suggestion_id: &str,
+        page_id: &str,
+        snapshot: &DrivePageContentSnapshot,
+        expected_current_drive_version_id: &str,
     ) -> Result<AiSuggestion, NotesProductError> {
-        let affected = sqlx::query(
+        let mut transaction = self.pool.begin().await.map_err(internal_sql_error(
+            "begin apply notes_ai_suggestion transaction failed",
+        ))?;
+
+        let page_affected = sqlx::query(
+            "UPDATE notes_page
+             SET drive_space_id=$1,
+                 drive_node_id=$2,
+                 drive_uri=$3,
+                 current_drive_version_id=$4,
+                 current_drive_version_no=$5,
+                 content_type=$6,
+                 content_schema_version=$7,
+                 content_hash=$8,
+                 snippet=$9,
+                 word_count=$10,
+                 task_count=$11,
+                 updated_by=$12,
+                 updated_at=CURRENT_TIMESTAMP,
+                 version=version + 1
+             WHERE tenant_id=$13
+               AND organization_id=$14
+               AND id=$15
+               AND lifecycle_status='active'
+               AND current_drive_version_id=$16",
+        )
+        .bind(&snapshot.drive_space_id)
+        .bind(&snapshot.drive_node_id)
+        .bind(&snapshot.drive_uri)
+        .bind(&snapshot.drive_version_id)
+        .bind(snapshot.drive_version_no)
+        .bind(&snapshot.content_type)
+        .bind(&snapshot.content_schema_version)
+        .bind(&snapshot.content_hash)
+        .bind(&snapshot.snippet)
+        .bind(snapshot.word_count)
+        .bind(snapshot.task_count)
+        .bind(&context.operator_id)
+        .bind(&context.tenant_id)
+        .bind(&context.organization_id)
+        .bind(page_id)
+        .bind(expected_current_drive_version_id)
+        .execute(&mut *transaction)
+        .await
+        .map_err(internal_sql_error(
+            "apply notes_ai_suggestion page drive refs failed",
+        ))?
+        .rows_affected();
+
+        if page_affected == 0 {
+            let page_exists: Option<String> = sqlx::query_scalar(
+                "SELECT id
+                 FROM notes_page
+                 WHERE tenant_id=$1
+                   AND organization_id=$2
+                   AND id=$3
+                   AND lifecycle_status='active'
+                 LIMIT 1",
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(page_id)
+            .fetch_optional(&mut *transaction)
+            .await
+            .map_err(internal_sql_error(
+                "apply notes_ai_suggestion page conflict check failed",
+            ))?;
+            if page_exists.is_some() {
+                return Err(NotesProductError::Conflict(
+                    "page Drive version has changed".to_string(),
+                ));
+            }
+            return Err(NotesProductError::NotFound("page not found".to_string()));
+        }
+
+        let suggestion_affected = sqlx::query(
             "UPDATE notes_ai_suggestion
              SET status='applied',
                  updated_by=$1,
@@ -931,20 +1177,48 @@ impl NotesRepository for SqlNotesStore {
                AND organization_id=$3
                AND id=$4
                AND status='accepted'
-               AND lifecycle_status != 'deleted'",
+               AND lifecycle_status='active'",
         )
         .bind(&context.operator_id)
         .bind(&context.tenant_id)
         .bind(&context.organization_id)
         .bind(ai_suggestion_id)
-        .execute(&self.pool)
+        .execute(&mut *transaction)
         .await
         .map_err(internal_sql_error("apply notes_ai_suggestion failed"))?
         .rows_affected();
 
-        if affected == 0 {
-            return self.find_ai_suggestion(context, ai_suggestion_id).await;
+        if suggestion_affected == 0 {
+            let suggestion_exists: Option<String> = sqlx::query_scalar(
+                "SELECT id
+                 FROM notes_ai_suggestion
+                 WHERE tenant_id=$1
+                   AND organization_id=$2
+                   AND id=$3
+                   AND lifecycle_status='active'
+                 LIMIT 1",
+            )
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(ai_suggestion_id)
+            .fetch_optional(&mut *transaction)
+            .await
+            .map_err(internal_sql_error(
+                "apply notes_ai_suggestion conflict check failed",
+            ))?;
+            if suggestion_exists.is_some() {
+                return Err(NotesProductError::Conflict(
+                    "AI suggestion status changed before apply completed".to_string(),
+                ));
+            }
+            return Err(NotesProductError::NotFound(
+                "AI suggestion not found".to_string(),
+            ));
         }
+
+        transaction.commit().await.map_err(internal_sql_error(
+            "commit apply notes_ai_suggestion transaction failed",
+        ))?;
 
         self.find_ai_suggestion(context, ai_suggestion_id).await
     }
@@ -1046,6 +1320,22 @@ fn map_insert_error(context: &'static str) -> impl Fn(sqlx::Error) -> NotesProdu
         }
         _ => NotesProductError::Internal(format!("{context}: {error}")),
     }
+}
+
+fn like_contains_pattern(query: &str) -> String {
+    let mut escaped = String::with_capacity(query.len() + 2);
+    escaped.push('%');
+    for character in query.to_lowercase().chars() {
+        match character {
+            '\\' | '%' | '_' => {
+                escaped.push('\\');
+                escaped.push(character);
+            }
+            _ => escaped.push(character),
+        }
+    }
+    escaped.push('%');
+    escaped
 }
 
 fn map_workspace(row: &sqlx::any::AnyRow) -> Workspace {

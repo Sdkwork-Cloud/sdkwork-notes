@@ -59,6 +59,15 @@ pub struct UpdatePageContentRequest {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct RestorePageVersionRequest {
+    pub tenant_id: String,
+    pub organization_id: String,
+    pub operator_id: String,
+    pub expected_current_drive_version_id: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdatePageRequest {
     pub tenant_id: String,
     pub organization_id: String,
@@ -228,14 +237,14 @@ pub struct PageResponse {
     pub snippet: Option<String>,
     pub page_kind: String,
     pub drive_node_id: String,
-    pub current_drive_version_no: Option<String>,
+    pub current_drive_version_no: String,
     pub favorite: bool,
     pub updated_at: String,
     pub parent_page_id: Option<String>,
     pub folder_drive_node_id: Option<String>,
     pub drive_space_id: String,
     pub drive_uri: String,
-    pub current_drive_version_id: Option<String>,
+    pub current_drive_version_id: String,
     pub content_type: String,
     pub content_schema_version: String,
     pub content_hash: Option<String>,
@@ -254,9 +263,7 @@ impl From<Page> for PageResponse {
             snippet: page.snippet,
             page_kind: page.page_kind.as_str().to_string(),
             drive_node_id: page.drive_node_id,
-            current_drive_version_no: page
-                .current_drive_version_no
-                .map(|version_no| version_no.to_string()),
+            current_drive_version_no: page.current_drive_version_no.to_string(),
             favorite: page.favorite,
             updated_at: page.updated_at,
             parent_page_id: page.parent_page_id,
@@ -284,7 +291,7 @@ pub struct PageSummaryResponse {
     pub snippet: Option<String>,
     pub page_kind: String,
     pub drive_node_id: String,
-    pub current_drive_version_no: Option<String>,
+    pub current_drive_version_no: String,
     pub favorite: bool,
     pub updated_at: String,
 }

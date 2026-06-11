@@ -10,7 +10,8 @@ use sdkwork_notes_product::infrastructure::sql::install_sqlite_schema;
 use sdkwork_notes_product::infrastructure::sql::notes_store::SqlNotesStore;
 use sdkwork_notes_product::ports::{
     CreateDrivePageContentCommand, DrivePageContentPort, ListDrivePageContentVersionsCommand,
-    ReadDrivePageContentCommand, UpdateDrivePageContentCommand,
+    ReadDrivePageContentCommand, RestoreDrivePageContentVersionCommand,
+    UpdateDrivePageContentCommand,
 };
 use sdkwork_notes_product::service::NotesService;
 use sdkwork_routes_notes_backend_api::routes::build_router;
@@ -720,6 +721,13 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
                     "page content not found".to_string(),
                 )
             })
+    }
+
+    async fn restore_page_content_version(
+        &self,
+        _: RestoreDrivePageContentVersionCommand,
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+        unreachable!("backend AI routes must not restore Drive page content versions")
     }
 
     async fn list_page_content_versions(

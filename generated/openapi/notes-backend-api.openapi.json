@@ -1557,7 +1557,8 @@
           "driveVersionId",
           "driveVersionNo",
           "contentType",
-          "content"
+          "content",
+          "contentSchemaVersion"
         ],
         "properties": {
           "pageId": {

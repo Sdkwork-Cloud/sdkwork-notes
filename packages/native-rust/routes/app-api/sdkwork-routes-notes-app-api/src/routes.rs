@@ -37,6 +37,10 @@ where
             get(handlers::list_page_versions::<R, D>),
         )
         .route(
+            paths::PAGE_VERSION_RESTORE,
+            post(handlers::restore_page_version::<R, D>),
+        )
+        .route(
             paths::PAGE_AI_SUGGESTIONS,
             get(handlers::list_page_ai_suggestions::<R, D>),
         )

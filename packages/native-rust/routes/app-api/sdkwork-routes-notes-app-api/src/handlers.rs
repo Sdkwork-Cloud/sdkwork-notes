@@ -3,9 +3,9 @@ use crate::dto::{
     AiSuggestionDecisionRequest, AiSuggestionPageResponse, AiSuggestionResponse,
     CreateAiJobRequest, CreatePageRequest, CreateWorkspaceRequest, DriveVersionPageResponse,
     NotesContextQuery, NotesPageQuery, NotesSearchQuery, PageContentResponse, PageResponse,
-    PageSummaryPageResponse, SearchResultPageResponse, UpdatePageContentRequest, UpdatePageRequest,
-    WorkspaceBootstrapResponse, WorkspacePageResponse, WorkspaceResponse,
-    DEFAULT_PAGE_CONTENT_TYPE, DEFAULT_PAGE_SCHEMA_VERSION,
+    PageSummaryPageResponse, RestorePageVersionRequest, SearchResultPageResponse,
+    UpdatePageContentRequest, UpdatePageRequest, WorkspaceBootstrapResponse, WorkspacePageResponse,
+    WorkspaceResponse, DEFAULT_PAGE_CONTENT_TYPE, DEFAULT_PAGE_SCHEMA_VERSION,
 };
 use crate::error::{map_product_error, problem, ApiResult, ProblemDetail};
 use crate::state::NotesAppState;
@@ -16,7 +16,8 @@ use sdkwork_notes_product::domain::{
     AcceptAiSuggestionCommand, ApplyAiSuggestionCommand, CreateAiFeedbackCommand,
     CreateAiJobCommand, CreatePageCommand, CreateWorkspaceCommand, ListPageAiSuggestionsQuery,
     ListPageVersionsQuery, ListPagesQuery, ListWorkspacesQuery, NotesActorContext, PageKind,
-    RejectAiSuggestionCommand, SearchQuery, UpdatePageContentCommand, UpdatePageMetadataCommand,
+    RejectAiSuggestionCommand, RestorePageVersionCommand, SearchQuery, UpdatePageContentCommand,
+    UpdatePageMetadataCommand,
 };
 use sdkwork_notes_product::ports::{DrivePageContentPort, NotesRepository};
 use serde_json::json;
@@ -254,12 +255,8 @@ where
             },
             page_id,
             content: payload.content,
-            content_type: payload
-                .content_type
-                .unwrap_or_else(|| DEFAULT_PAGE_CONTENT_TYPE.to_string()),
-            content_schema_version: payload
-                .content_schema_version
-                .unwrap_or_else(|| DEFAULT_PAGE_SCHEMA_VERSION.to_string()),
+            content_type: payload.content_type,
+            content_schema_version: payload.content_schema_version,
             change_summary: payload.change_summary,
             expected_drive_version_id: payload.expected_drive_version_id,
             create_checkpoint: payload.create_checkpoint.unwrap_or(false),
@@ -290,6 +287,33 @@ where
         .map_err(map_product_error)?;
 
     Ok(Json(versions.into()))
+}
+
+pub(crate) async fn restore_page_version<R, D>(
+    State(state): State<NotesAppState<R, D>>,
+    Path((page_id, drive_version_id)): Path<(String, String)>,
+    Json(payload): Json<RestorePageVersionRequest>,
+) -> ApiResult<Json<PageContentResponse>>
+where
+    R: NotesRepository,
+    D: DrivePageContentPort,
+{
+    let content = state
+        .service
+        .restore_page_version(RestorePageVersionCommand {
+            context: NotesActorContext {
+                tenant_id: payload.tenant_id,
+                organization_id: payload.organization_id,
+                operator_id: payload.operator_id,
+            },
+            page_id,
+            drive_version_id,
+            expected_current_drive_version_id: payload.expected_current_drive_version_id,
+        })
+        .await
+        .map_err(map_product_error)?;
+
+    Ok(Json(content.into()))
 }
 
 pub(crate) async fn list_page_ai_suggestions<R, D>(

@@ -37,6 +37,7 @@ fn route_manifest_matches_app_openapi_operations() {
         "GET /app/v3/api/notes/pages/{pageId}/content".to_string(),
         "PUT /app/v3/api/notes/pages/{pageId}/content".to_string(),
         "GET /app/v3/api/notes/pages/{pageId}/versions".to_string(),
+        "POST /app/v3/api/notes/pages/{pageId}/versions/{driveVersionId}/restore".to_string(),
         "GET /app/v3/api/notes/pages/{pageId}/ai_suggestions".to_string(),
         "POST /app/v3/api/notes/ai_suggestions/{aiSuggestionId}/accept".to_string(),
         "POST /app/v3/api/notes/ai_suggestions/{aiSuggestionId}/reject".to_string(),

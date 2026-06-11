@@ -43,7 +43,7 @@ GET  /app/v3/api/notes/pages/{pageId}/content
 PUT  /app/v3/api/notes/pages/{pageId}/content
 ```
 
-The product service persists `notes_workspace` and `notes_page` metadata only. Page content is read and written through `DrivePageContentPort`; tests use a fake Drive port, and a later phase can bind it to the Drive Rust product component or approved Drive SDK facade.
+The product service persists `notes_workspace` and `notes_page` metadata only. Page content is read and written through `DrivePageContentPort`; tests use a fake Drive port. A production adapter is still pending and must bind to a Drive-owned Rust product service/facade or an approved generated Drive SDK facade. Notes must not implement that adapter with raw HTTP to Drive App API or direct writes to Drive tables.
 
 ## Phase 2 Route Manifest And Read Model Foundation (2026-06-08)
 
@@ -70,20 +70,28 @@ PUT   /app/v3/api/notes/pages/{pageId}/content
 
 Phase 2 adds workspace/page list APIs, workspace bootstrap, route manifest parity checks, and Notes-owned page metadata updates with optimistic version checks. Page content remains Drive-owned; Notes still stores only Drive references and current Drive version pointers.
 
-## Phase 3 Drive Version List (2026-06-08)
+## Phase 3 Drive Version Workflows (2026-06-08)
 
-The App API runtime now exposes the first Drive-owned version workflow through the Notes business facade.
+The App API runtime now exposes Drive-owned version workflows through the Notes business facade.
 
 - Phase 3 design: [docs/superpowers/specs/2026-06-08-sdkwork-notes-phase3-drive-version-list-design.md](docs/superpowers/specs/2026-06-08-sdkwork-notes-phase3-drive-version-list-design.md)
 - Phase 3 implementation plan: [docs/superpowers/plans/2026-06-08-sdkwork-notes-phase3-drive-version-list.md](docs/superpowers/plans/2026-06-08-sdkwork-notes-phase3-drive-version-list.md)
 
-Implemented Phase 3 App API runtime route:
+Implemented Phase 3 App API runtime routes:
 
 ```text
-GET /app/v3/api/notes/pages/{pageId}/versions
+GET  /app/v3/api/notes/pages/{pageId}/versions
+POST /app/v3/api/notes/pages/{pageId}/versions/{driveVersionId}/restore
 ```
 
-The product service resolves the Notes page for tenant/organization scope, then delegates version listing to `DrivePageContentPort`. No Notes-owned revision table, version lifecycle, storage object, upload session, provider bucket, or object key state is introduced.
+The product service resolves the Notes page for tenant/organization scope, delegates version listing/restoration to `DrivePageContentPort`, and atomically advances `notes_page.current_drive_version_id/current_drive_version_no` after Drive returns the restored content snapshot. Restoring a historical version produces a new Drive-owned current version; Notes does not move bytes or write Drive version rows directly. No Notes-owned revision table, version lifecycle, storage object, upload session, provider bucket, or object key state is introduced.
+
+Current consistency guards:
+
+- content update and restore commands reject stale expected Drive pointers before calling Drive when the caller supplies an expected version;
+- content update, restore, and AI suggestion apply reject Drive snapshots that point at the wrong node, contain invalid page content, or do not advance the Drive version;
+- duplicate page creation is rejected before Drive content creation to avoid orphan Drive content for same-tenant duplicate page ids;
+- version list responses from Drive are validated before the Notes facade returns them to SDK/API clients.
 
 ## Phase 4 Search Query (2026-06-08)
 
@@ -229,7 +237,7 @@ Implemented Phase 9 Backend API runtime route:
 POST /backend/v3/api/notes/ai_suggestions/{aiSuggestionId}/apply
 ```
 
-The first apply shape is deliberately conservative. A suggestion must already be `accepted`, its payload must contain a full `content` object, and optional `contentType` / `contentSchemaVersion` values override the current page content metadata. The service writes through `DrivePageContentPort::update_page_content`, updates `notes_page` Drive refs from the returned Drive snapshot, and marks the suggestion `applied`.
+The first apply shape is deliberately conservative. A suggestion must already be `accepted`, its payload must contain a full `content` object, and optional `contentType` / `contentSchemaVersion` values override the current page content metadata. The service writes through `DrivePageContentPort::update_page_content`, validates that the returned Drive snapshot advances the current page version, then updates `notes_page` Drive refs and marks the suggestion `applied` in one Notes database transaction.
 
 This phase extends `notes_ai_suggestion.status` to `proposed`, `accepted`, `applied`, `rejected`, and `dismissed`. It still does not create a Notes-owned revision table, storage table, upload lifecycle, object lifecycle, model provider call, AI execution runtime, or generic rich-text patch engine. Drive remains the version authority for the file content produced by apply.
 

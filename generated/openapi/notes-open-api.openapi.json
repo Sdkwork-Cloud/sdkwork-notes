@@ -534,6 +534,62 @@
         "x-sdkwork-data-scope": "organization",
         "x-sdkwork-audit-event": "notes.open.export.retrieve"
       }
+    },
+    "/notes/v3/api/pages/{pageId}/versions/{driveVersionId}/restore": {
+      "post": {
+        "summary": "Restore a Drive-owned page content version through Open API.",
+        "operationId": "pages.versions.restore",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageIdPath"
+          },
+          {
+            "$ref": "#/components/parameters/DriveVersionIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestorePageVersionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Restored page content envelope with the new current Drive version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageContent"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes-open-api",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.open.pages.versions.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.open.page.versions.restore",
+        "x-sdkwork-idempotent": false
+      }
     }
   },
   "components": {
@@ -598,6 +654,15 @@
           "type": "string",
           "maxLength": 200
         }
+      },
+      "DriveVersionIdPath": {
+        "name": "driveVersionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Drive-owned node version id exposed through the Notes page facade."
       }
     },
     "responses": {
@@ -783,7 +848,9 @@
               "driveSpaceId",
               "driveUri",
               "contentType",
-              "lifecycleStatus"
+              "lifecycleStatus",
+              "currentDriveVersionId",
+              "contentSchemaVersion"
             ],
             "properties": {
               "driveSpaceId": {
@@ -796,7 +863,12 @@
                 "type": "string"
               },
               "contentType": {
-                "type": "string"
+                "type": "string",
+                "maxLength": 255
+              },
+              "contentSchemaVersion": {
+                "type": "string",
+                "maxLength": 32
               },
               "lifecycleStatus": {
                 "type": "string"
@@ -832,7 +904,9 @@
           "driveNodeId",
           "driveVersionNo",
           "contentType",
-          "content"
+          "content",
+          "driveVersionId",
+          "contentSchemaVersion"
         ],
         "properties": {
           "pageId": {
@@ -848,11 +922,16 @@
             "type": "string"
           },
           "contentType": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           },
           "content": {
             "type": "object",
             "additionalProperties": true
+          },
+          "contentSchemaVersion": {
+            "type": "string",
+            "maxLength": 32
           }
         }
       },
@@ -1011,7 +1090,13 @@
           },
           "contentType": {
             "type": "string",
+            "maxLength": 255,
             "default": "application/vnd.sdkwork.notes.page+json"
+          },
+          "contentSchemaVersion": {
+            "type": "string",
+            "maxLength": 32,
+            "default": "1"
           }
         }
       },
@@ -1035,8 +1120,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "content",
-          "contentType"
+          "content"
         ],
         "properties": {
           "content": {
@@ -1044,10 +1128,12 @@
             "additionalProperties": true
           },
           "contentType": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 255
           },
           "contentSchemaVersion": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 32
           },
           "changeSummary": {
             "type": "string"
@@ -1088,6 +1174,15 @@
               "pdf",
               "json"
             ]
+          }
+        }
+      },
+      "RestorePageVersionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expectedCurrentDriveVersionId": {
+            "type": "string"
           }
         }
       }
