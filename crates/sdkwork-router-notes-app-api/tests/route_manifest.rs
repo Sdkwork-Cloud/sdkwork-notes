@@ -6,12 +6,12 @@ use std::path::PathBuf;
 #[test]
 fn route_manifest_matches_app_openapi_operations() {
     let manifest: Value =
-        serde_json::from_str(sdkwork_routes_notes_app_api::manifest::route_manifest_json())
+        serde_json::from_str(sdkwork_router_notes_app_api::manifest::route_manifest_json())
             .expect("route manifest json should be valid");
 
     assert_eq!(manifest["schemaVersion"], 1);
     assert_eq!(manifest["kind"], "sdkwork.route.manifest");
-    assert_eq!(manifest["packageName"], "sdkwork-routes-notes-app-api");
+    assert_eq!(manifest["packageName"], "sdkwork-router-notes-app-api");
     assert_eq!(manifest["surface"], "app-api");
     assert_eq!(manifest["owner"], "sdkwork-notes");
     assert_eq!(manifest["domain"], "notes");
@@ -88,8 +88,8 @@ fn read_openapi() -> Value {
 fn workspace_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
-        .nth(5)
-        .expect("route crate should live under packages/native-rust/routes/app-api")
+        .nth(2)
+        .expect("route crate should live under crates")
         .to_path_buf()
 }
 

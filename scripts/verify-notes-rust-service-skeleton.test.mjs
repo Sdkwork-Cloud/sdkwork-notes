@@ -67,17 +67,21 @@ test('declares root Rust workspace service and app-api route crates for Notes ru
   const cargo = await read('Cargo.toml');
   assert.match(cargo, /\[workspace\]/);
   assert.match(cargo, /"services\/sdkwork-notes-product"/);
-  assert.match(cargo, /"packages\/native-rust\/routes\/app-api\/sdkwork-routes-notes-app-api"/);
-  assert.match(cargo, /"packages\/native-rust\/routes\/backend-api\/sdkwork-routes-notes-backend-api"/);
+  assert.match(cargo, /"crates\/sdkwork-router-notes-app-api"/);
+  assert.match(cargo, /"crates\/sdkwork-router-notes-backend-api"/);
+  assert.doesNotMatch(cargo, /packages\/native-rust/);
+  assert.doesNotMatch(cargo, /sdkwork-routes-notes/);
 
   const productCargo = await read('services/sdkwork-notes-product/Cargo.toml');
   assert.match(productCargo, /name\s*=\s*"sdkwork-notes-product"/);
 
-  const appApiCargo = await read('packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/Cargo.toml');
-  assert.match(appApiCargo, /name\s*=\s*"sdkwork-routes-notes-app-api"/);
+  const appApiCargo = await read('crates/sdkwork-router-notes-app-api/Cargo.toml');
+  assert.match(appApiCargo, /name\s*=\s*"sdkwork-router-notes-app-api"/);
+  assert.match(appApiCargo, /name\s*=\s*"sdkwork_router_notes_app_api"/);
 
-  const backendApiCargo = await read('packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/Cargo.toml');
-  assert.match(backendApiCargo, /name\s*=\s*"sdkwork-routes-notes-backend-api"/);
+  const backendApiCargo = await read('crates/sdkwork-router-notes-backend-api/Cargo.toml');
+  assert.match(backendApiCargo, /name\s*=\s*"sdkwork-router-notes-backend-api"/);
+  assert.match(backendApiCargo, /name\s*=\s*"sdkwork_router_notes_backend_api"/);
 });
 
 test('does not create generated SDK transport output inside Notes SDK families', async () => {
@@ -99,8 +103,8 @@ test('does not create generated SDK transport output inside Notes SDK families',
 test('declares component specs for new Rust service crates', async () => {
   for (const relativePath of [
     'services/sdkwork-notes-product/specs/component.spec.json',
-    'packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/specs/component.spec.json',
-    'packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/specs/component.spec.json'
+    'crates/sdkwork-router-notes-app-api/specs/component.spec.json',
+    'crates/sdkwork-router-notes-backend-api/specs/component.spec.json'
   ]) {
     assert.equal(await exists(relativePath), true, `${relativePath} should exist`);
     const componentSpec = await readJson(relativePath);
@@ -121,13 +125,13 @@ test('declares component specs for new Rust service crates', async () => {
 });
 
 test('declares a route manifest artifact aligned with the Notes App OpenAPI authority', async () => {
-  const manifestPath = 'sdks/_route-manifests/app-api/sdkwork-routes-notes-app-api.route-manifest.json';
+  const manifestPath = 'sdks/_route-manifests/app-api/sdkwork-router-notes-app-api.route-manifest.json';
   assert.equal(await exists(manifestPath), true, `${manifestPath} should exist`);
 
   const manifest = await readJson(manifestPath);
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.kind, 'sdkwork.route.manifest');
-  assert.equal(manifest.packageName, 'sdkwork-routes-notes-app-api');
+  assert.equal(manifest.packageName, 'sdkwork-router-notes-app-api');
   assert.equal(manifest.surface, 'app-api');
   assert.equal(manifest.owner, 'sdkwork-notes');
   assert.equal(manifest.domain, 'notes');
@@ -135,9 +139,14 @@ test('declares a route manifest artifact aligned with the Notes App OpenAPI auth
   assert.equal(manifest.apiAuthority, 'sdkwork-notes-app-api');
   assert.equal(manifest.sdkFamily, 'sdkwork-notes-app-sdk');
   assert.equal(manifest.prefix, '/app/v3/api');
+  assert.deepEqual(manifest.source, {
+    crateRoot: 'crates/sdkwork-router-notes-app-api',
+    crateImport: 'sdkwork_router_notes_app_api'
+  });
 
-  const componentSpec = await readJson('packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/specs/component.spec.json');
-  assert.equal(componentSpec.contracts.routeManifest, '../../../../../../sdks/_route-manifests/app-api/sdkwork-routes-notes-app-api.route-manifest.json');
+  const componentSpec = await readJson('crates/sdkwork-router-notes-app-api/specs/component.spec.json');
+  assert.equal(componentSpec.component.type, 'rust-route-crate');
+  assert.equal(componentSpec.contracts.routeManifest, '../../../sdks/_route-manifests/app-api/sdkwork-router-notes-app-api.route-manifest.json');
 
   const openapi = await readJson('generated/openapi/notes-app-api.openapi.json');
   const openapiOperations = new Map();
@@ -197,13 +206,13 @@ test('declares a route manifest artifact aligned with the Notes App OpenAPI auth
 });
 
 test('declares a backend route manifest artifact aligned with the Notes Backend OpenAPI authority', async () => {
-  const manifestPath = 'sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json';
+  const manifestPath = 'sdks/_route-manifests/backend-api/sdkwork-router-notes-backend-api.route-manifest.json';
   assert.equal(await exists(manifestPath), true, `${manifestPath} should exist`);
 
   const manifest = await readJson(manifestPath);
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.kind, 'sdkwork.route.manifest');
-  assert.equal(manifest.packageName, 'sdkwork-routes-notes-backend-api');
+  assert.equal(manifest.packageName, 'sdkwork-router-notes-backend-api');
   assert.equal(manifest.surface, 'backend-api');
   assert.equal(manifest.owner, 'sdkwork-notes');
   assert.equal(manifest.domain, 'notes');
@@ -211,9 +220,14 @@ test('declares a backend route manifest artifact aligned with the Notes Backend 
   assert.equal(manifest.apiAuthority, 'sdkwork-notes-backend-api');
   assert.equal(manifest.sdkFamily, 'sdkwork-notes-backend-sdk');
   assert.equal(manifest.prefix, '/backend/v3/api');
+  assert.deepEqual(manifest.source, {
+    crateRoot: 'crates/sdkwork-router-notes-backend-api',
+    crateImport: 'sdkwork_router_notes_backend_api'
+  });
 
-  const componentSpec = await readJson('packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/specs/component.spec.json');
-  assert.equal(componentSpec.contracts.routeManifest, '../../../../../../sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json');
+  const componentSpec = await readJson('crates/sdkwork-router-notes-backend-api/specs/component.spec.json');
+  assert.equal(componentSpec.component.type, 'rust-route-crate');
+  assert.equal(componentSpec.contracts.routeManifest, '../../../sdks/_route-manifests/backend-api/sdkwork-router-notes-backend-api.route-manifest.json');
 
   const openapi = await readJson('generated/openapi/notes-backend-api.openapi.json');
   const openapiOperations = new Map();
@@ -266,7 +280,7 @@ test('declares a backend route manifest artifact aligned with the Notes Backend 
 test('keeps Notes service source free of Drive-owned storage lifecycle terms', async () => {
   const files = [
     ...await walk('services'),
-    ...await walk('packages/native-rust/routes')
+    ...await walk('crates')
   ]
     .filter((file) => /[\\/]src[\\/].*\.(rs|sql)$/.test(file));
   assert.ok(files.length > 0, 'service source files should be discoverable');

@@ -1,7 +1,11 @@
 [package]
-name = "sdkwork-routes-notes-app-api"
+name = "sdkwork-router-notes-app-api"
 version.workspace = true
 edition.workspace = true
+
+[lib]
+name = "sdkwork_router_notes_app_api"
+path = "src/lib.rs"
 
 [dependencies]
 axum.workspace = true

@@ -1103,7 +1103,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-routes-notes-app-api"
+name = "sdkwork-router-notes-app-api"
 version = "0.1.0"
 dependencies = [
  "async-trait",
@@ -1118,7 +1118,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-routes-notes-backend-api"
+name = "sdkwork-router-notes-backend-api"
 version = "0.1.0"
 dependencies = [
  "async-trait",

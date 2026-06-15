@@ -449,7 +449,7 @@ function expectedSurfacePrefix(surface) {
 }
 
 function parseRoutePackageName(packageName) {
-  if (typeof packageName !== 'string' || !packageName.startsWith('sdkwork-routes-')) {
+  if (typeof packageName !== 'string' || !packageName.startsWith('sdkwork-router-')) {
     return null;
   }
 
@@ -459,7 +459,7 @@ function parseRoutePackageName(packageName) {
       continue;
     }
 
-    const capability = packageName.slice('sdkwork-routes-'.length, -suffix.length);
+    const capability = packageName.slice('sdkwork-router-'.length, -suffix.length);
     if (!capability) {
       return null;
     }
@@ -1173,7 +1173,7 @@ async function verifyRouteManifestMetadata(rootDir, findings) {
         findings,
         'ROUTE_MANIFEST_METADATA_MISMATCH',
         relativePath,
-        `Route manifest packageName must follow sdkwork-routes-<capability>-<surface>, got ${manifest.packageName ?? 'missing'}.`
+        `Route manifest packageName must follow sdkwork-router-<capability>-<surface>, got ${manifest.packageName ?? 'missing'}.`
       );
       continue;
     }
@@ -1191,7 +1191,7 @@ async function verifyRouteManifestMetadata(rootDir, findings) {
     const expectedAuthority = expectedApiAuthority(manifest.domain, packageParts.surface);
     const expectedFamily = expectedSdkFamily(manifest.domain, packageParts.surface);
     const expectedPrefix = expectedSurfacePrefix(packageParts.surface);
-    const expectedCrateRoot = `packages/native-rust/routes/${packageParts.surface}/${manifest.packageName}`;
+    const expectedCrateRoot = `crates/${manifest.packageName}`;
     const expectedCrateImport = packageImportName(manifest.packageName);
 
     const metadataChecks = [
@@ -1306,7 +1306,7 @@ async function verifyRouteComponentSpecMetadata(rootDir, findings) {
       continue;
     }
 
-    const componentSpecPath = `packages/native-rust/routes/${packageParts.surface}/${manifest.packageName}/specs/component.spec.json`;
+    const componentSpecPath = `crates/${manifest.packageName}/specs/component.spec.json`;
     if (!(await pathExists(path.join(rootDir, componentSpecPath)))) {
       pushFinding(
         findings,
@@ -1318,7 +1318,7 @@ async function verifyRouteComponentSpecMetadata(rootDir, findings) {
     }
 
     const componentSpec = await readJson(rootDir, componentSpecPath);
-    const expectedRouteManifest = `../../../../../../sdks/_route-manifests/${packageParts.surface}/${manifest.packageName}.route-manifest.json`;
+    const expectedRouteManifest = `../../../sdks/_route-manifests/${packageParts.surface}/${manifest.packageName}.route-manifest.json`;
     const componentChecks = [
       {
         actual: componentSpec.component?.name,

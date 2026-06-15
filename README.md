@@ -28,7 +28,7 @@ The first executable backend service layer has been started at the repository ro
 
 - Root Rust workspace: [Cargo.toml](Cargo.toml)
 - Product service crate: [services/sdkwork-notes-product](services/sdkwork-notes-product)
-- App API route crate: [packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api](packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api)
+- App API route crate: [crates/sdkwork-router-notes-app-api](crates/sdkwork-router-notes-app-api)
 - Phase 1 service design: [docs/superpowers/specs/2026-06-08-sdkwork-notes-phase1-rust-service-design.md](docs/superpowers/specs/2026-06-08-sdkwork-notes-phase1-rust-service-design.md)
 - Phase 1 implementation plan: [docs/superpowers/plans/2026-06-08-sdkwork-notes-phase1-rust-service.md](docs/superpowers/plans/2026-06-08-sdkwork-notes-phase1-rust-service.md)
 - Service skeleton verifier: [scripts/verify-notes-rust-service-skeleton.test.mjs](scripts/verify-notes-rust-service-skeleton.test.mjs)
@@ -51,8 +51,8 @@ The App API runtime has been aligned to the SDKWork Rust route crate shape and n
 
 - Phase 2 design: [docs/superpowers/specs/2026-06-08-sdkwork-notes-phase2-route-manifest-and-read-model-design.md](docs/superpowers/specs/2026-06-08-sdkwork-notes-phase2-route-manifest-and-read-model-design.md)
 - Phase 2 implementation plan: [docs/superpowers/plans/2026-06-08-sdkwork-notes-phase2-route-manifest-and-read-model.md](docs/superpowers/plans/2026-06-08-sdkwork-notes-phase2-route-manifest-and-read-model.md)
-- Route crate: [packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api](packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api)
-- Normalized route manifest: [sdks/_route-manifests/app-api/sdkwork-routes-notes-app-api.route-manifest.json](sdks/_route-manifests/app-api/sdkwork-routes-notes-app-api.route-manifest.json)
+- Route crate: [crates/sdkwork-router-notes-app-api](crates/sdkwork-router-notes-app-api)
+- Normalized route manifest: [sdks/_route-manifests/app-api/sdkwork-router-notes-app-api.route-manifest.json](sdks/_route-manifests/app-api/sdkwork-router-notes-app-api.route-manifest.json)
 
 Implemented Phase 2 App API runtime routes:
 
@@ -112,7 +112,7 @@ Backend verification commands:
 
 ```powershell
 cargo test -p sdkwork-notes-product
-cargo test -p sdkwork-routes-notes-app-api
+cargo test -p sdkwork-router-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 node scripts\verify-notes-contract-foundation.mjs
 cargo test --workspace
@@ -148,8 +148,8 @@ The Backend API runtime now exposes the first operational administration surface
 
 - Phase 6 design: [docs/superpowers/specs/2026-06-08-sdkwork-notes-phase6-backend-ai-job-admin-design.md](docs/superpowers/specs/2026-06-08-sdkwork-notes-phase6-backend-ai-job-admin-design.md)
 - Phase 6 implementation plan: [docs/superpowers/plans/2026-06-08-sdkwork-notes-phase6-backend-ai-job-admin.md](docs/superpowers/plans/2026-06-08-sdkwork-notes-phase6-backend-ai-job-admin.md)
-- Backend route crate: [packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api](packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api)
-- Backend route manifest: [sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json](sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json)
+- Backend route crate: [crates/sdkwork-router-notes-backend-api](crates/sdkwork-router-notes-backend-api)
+- Backend route manifest: [sdks/_route-manifests/backend-api/sdkwork-router-notes-backend-api.route-manifest.json](sdks/_route-manifests/backend-api/sdkwork-router-notes-backend-api.route-manifest.json)
 
 Implemented Phase 6 Backend API runtime routes:
 

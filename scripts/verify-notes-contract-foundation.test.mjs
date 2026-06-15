@@ -715,11 +715,11 @@ test('rejects route manifests whose package, capability, authority, or component
   const rootDir = await createFixture();
   try {
     await writeJson(
-      path.join(rootDir, 'sdks/_route-manifests/app-api/sdkwork-routes-pages-app-api.route-manifest.json'),
+      path.join(rootDir, 'sdks/_route-manifests/app-api/sdkwork-router-pages-app-api.route-manifest.json'),
       {
         schemaVersion: 1,
         kind: 'sdkwork.route.manifest',
-        packageName: 'sdkwork-routes-pages-app-api',
+        packageName: 'sdkwork-router-pages-app-api',
         surface: 'app-api',
         owner: 'sdkwork-notes',
         domain: 'notes',
@@ -728,8 +728,8 @@ test('rejects route manifests whose package, capability, authority, or component
         sdkFamily: 'sdkwork-notes-app-sdk',
         prefix: '/app/v3/api',
         source: {
-          crateRoot: 'packages/native-rust/routes/app-api/sdkwork-routes-pages-app-api',
-          crateImport: 'sdkwork_routes_pages_app_api'
+          crateRoot: 'crates/sdkwork-router-pages-app-api',
+          crateImport: 'sdkwork_router_pages_app_api'
         },
         routes: [
           {
@@ -757,12 +757,12 @@ test('rejects route manifests whose package, capability, authority, or component
     );
 
     await writeJson(
-      path.join(rootDir, 'packages/native-rust/routes/app-api/sdkwork-routes-pages-app-api/specs/component.spec.json'),
+      path.join(rootDir, 'crates/sdkwork-router-pages-app-api/specs/component.spec.json'),
       {
         schemaVersion: 1,
         kind: 'sdkwork.component.spec',
         component: {
-          name: 'sdkwork-routes-pages-app-api',
+          name: 'sdkwork-router-pages-app-api',
           domain: 'notes',
           capability: 'pages',
           surface: 'app-api'
@@ -772,7 +772,7 @@ test('rejects route manifests whose package, capability, authority, or component
             name: 'sdkwork-notes.app',
             prefix: '/app/v3/api/notes'
           },
-          routeManifest: '../../../../../../sdks/_route-manifests/app-api/sdkwork-routes-pages-app-api.route-manifest.json',
+          routeManifest: '../../../sdks/_route-manifests/app-api/sdkwork-router-pages-app-api.route-manifest.json',
           sdkDependencies: [],
           dependencyApiExports: [],
           dependencyApiSurfaces: []

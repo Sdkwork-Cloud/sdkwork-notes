@@ -19,6 +19,6 @@ Responsibilities:
 Verification:
 
 ```powershell
-cargo test -p sdkwork-routes-notes-app-api
+cargo test -p sdkwork-router-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 ```

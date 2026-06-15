@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "services/sdkwork-notes-product",
-    "packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api",
-    "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api",
+    "crates/sdkwork-router-notes-app-api",
+    "crates/sdkwork-router-notes-backend-api",
 ]
 resolver = "2"
 
@@ -21,4 +21,5 @@ tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }
 tower = { version = "0.5", features = ["util"] }
 
 sdkwork-notes-product = { path = "services/sdkwork-notes-product" }
-sdkwork-routes-notes-backend-api = { path = "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api" }
+sdkwork-router-notes-app-api = { path = "crates/sdkwork-router-notes-app-api" }
+sdkwork-router-notes-backend-api = { path = "crates/sdkwork-router-notes-backend-api" }

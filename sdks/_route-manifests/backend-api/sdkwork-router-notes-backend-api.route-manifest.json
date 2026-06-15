@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "sdkwork.route.manifest",
-  "packageName": "sdkwork-routes-notes-backend-api",
+  "packageName": "sdkwork-router-notes-backend-api",
   "surface": "backend-api",
   "owner": "sdkwork-notes",
   "domain": "notes",
@@ -10,8 +10,8 @@
   "sdkFamily": "sdkwork-notes-backend-sdk",
   "prefix": "/backend/v3/api",
   "source": {
-    "crateRoot": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api",
-    "crateImport": "sdkwork_routes_notes_backend_api"
+    "crateRoot": "crates/sdkwork-router-notes-backend-api",
+    "crateImport": "sdkwork_router_notes_backend_api"
   },
   "routes": [
     {
@@ -29,7 +29,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "list_ai_jobs"
       },
       "schemas": {
@@ -42,7 +42,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     },
     {
@@ -60,7 +60,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "get_ai_job"
       },
       "schemas": {
@@ -73,7 +73,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     },
     {
@@ -91,7 +91,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "cancel_ai_job"
       },
       "schemas": {
@@ -104,7 +104,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     },
     {
@@ -122,7 +122,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "claim_ai_job"
       },
       "schemas": {
@@ -135,7 +135,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     },
     {
@@ -153,7 +153,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "complete_ai_job"
       },
       "schemas": {
@@ -166,7 +166,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     },
     {
@@ -184,7 +184,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "accept_ai_suggestion"
       },
       "schemas": {
@@ -197,7 +197,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     },
     {
@@ -215,7 +215,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "reject_ai_suggestion"
       },
       "schemas": {
@@ -228,7 +228,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     },
     {
@@ -246,7 +246,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "apply_ai_suggestion"
       },
       "schemas": {
@@ -259,7 +259,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     },
     {
@@ -277,7 +277,7 @@
         "dataScope": "organization"
       },
       "handler": {
-        "module": "sdkwork_routes_notes_backend_api::handlers",
+        "module": "sdkwork_router_notes_backend_api::handlers",
         "name": "list_ai_suggestion_feedback"
       },
       "schemas": {
@@ -290,7 +290,7 @@
         "apiAuthority": "sdkwork-notes-backend-api"
       },
       "source": {
-        "file": "packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/handlers.rs"
+        "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
       }
     }
   ]

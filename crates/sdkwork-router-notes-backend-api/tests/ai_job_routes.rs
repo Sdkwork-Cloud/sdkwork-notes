@@ -14,7 +14,7 @@ use sdkwork_notes_product::ports::{
     UpdateDrivePageContentCommand,
 };
 use sdkwork_notes_product::service::NotesService;
-use sdkwork_routes_notes_backend_api::routes::build_router;
+use sdkwork_router_notes_backend_api::routes::build_router;
 use serde_json::json;
 use sqlx::any::AnyPoolOptions;
 use std::collections::BTreeMap;

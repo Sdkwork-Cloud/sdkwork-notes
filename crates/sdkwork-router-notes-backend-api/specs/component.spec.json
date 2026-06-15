@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "kind": "sdkwork.component.spec",
   "component": {
-    "name": "sdkwork-routes-notes-backend-api",
-    "displayName": "SDKWork Notes Backend API Service",
+    "name": "sdkwork-router-notes-backend-api",
+    "displayName": "SDKWork Notes Backend API Router",
     "version": "0.1.0",
-    "type": "web-backend-service",
-    "root": "sdkwork-notes/packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api",
+    "type": "rust-route-crate",
+    "root": "sdkwork-notes/crates/sdkwork-router-notes-backend-api",
     "domain": "notes",
     "capability": "notes",
     "surface": "backend-api",
@@ -22,42 +22,42 @@
   "canonicalSpecs": [
     {
       "file": "COMPONENT_SPEC.md",
-      "path": "../../../../../../../sdkwork-specs/COMPONENT_SPEC.md",
+      "path": "../../../../sdkwork-specs/COMPONENT_SPEC.md",
       "purpose": "Local component spec and manifest rules."
     },
     {
       "file": "CODE_STYLE_SPEC.md",
-      "path": "../../../../../../../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "path": "../../../../sdkwork-specs/CODE_STYLE_SPEC.md",
       "purpose": "Authored source structure and generated-code boundaries."
     },
     {
       "file": "NAMING_SPEC.md",
-      "path": "../../../../../../../sdkwork-specs/NAMING_SPEC.md",
+      "path": "../../../../sdkwork-specs/NAMING_SPEC.md",
       "purpose": "Canonical package, route, API, SDK, and component naming."
     },
     {
       "file": "RUST_CODE_SPEC.md",
-      "path": "../../../../../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "path": "../../../../sdkwork-specs/RUST_CODE_SPEC.md",
       "purpose": "Rust crate/module layout, route/service boundaries, errors, and tests."
     },
     {
       "file": "API_SPEC.md",
-      "path": "../../../../../../../sdkwork-specs/API_SPEC.md",
+      "path": "../../../../sdkwork-specs/API_SPEC.md",
       "purpose": "Backend API prefix, operation, problem detail, and OpenAPI alignment rules."
     },
     {
       "file": "WEB_BACKEND_SPEC.md",
-      "path": "../../../../../../../sdkwork-specs/WEB_BACKEND_SPEC.md",
+      "path": "../../../../sdkwork-specs/WEB_BACKEND_SPEC.md",
       "purpose": "Router/handler/service/repository layering and request context rules."
     },
     {
       "file": "DRIVE_SPEC.md",
-      "path": "../../../../../../../sdkwork-specs/DRIVE_SPEC.md",
+      "path": "../../../../sdkwork-specs/DRIVE_SPEC.md",
       "purpose": "Drive file/content/version ownership boundary."
     },
     {
       "file": "TEST_SPEC.md",
-      "path": "../../../../../../../sdkwork-specs/TEST_SPEC.md",
+      "path": "../../../../sdkwork-specs/TEST_SPEC.md",
       "purpose": "Required backend, API, Drive boundary, and contract verification."
     }
   ],
@@ -65,17 +65,17 @@
     "apiAuthority": {
       "name": "sdkwork-notes-backend-api",
       "prefix": "/backend/v3/api/notes",
-      "authorityOpenApi": "../../generated/openapi/notes-backend-api.openapi.json",
+      "authorityOpenApi": "../../../generated/openapi/notes-backend-api.openapi.json",
       "owner": "sdkwork-notes"
     },
     "publicExports": [
       ".",
-      "sdkwork_routes_notes_backend_api::routes::build_router"
+      "sdkwork_router_notes_backend_api::routes::build_router"
     ],
     "runtimeEntrypoints": [
-      "sdkwork_routes_notes_backend_api::routes::build_router"
+      "sdkwork_router_notes_backend_api::routes::build_router"
     ],
-    "routeManifest": "../../../../../../sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json",
+    "routeManifest": "../../../sdks/_route-manifests/backend-api/sdkwork-router-notes-backend-api.route-manifest.json",
     "sdkClients": [],
     "sdkDependencies": [],
     "dependencyApiExports": [],
@@ -89,7 +89,7 @@
   },
   "verification": {
     "commands": [
-      "cargo test -p sdkwork-routes-notes-backend-api",
+      "cargo test -p sdkwork-router-notes-backend-api",
       "node --test scripts/verify-notes-rust-service-skeleton.test.mjs"
     ]
   },
