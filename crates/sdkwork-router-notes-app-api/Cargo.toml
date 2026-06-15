@@ -8,6 +8,7 @@ name = "sdkwork_router_notes_app_api"
 path = "src/lib.rs"
 
 [dependencies]
+sdkwork-pool-config = { path = "../../../sdkwork-pool/crates/sdkwork-pool-config" }
 axum.workspace = true
 http.workspace = true
 serde.workspace = true
