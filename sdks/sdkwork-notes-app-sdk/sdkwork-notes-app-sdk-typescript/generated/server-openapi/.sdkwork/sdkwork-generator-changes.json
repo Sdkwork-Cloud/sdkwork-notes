@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "generator": "@sdkwork/sdk-generator",
+  "sdk": {
+    "name": "sdkwork-notes-app-sdk",
+    "version": "0.1.0",
+    "language": "typescript",
+    "sdkType": "app",
+    "protocol": "http",
+    "packageName": "@sdkwork-internal/notes-app-sdk-generated"
+  },
+  "changeFingerprint": "9449ffc2ff2453ad91ac78fc7ad4057b2086afc048dbc70789ab51d9ec720ddf",
+  "changes": {
+    "createdGeneratedFiles": [],
+    "updatedGeneratedFiles": [
+      "src/types/create-page-request.ts",
+      "src/types/page-summary.ts",
+      "src/types/page.ts"
+    ],
+    "unchangedGeneratedFiles": [
+      "bin/publish-core.mjs",
+      "bin/publish.ps1",
+      "bin/publish.sh",
+      "bin/sdk-gen.bat",
+      "bin/sdk-gen.sh",
+      "CHANGELOG.md",
+      "LICENSE",
+      "package.json",
+      "README.md",
+      "sdkwork-sdk.json",
+      "src/api/base.ts",
+      "src/api/index.ts",
+      "src/api/notes.ts",
+      "src/api/paths.ts",
+      "src/auth/index.ts",
+      "src/http/client.ts",
+      "src/http/index.ts",
+      "src/index.ts",
+      "src/sdk.ts",
+      "src/types/ai-feedback-create-request.ts",
+      "src/types/ai-feedback.ts",
+      "src/types/ai-job.ts",
+      "src/types/ai-suggestion-apply-request.ts",
+      "src/types/ai-suggestion-decision-request.ts",
+      "src/types/ai-suggestion-page.ts",
+      "src/types/ai-suggestion.ts",
+      "src/types/common.ts",
+      "src/types/create-ai-job-request.ts",
+      "src/types/create-workspace-request.ts",
+      "src/types/drive-version-page.ts",
+      "src/types/drive-version-summary.ts",
+      "src/types/field-error.ts",
+      "src/types/index.ts",
+      "src/types/note-remote-apply-conflict.ts",
+      "src/types/note-remote-apply-mutation-patch.ts",
+      "src/types/note-remote-apply-request.ts",
+      "src/types/note-remote-apply-result.ts",
+      "src/types/object-type-summary.ts",
+      "src/types/page-content.ts",
+      "src/types/page-info.ts",
+      "src/types/page-summary-page.ts",
+      "src/types/problem-detail.ts",
+      "src/types/restore-page-version-request.ts",
+      "src/types/search-result-page.ts",
+      "src/types/search-result.ts",
+      "src/types/update-page-content-request.ts",
+      "src/types/update-page-request.ts",
+      "src/types/workspace-bootstrap.ts",
+      "src/types/workspace-page.ts",
+      "src/types/workspace.ts",
+      "tsconfig.json"
+    ],
+    "deletedGeneratedFiles": [],
+    "scaffoldedFiles": [],
+    "preservedScaffoldFiles": [
+      "custom/build-runtime.mjs",
+      "custom/README.md"
+    ],
+    "backedUpFiles": []
+  },
+  "impact": {
+    "schemaVersion": 1,
+    "areas": [
+      "models"
+    ],
+    "details": [
+      {
+        "area": "models",
+        "paths": [
+          "src/types/create-page-request.ts",
+          "src/types/page-summary.ts",
+          "src/types/page.ts"
+        ]
+      }
+    ],
+    "requiresVerification": true,
+    "summary": "Detected impact areas: models. Verification is required."
+  },
+  "verificationPlan": {
+    "shouldRun": true,
+    "runPhase": "now",
+    "summary": "Detected impact areas: models. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "steps": [
+      {
+        "id": "check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: models.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
+      },
+      {
+        "id": "build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: models.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
+      }
+    ]
+  },
+  "executionDecision": {
+    "schemaVersion": 1,
+    "riskLevel": "medium",
+    "nextAction": "verify",
+    "requiresManualReview": false,
+    "applyRequiresExpectedFingerprint": false,
+    "summary": "Changes have been applied. Run the required verification plan now.",
+    "reasons": [
+      "verification-required"
+    ]
+  },
+  "preservedLegacyFiles": false
+}
