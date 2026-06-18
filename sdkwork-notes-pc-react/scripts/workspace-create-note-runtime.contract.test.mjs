@@ -11,7 +11,7 @@ function createDataModuleUrl(source) {
 async function loadWorkspaceCreateNoteRuntimeModule() {
   const entryPoint = path.resolve(
     process.cwd(),
-    'packages/sdkwork-notes-notes/src/services/noteWorkspaceCreateNoteRuntime.ts',
+    'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceCreateNoteRuntime.ts',
   );
   const source = await readFile(entryPoint, 'utf8');
   const transpiled = ts.transpileModule(source, {

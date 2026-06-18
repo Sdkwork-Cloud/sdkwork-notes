@@ -45,12 +45,12 @@ function createMemoryStorage() {
   };
 }
 
-const notesLocalModule = await loadTsModule('packages/sdkwork-notes-local/src/index.ts');
+const notesLocalModule = await loadTsModule('packages/sdkwork-notes-pc-local/src/index.ts');
 const autosaveRuntimeModule = await loadTsModule(
-  'packages/sdkwork-notes-notes/src/services/noteWorkspaceAutosaveRuntime.ts',
+  'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceAutosaveRuntime.ts',
 );
 const exitRecoveryModule = await loadTsModule(
-  'packages/sdkwork-notes-notes/src/services/noteWorkspaceExitRecovery.ts',
+  'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceExitRecovery.ts',
 );
 
 test('browser local store upserts crash-recovery drafts by note id and clears them after confirmation', async () => {
@@ -225,8 +225,8 @@ test('autosave runtime captures recovery snapshots before exit flush and the wor
     'cleanup:visibility',
   ]);
 
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const storeSource = read('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const storeSource = read('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts');
 
   assert.match(pageSource, /captureActiveNoteExitRecovery = useNotesWorkspaceStore\(\(state\) => state\.captureActiveNoteExitRecovery\);/);
   assert.match(pageSource, /void captureActiveNoteExitRecovery\('pagehide'\);/);

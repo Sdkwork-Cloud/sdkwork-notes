@@ -10,9 +10,9 @@ function read(relativePath) {
 }
 
 test('workspace page delegates command palette item binding to a dedicated component boundary', () => {
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const componentsIndexSource = read('packages/sdkwork-notes-notes/src/components/index.ts');
-  const commandPaletteBoundarySource = read('packages/sdkwork-notes-notes/src/components/NotesWorkspaceCommandPalette.tsx');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const componentsIndexSource = read('packages/sdkwork-notes-pc-notes/src/components/index.ts');
+  const commandPaletteBoundarySource = read('packages/sdkwork-notes-pc-notes/src/components/NotesWorkspaceCommandPalette.tsx');
 
   assert.match(pageSource, /NotesWorkspaceCommandPalette/);
   assert.match(pageSource, /<NotesWorkspaceCommandPalette/);

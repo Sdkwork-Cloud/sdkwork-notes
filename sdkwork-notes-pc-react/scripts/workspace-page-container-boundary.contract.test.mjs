@@ -10,9 +10,9 @@ function read(relativePath) {
 }
 
 test('workspace page container keeps insight rendering out of NotesWorkspacePage and inside a dedicated component boundary', () => {
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const componentsIndexSource = read('packages/sdkwork-notes-notes/src/components/index.ts');
-  const insightsComponentSource = read('packages/sdkwork-notes-notes/src/components/NotesWorkspaceInsightsPanel.tsx');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const componentsIndexSource = read('packages/sdkwork-notes-pc-notes/src/components/index.ts');
+  const insightsComponentSource = read('packages/sdkwork-notes-pc-notes/src/components/NotesWorkspaceInsightsPanel.tsx');
 
   assert.match(pageSource, /NotesWorkspaceInsightsPanel/);
   assert.match(pageSource, /<NotesWorkspaceInsightsPanel/);

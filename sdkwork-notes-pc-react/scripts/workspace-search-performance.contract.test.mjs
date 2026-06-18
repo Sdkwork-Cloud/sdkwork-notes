@@ -24,15 +24,15 @@ async function transpileTsModule(relativePath) {
 }
 
 async function loadSearchPerformanceModules() {
-  const notesSearchModuleSource = await transpileTsModule('packages/sdkwork-notes-search/src/index.ts');
+  const notesSearchModuleSource = await transpileTsModule('packages/sdkwork-notes-pc-search/src/index.ts');
   const notesSearchModuleUrl = createDataModuleUrl(notesSearchModuleSource);
-  const selectorsSource = (await transpileTsModule('packages/sdkwork-notes-notes/src/services/noteWorkspaceSelectors.ts'))
-    .replaceAll("'@sdkwork/notes-search'", `'${notesSearchModuleUrl}'`)
-    .replaceAll('"@sdkwork/notes-search"', `"${notesSearchModuleUrl}"`);
-  const commandPaletteModelSource = (await transpileTsModule('packages/sdkwork-notes-notes/src/services/noteWorkspaceCommandPaletteModel.ts'))
-    .replaceAll("'@sdkwork/notes-search'", `'${notesSearchModuleUrl}'`)
-    .replaceAll('"@sdkwork/notes-search"', `"${notesSearchModuleUrl}"`);
-  const commandPaletteSource = await transpileTsModule('packages/sdkwork-notes-notes/src/services/noteCommandPalette.ts');
+  const selectorsSource = (await transpileTsModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceSelectors.ts'))
+    .replaceAll("'@sdkwork/notes-pc-search'", `'${notesSearchModuleUrl}'`)
+    .replaceAll('"@sdkwork/notes-pc-search"', `"${notesSearchModuleUrl}"`);
+  const commandPaletteModelSource = (await transpileTsModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceCommandPaletteModel.ts'))
+    .replaceAll("'@sdkwork/notes-pc-search'", `'${notesSearchModuleUrl}'`)
+    .replaceAll('"@sdkwork/notes-pc-search"', `"${notesSearchModuleUrl}"`);
+  const commandPaletteSource = await transpileTsModule('packages/sdkwork-notes-pc-notes/src/services/noteCommandPalette.ts');
 
   return {
     notesSearchModule: await import(notesSearchModuleUrl),

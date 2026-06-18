@@ -1,0 +1,14 @@
+[package]
+name = "sdkwork-notes-pages-repository-sqlx"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+name = "sdkwork_notes_pages_repository_sqlx"
+path = "src/lib.rs"
+
+[dependencies]
+async-trait.workspace = true
+serde_json.workspace = true
+sdkwork-notes-pages-service.workspace = true
+sqlx.workspace = true

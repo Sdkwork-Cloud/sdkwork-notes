@@ -6,7 +6,7 @@ import test from 'node:test';
 import ts from 'typescript';
 
 const workspaceRoot = process.cwd();
-const workspaceSaveQueueModulePath = 'packages/sdkwork-notes-notes/src/services/noteWorkspaceSaveQueue.ts';
+const workspaceSaveQueueModulePath = 'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceSaveQueue.ts';
 
 function createDataModuleUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
@@ -63,7 +63,7 @@ test('workspace save queue runtime exists and is exported from the services boun
     'Expected noteWorkspaceSaveQueue.ts to exist.',
   );
 
-  const servicesIndexSource = read('packages/sdkwork-notes-notes/src/services/index.ts');
+  const servicesIndexSource = read('packages/sdkwork-notes-pc-notes/src/services/index.ts');
   assert.match(servicesIndexSource, /noteWorkspaceSaveQueue/);
 
   const workspaceSaveQueueModule = await loadWorkspaceSaveQueueModule();
@@ -210,7 +210,7 @@ test('save completion returns the success state when no newer draft edits arrive
 });
 
 test('workspace store consumes the save queue for in-flight waits, replay requests, and save completion', () => {
-  const storeSource = read('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts');
+  const storeSource = read('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts');
 
   assert.match(storeSource, /createNotesWorkspaceSaveQueue/);
   assert.match(storeSource, /resolveNotesWorkspaceSaveCompletion/);

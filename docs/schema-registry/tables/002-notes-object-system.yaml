@@ -7,7 +7,7 @@ tables:
   - table: notes_object_type
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Workspace-scoped object type similar to a supertag or structured page type.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -35,7 +35,7 @@ tables:
   - table: notes_property_definition
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Property definition for object types and collection views.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -66,7 +66,7 @@ tables:
   - table: notes_page_object_type
     profile: relation_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Binding between pages and object types.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -85,7 +85,7 @@ tables:
   - table: notes_property_value
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Typed property values for pages. Search/sort indexes are enabled only for selected property definitions.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -123,7 +123,7 @@ tables:
   - table: notes_collection
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Collection/database over pages.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -145,7 +145,7 @@ tables:
   - table: notes_collection_item
     profile: relation_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Manual collection membership. Dynamic collections derive membership from filters and source scope.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -170,7 +170,7 @@ tables:
   - table: notes_view
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Saved collection view configuration.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }

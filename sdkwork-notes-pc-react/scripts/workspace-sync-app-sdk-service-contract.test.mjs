@@ -43,8 +43,8 @@ test('future notes remote apply shared wrapper service contract freezes the note
   assert.deepEqual(spec, {
     owner: {
       family: 'notes-core-service',
-      sharedWrapperPackage: '@sdkwork/notes-core',
-      serviceFile: 'packages/sdkwork-notes-core/src/services/appNoteSyncService.ts',
+      sharedWrapperPackage: '@sdkwork/notes-pc-core',
+      serviceFile: 'packages/sdkwork-notes-pc-core/src/services/appNoteSyncService.ts',
       serviceExport: 'appNoteSyncService',
       serviceInterface: 'IAppNoteSyncService',
       serviceMethod: 'remoteApply',
@@ -76,8 +76,8 @@ test('future notes remote apply shared wrapper service contract freezes the note
       delegateToResultAdapterContract: 'notes-remote-apply-app-sdk-result-adapter.contract.json',
     },
     publicExports: {
-      rootIndex: 'packages/sdkwork-notes-core/src/index.ts',
-      servicesIndex: 'packages/sdkwork-notes-core/src/services/index.ts',
+      rootIndex: 'packages/sdkwork-notes-pc-core/src/index.ts',
+      servicesIndex: 'packages/sdkwork-notes-pc-core/src/services/index.ts',
     },
     forbidden: [
       'wrapper-level direct-write fallback',

@@ -33,7 +33,7 @@ function createIntentMutation(intent) {
   return { intent };
 }
 
-const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-sync/src/index.ts');
+const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts');
 
 test('notes sync remote apply request maps a replayable task into an explicit idempotent transport payload', () => {
   const task = syncModule.createNotesSyncTask({

@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
   );
   const notesSearchSourceEntry = path.resolve(
     __dirname,
-    './packages/sdkwork-notes-search/src/index.ts',
+    './packages/sdkwork-notes-pc-search/src/index.ts',
   );
   const sharedSdkCommonDistEntry =
     resolvePnpmPackageDistEntry('@sdkwork/sdk-common', workspaceRootDir)
@@ -102,7 +102,7 @@ export default defineConfig(({ mode }) => {
           : [
               { find: '@sdkwork/sdk-common', replacement: sharedSdkCommonDistEntry },
             ]),
-        { find: '@sdkwork/notes-search', replacement: notesSearchSourceEntry },
+        { find: '@sdkwork/notes-pc-search', replacement: notesSearchSourceEntry },
       ],
       dedupe: ['react', 'react-dom', '@sdkwork/sdk-common'],
     },

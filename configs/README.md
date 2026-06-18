@@ -1,12 +1,8 @@
-# Notes Config Templates
+# configs/
 
-`configs/` contains safe checked-in config templates for `sdkwork-notes`.
+Runtime topology profiles and gateway configuration for SDKWork Notes.
 
-Current templates:
+- [topology/](topology/) — hosting/service-layout/environment env profiles
+- `sdkwork-api-gateway.notes.*.toml` — cloud gateway bundles
 
-- `topology/*.env`: runtime topology profile env files (`specs/topology.spec.json`).
-- `sdkwork-api-gateway.notes.development.toml`: cloud gateway dev handoff for Notes surfaces.
-- `sdkwork-api-gateway.notes.production.toml`: cloud gateway production handoff for Notes surfaces.
-
-Host-local overrides such as `.env.local` and `configs/*.local.toml` must stay out of source control.
-Runtime user-private config is governed by `../../sdkwork-specs/RUNTIME_DIRECTORY_SPEC.md`.
+See [../specs/topology.spec.json](../specs/topology.spec.json).

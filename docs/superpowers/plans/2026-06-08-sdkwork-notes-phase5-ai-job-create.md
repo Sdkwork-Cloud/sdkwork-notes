@@ -15,13 +15,13 @@
 Modify:
 
 - `docs/schema-registry/tables/003-notes-ai-projections.yaml`: record idempotency columns and product-owned initial AI job source writes.
-- `services/sdkwork-notes-product/src/domain.rs`: add AI job domain models and command structs.
-- `services/sdkwork-notes-product/src/ports.rs`: add AI job repository methods.
-- `services/sdkwork-notes-product/src/service.rs`: add `NotesService::create_ai_job`.
-- `services/sdkwork-notes-product/src/infrastructure/sql/sqlite_core.sql`: add `notes_ai_job` and `notes_ai_job_source`.
-- `services/sdkwork-notes-product/src/infrastructure/sql/notes_store.rs`: add AI job SQL mapping and insert/read methods.
-- `services/sdkwork-notes-product/tests/sqlite_schema_contract.rs`: assert AI job tables and Drive reference boundaries.
-- `services/sdkwork-notes-product/tests/page_service.rs`: add product service AI job tests.
+- `services/sdkwork-notes-pages-service/src/domain.rs`: add AI job domain models and command structs.
+- `services/sdkwork-notes-pages-service/src/ports.rs`: add AI job repository methods.
+- `services/sdkwork-notes-pages-service/src/service.rs`: add `NotesService::create_ai_job`.
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/sqlite_core.sql`: add `notes_ai_job` and `notes_ai_job_source`.
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/notes_store.rs`: add AI job SQL mapping and insert/read methods.
+- `services/sdkwork-notes-pages-service/tests/sqlite_schema_contract.rs`: assert AI job tables and Drive reference boundaries.
+- `services/sdkwork-notes-pages-service/tests/page_service.rs`: add product service AI job tests.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/dto.rs`: add AI job request/response DTOs.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/handlers.rs`: add `create_ai_job`.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/paths.rs`: add `AI_JOBS`.
@@ -51,7 +51,7 @@ Do not modify:
 - [ ] Run:
 
 ```powershell
-cargo test -p sdkwork-notes-product ai_job_creation_records_page_source_drive_version_provenance_and_idempotency
+cargo test -p sdkwork-notes-pages-service ai_job_creation_records_page_source_drive_version_provenance_and_idempotency
 ```
 
 Expected: fail because AI job domain/service/repository methods do not exist.
@@ -74,8 +74,8 @@ Expected: fail because AI job domain/service/repository methods do not exist.
 - [ ] Re-run:
 
 ```powershell
-cargo test -p sdkwork-notes-product ai_job_creation_records_page_source_drive_version_provenance_and_idempotency
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service ai_job_creation_records_page_source_drive_version_provenance_and_idempotency
+cargo test -p sdkwork-notes-pages-service
 ```
 
 Expected: product tests pass.
@@ -135,8 +135,8 @@ Expected: fail because manifest is missing `aiJobs.create`.
 - [ ] Run:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 node --test scripts\verify-notes-contract-foundation.test.mjs

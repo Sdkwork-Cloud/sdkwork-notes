@@ -10,12 +10,12 @@ function read(relativePath) {
 }
 
 test('desktop session bridge freezes native session commands and startup hydration wiring', () => {
-  const catalogSource = read('packages/sdkwork-notes-desktop/src/desktop/catalog.ts');
-  const tauriBridgeSource = read('packages/sdkwork-notes-desktop/src/desktop/tauriBridge.ts');
-  const desktopIndexSource = read('packages/sdkwork-notes-desktop/src/index.ts');
-  const desktopBootstrapSource = read('packages/sdkwork-notes-desktop/src/desktop/bootstrap/createDesktopApp.tsx');
-  const tauriBootstrapSource = read('packages/sdkwork-notes-desktop/src-tauri/src/app/bootstrap.rs');
-  const tauriCommandsSource = read('packages/sdkwork-notes-desktop/src-tauri/src/commands/mod.rs');
+  const catalogSource = read('packages/sdkwork-notes-pc-desktop/src/desktop/catalog.ts');
+  const tauriBridgeSource = read('packages/sdkwork-notes-pc-desktop/src/desktop/tauriBridge.ts');
+  const desktopIndexSource = read('packages/sdkwork-notes-pc-desktop/src/index.ts');
+  const desktopBootstrapSource = read('packages/sdkwork-notes-pc-desktop/src/desktop/bootstrap/createDesktopApp.tsx');
+  const tauriBootstrapSource = read('packages/sdkwork-notes-pc-desktop/src-tauri/src/app/bootstrap.rs');
+  const tauriCommandsSource = read('packages/sdkwork-notes-pc-desktop/src-tauri/src/commands/mod.rs');
 
   assert.match(catalogSource, /readSessionState:\s*'read_session_state'/);
   assert.match(catalogSource, /writeSessionState:\s*'write_session_state'/);

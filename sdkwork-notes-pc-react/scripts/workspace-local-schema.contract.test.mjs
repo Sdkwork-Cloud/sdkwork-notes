@@ -40,7 +40,7 @@ function createMemoryStorage() {
   };
 }
 
-const notesLocalModule = await loadTsModule('packages/sdkwork-notes-local/src/index.ts');
+const notesLocalModule = await loadTsModule('packages/sdkwork-notes-pc-local/src/index.ts');
 const storageKey = 'sdkwork-notes-test-local-workspace-schema';
 
 test('browser local store migrates legacy workspace snapshots and rewrites them with an explicit schema envelope', async () => {

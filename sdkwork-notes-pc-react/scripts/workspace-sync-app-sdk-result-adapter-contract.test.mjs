@@ -37,7 +37,7 @@ test('future notes remote apply result adapter contract freezes the shared wrapp
   assert.deepEqual(spec, {
     owner: {
       family: 'typescript-wrapper',
-      sharedWrapperPackage: '@sdkwork/notes-core',
+      sharedWrapperPackage: '@sdkwork/notes-pc-core',
       clientAccessor: 'getAppSdkClientWithSession',
       sdkMethod: 'note.remoteApply',
     },

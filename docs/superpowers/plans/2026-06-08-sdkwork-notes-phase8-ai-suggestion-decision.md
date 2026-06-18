@@ -4,7 +4,7 @@
 
 **Goal:** Add accept/reject lifecycle commands for AI suggestions without writing Drive content or creating Notes-owned revisions.
 
-**Architecture:** Extend `sdkwork-notes-product` with command structs, repository transition methods, and service state-machine validation over the existing `notes_ai_suggestion` ledger. Add App API and Backend API routes for suggestion decisions, then update OpenAPI, route manifests, docs, and static verification expectations.
+**Architecture:** Extend `sdkwork-notes-pages-service` with command structs, repository transition methods, and service state-machine validation over the existing `notes_ai_suggestion` ledger. Add App API and Backend API routes for suggestion decisions, then update OpenAPI, route manifests, docs, and static verification expectations.
 
 **Tech Stack:** Rust 2021, Axum 0.7, SQLx AnyPool/SQLite tests, Serde, SDKWork route manifests, OpenAPI 3.1.2 skeletons, Node.js static contract tests.
 
@@ -14,11 +14,11 @@
 
 Modify:
 
-- `services/sdkwork-notes-product/src/domain.rs`: add accept/reject command structs.
-- `services/sdkwork-notes-product/src/ports.rs`: add repository methods for suggestion lookup and status transition.
-- `services/sdkwork-notes-product/src/service.rs`: add accept/reject use cases and state-machine helper.
-- `services/sdkwork-notes-product/src/infrastructure/sql/notes_store.rs`: implement SQL transition with tenant/org predicates.
-- `services/sdkwork-notes-product/tests/page_service.rs`: add product decision lifecycle test.
+- `services/sdkwork-notes-pages-service/src/domain.rs`: add accept/reject command structs.
+- `services/sdkwork-notes-pages-service/src/ports.rs`: add repository methods for suggestion lookup and status transition.
+- `services/sdkwork-notes-pages-service/src/service.rs`: add accept/reject use cases and state-machine helper.
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/notes_store.rs`: implement SQL transition with tenant/org predicates.
+- `services/sdkwork-notes-pages-service/tests/page_service.rs`: add product decision lifecycle test.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/*`: add app accept/reject DTO/handlers/routes/path constants.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/tests/*`: add app route test and manifest parity.
 - `packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/*`: add backend accept/reject DTO/handlers/routes/path constants.
@@ -48,7 +48,7 @@ Do not modify:
 - [ ] Run:
 
 ```powershell
-cargo test -p sdkwork-notes-product ai_suggestion_decisions_accept_reject_and_conflict
+cargo test -p sdkwork-notes-pages-service ai_suggestion_decisions_accept_reject_and_conflict
 ```
 
 Expected: fail because command and service methods do not exist.
@@ -62,8 +62,8 @@ Expected: fail because command and service methods do not exist.
 - [ ] Re-run:
 
 ```powershell
-cargo test -p sdkwork-notes-product ai_suggestion_decisions_accept_reject_and_conflict
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service ai_suggestion_decisions_accept_reject_and_conflict
+cargo test -p sdkwork-notes-pages-service
 ```
 
 Expected: product tests pass.
@@ -128,8 +128,8 @@ Expected: Node checks pass.
 - [ ] Run:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -p sdkwork-routes-notes-backend-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -p sdkwork-routes-notes-backend-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 cargo test -p sdkwork-routes-notes-backend-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs

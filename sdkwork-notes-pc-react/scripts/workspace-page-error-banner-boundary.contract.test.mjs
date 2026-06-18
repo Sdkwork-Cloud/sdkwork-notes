@@ -10,11 +10,11 @@ function read(relativePath) {
 }
 
 test('workspace page delegates error banner rendering to a dedicated component boundary', () => {
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const componentsIndexSource = read('packages/sdkwork-notes-notes/src/components/index.ts');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const componentsIndexSource = read('packages/sdkwork-notes-pc-notes/src/components/index.ts');
   const errorBannerBoundaryPath = path.join(
     workspaceRoot,
-    'packages/sdkwork-notes-notes/src/components/NotesWorkspaceErrorBanner.tsx',
+    'packages/sdkwork-notes-pc-notes/src/components/NotesWorkspaceErrorBanner.tsx',
   );
   const errorBannerBoundaryExists = fs.existsSync(errorBannerBoundaryPath);
   const errorBannerBoundarySource = errorBannerBoundaryExists

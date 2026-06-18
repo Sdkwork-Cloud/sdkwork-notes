@@ -130,8 +130,8 @@ No new table is required. The backend query path joins or aggregates source coun
 Required commands from `sdkwork-notes` root:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -p sdkwork-routes-notes-backend-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -p sdkwork-routes-notes-backend-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 cargo test -p sdkwork-routes-notes-backend-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs

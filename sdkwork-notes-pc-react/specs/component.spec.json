@@ -149,6 +149,24 @@
       "package.json#scripts.test"
     ],
     "sdkClients": [],
+    "sdkDependencies": [
+      {
+        "sdkFamily": "sdkwork-appbase-app-sdk",
+        "surface": "app-api",
+        "owner": "sdkwork-appbase"
+      },
+      {
+        "sdkFamily": "sdkwork-drive-app-sdk",
+        "surface": "app-api",
+        "owner": "sdkwork-drive"
+      },
+      {
+        "sdkFamily": "sdkwork-notes-app-sdk",
+        "surface": "app-api",
+        "owner": "sdkwork-notes"
+      }
+    ],
+    "dependencyApiExports": [],
     "events": [],
     "configKeys": [
       "sdkwork.app.config.json"

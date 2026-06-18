@@ -123,7 +123,7 @@ function createRetryingTask(syncModule, input) {
   );
 }
 
-const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-sync/src/index.ts');
+const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts');
 
 test('notes sync worker runtime drains queued tasks serially until no runnable task remains', async () => {
   const firstTask = syncModule.createNotesSyncTask({

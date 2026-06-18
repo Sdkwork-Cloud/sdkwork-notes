@@ -7,11 +7,11 @@ use sdkwork_drive_app_sdk_generated_rust::{
     MarkUploaderPartUploadedRequest, NodeCommandRequest, PrepareUploaderUploadRequest,
     PresignUploadPartRequest, SdkworkAppClient, SdkworkError,
 };
-use sdkwork_notes_product::domain::{
+use sdkwork_notes_pages_service::domain::{
     DrivePageContentSnapshot, DriveVersionPage, DriveVersionSummary, PageInfo,
 };
-use sdkwork_notes_product::error::NotesProductError;
-use sdkwork_notes_product::ports::{
+use sdkwork_notes_pages_service::error::NotesProductError;
+use sdkwork_notes_pages_service::ports::{
     CreateDrivePageContentCommand, DrivePageContentPort, ListDrivePageContentVersionsCommand,
     ReadDrivePageContentCommand, RestoreDrivePageContentVersionCommand,
     UpdateDrivePageContentCommand,
@@ -19,7 +19,6 @@ use sdkwork_notes_product::ports::{
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
-const NOTES_APP_ID: &str = "sdkwork-notes";
 const NOTES_RESOURCE_TYPE: &str = "notes_page";
 const NOTES_UPLOAD_PROFILE: &str = "generic";
 const NOTES_CONTENT_SCENE: &str = "notes_page_content";
@@ -163,10 +162,7 @@ impl DrivePageContentPort for SdkDriveAppFacadePageContentPort {
             .versions_restore(
                 &command.drive_node_id,
                 &command.drive_version_id,
-                &NodeCommandRequest {
-                    tenant_id: command.tenant_id.clone(),
-                    operator_id: Some(command.operator_id.clone()),
-                },
+                &NodeCommandRequest::default(),
             )
             .await
             .map_err(map_drive_error("restore page content version"))?;
@@ -249,11 +245,8 @@ impl SdkDriveAppFacadePageContentPort {
             .uploader_uploads_prepare(&PrepareUploaderUploadRequest {
                 id: upload_item_id.clone(),
                 task_id,
-                tenant_id: tenant_id.to_string(),
                 organization_id: Some(organization_id.to_string()),
-                user_id: Some(operator_id.to_string()),
                 anonymous_id: None,
-                app_id: NOTES_APP_ID.to_string(),
                 app_resource_type: NOTES_RESOURCE_TYPE.to_string(),
                 app_resource_id: page_id.to_string(),
                 upload_profile_code: Some(NOTES_UPLOAD_PROFILE.to_string()),
@@ -265,7 +258,6 @@ impl SdkDriveAppFacadePageContentPort {
                 space_id: Some(drive_space_id.to_string()),
                 parent_node_id: parent_node_id.map(str::to_string),
                 retention: None,
-                operator_id: operator_id.to_string(),
                 now_epoch_ms: Some(epoch_ms),
                 scene: Some(NOTES_CONTENT_SCENE.to_string()),
                 source: Some(NOTES_CONTENT_SOURCE.to_string()),
@@ -315,13 +307,11 @@ impl SdkDriveAppFacadePageContentPort {
             .drive()
             .upload_sessions_create(&CreateUploadSessionRequest {
                 session_id,
-                tenant_id: tenant_id.to_string(),
                 space_id: drive_space_id.to_string(),
                 node_id: drive_node_id.to_string(),
                 bucket: None,
                 object_key: None,
                 idempotency_key: format!("notes-content-{page_id}-{epoch_ms}"),
-                operator_id: operator_id.to_string(),
                 expires_at_epoch_ms: epoch_ms + 3_600_000,
             })
             .await
@@ -342,8 +332,8 @@ impl SdkDriveAppFacadePageContentPort {
 
     async fn upload_single_part(
         &self,
-        tenant_id: &str,
-        operator_id: &str,
+        _tenant_id: &str,
+        _operator_id: &str,
         upload_session_id: &str,
         storage_upload_id: Option<&str>,
         upload_item_id: Option<&str>,
@@ -358,7 +348,6 @@ impl SdkDriveAppFacadePageContentPort {
                 upload_session_id,
                 1,
                 &PresignUploadPartRequest {
-                    tenant_id: tenant_id.to_string(),
                     upload_id: storage_upload_id.map(str::to_string),
                     requested_ttl_seconds: Some(900),
                 },
@@ -400,7 +389,6 @@ impl SdkDriveAppFacadePageContentPort {
                     upload_item_id,
                     1,
                     &MarkUploaderPartUploadedRequest {
-                        tenant_id: tenant_id.to_string(),
                         upload_session_id: upload_session_id.to_string(),
                         offset_bytes: 0,
                         size_bytes: body.len() as i64,
@@ -417,12 +405,10 @@ impl SdkDriveAppFacadePageContentPort {
             .upload_sessions_complete(
                 upload_session_id,
                 &CompleteUploadSessionRequest {
-                    tenant_id: tenant_id.to_string(),
                     upload_id: storage_upload_id.map(str::to_string),
                     content_type: content_type.to_string(),
                     content_length: body.len() as i64,
                     checksum_sha256_hex: checksum.to_string(),
-                    operator_id: Some(operator_id.to_string()),
                     parts: vec![CompletedUploadPart {
                         part_no: 1,
                         etag,
@@ -437,9 +423,9 @@ impl SdkDriveAppFacadePageContentPort {
     async fn latest_file_version(
         &self,
         node_id: &str,
-        tenant_id: &str,
+        _tenant_id: &str,
     ) -> Result<sdkwork_drive_app_sdk_generated_rust::FileVersion, NotesProductError> {
-        let versions = self.list_all_versions(node_id, tenant_id).await?;
+        let versions = self.list_all_versions(node_id, _tenant_id).await?;
         versions
             .into_iter()
             .max_by_key(|version| version.version_no)
@@ -449,12 +435,12 @@ impl SdkDriveAppFacadePageContentPort {
     async fn resolve_version(
         &self,
         node_id: &str,
-        tenant_id: &str,
+        _tenant_id: &str,
         drive_version_id: &str,
     ) -> Result<sdkwork_drive_app_sdk_generated_rust::FileVersion, NotesProductError> {
         self.client
             .drive()
-            .versions_get(node_id, drive_version_id, tenant_id)
+            .versions_get(node_id, drive_version_id)
             .await
             .map_err(map_drive_error("get Drive file version"))
     }
@@ -462,7 +448,7 @@ impl SdkDriveAppFacadePageContentPort {
     async fn list_all_versions(
         &self,
         node_id: &str,
-        tenant_id: &str,
+        _tenant_id: &str,
     ) -> Result<Vec<sdkwork_drive_app_sdk_generated_rust::FileVersion>, NotesProductError> {
         let mut items = Vec::new();
         let mut page_token: Option<String> = None;
@@ -470,12 +456,7 @@ impl SdkDriveAppFacadePageContentPort {
             let response = self
                 .client
                 .drive()
-                .versions_list(
-                    node_id,
-                    tenant_id,
-                    Some(100),
-                    page_token.as_deref(),
-                )
+                .versions_list(node_id, Some(100), page_token.as_deref())
                 .await
                 .map_err(map_drive_error("list Drive file versions"))?;
             items.extend(response.items);
@@ -489,13 +470,13 @@ impl SdkDriveAppFacadePageContentPort {
 
     async fn download_json_content(
         &self,
-        tenant_id: &str,
+        _tenant_id: &str,
         node_id: &str,
     ) -> Result<Value, NotesProductError> {
         let download = self
             .client
             .drive()
-            .nodes_download_urls_create(node_id, tenant_id, Some(900))
+            .nodes_download_urls_create(node_id, Some(900))
             .await
             .map_err(map_drive_error("create Drive download url"))?;
         let response = self

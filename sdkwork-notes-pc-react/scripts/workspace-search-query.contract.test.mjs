@@ -48,7 +48,7 @@ function createSearchDocument(noteId, title, overrides = {}) {
   };
 }
 
-const notesSearchSourcePath = 'packages/sdkwork-notes-search/src/index.ts';
+const notesSearchSourcePath = 'packages/sdkwork-notes-pc-search/src/index.ts';
 const notesSearchModule = await loadTsModule(notesSearchSourcePath);
 const notesSearchSource = await readFile(
   path.resolve(workspaceRoot, notesSearchSourcePath),

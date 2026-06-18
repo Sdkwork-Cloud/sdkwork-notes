@@ -1,6 +1,6 @@
 use axum::Json;
 use http::StatusCode;
-use sdkwork_notes_product::error::NotesProductError;
+use sdkwork_notes_pages_service::error::NotesProductError;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]

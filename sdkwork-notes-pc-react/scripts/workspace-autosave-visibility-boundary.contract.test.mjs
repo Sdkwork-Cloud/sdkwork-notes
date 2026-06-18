@@ -18,7 +18,7 @@ function read(relativePath) {
 async function loadWorkspaceAutosaveRuntimeModule() {
   const entryPoint = path.resolve(
     workspaceRoot,
-    'packages/sdkwork-notes-notes/src/services/noteWorkspaceAutosaveRuntime.ts',
+    'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceAutosaveRuntime.ts',
   );
   const source = await readFile(entryPoint, 'utf8');
   const transpiled = ts.transpileModule(source, {
@@ -90,7 +90,7 @@ test('autosave visibility runtime flushes only when the page is hidden and the p
 });
 
 test('workspace page binds autosave visibility flush through the shared runtime boundary', () => {
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
 
   assert.match(pageSource, /bindNotesWorkspaceVisibilityAutosave/);
   assert.match(pageSource, /document\.addEventListener\('visibilitychange', handler\)/);

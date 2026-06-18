@@ -37,7 +37,7 @@ function createDataModuleUrl(source) {
 async function loadUseAppSdkClientModule() {
   const entryPoint = path.resolve(
     process.cwd(),
-    'packages/sdkwork-notes-core/src/sdk/useAppSdkClient.ts',
+    'packages/sdkwork-notes-pc-core/src/sdk/useAppSdkClient.ts',
   );
   const source = await readFile(entryPoint, 'utf8');
   const transpiled = ts.transpileModule(source, {

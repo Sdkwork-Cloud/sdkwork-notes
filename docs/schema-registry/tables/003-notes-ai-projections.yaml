@@ -108,7 +108,7 @@ tables:
   - table: notes_ai_job
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: AI command/job ledger. AI edits must normally produce reviewable suggestions instead of silent mutations.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -144,7 +144,7 @@ tables:
   - table: notes_ai_job_source
     profile: ledger_event
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Source/citation facts consumed by an AI job. Initial command creation records target page Drive version provenance; workers may append expanded retrieval sources later.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -164,7 +164,7 @@ tables:
   - table: notes_ai_suggestion
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Reviewable AI suggestion ledger produced by completed AI jobs. Accepted suggestions are applied through normal page/property/link mutations and Drive-backed page content updates.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -194,7 +194,7 @@ tables:
   - table: notes_ai_feedback
     profile: ledger_event
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: User feedback ledger for AI suggestion quality loops. It records governance signals only and does not own Drive content, versions, model calls, or training export.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }

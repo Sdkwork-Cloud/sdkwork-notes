@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-notes",
+    "displayName": "SDKWork Notes Workspace",
+    "version": "0.1.0",
+    "type": "product-workspace",
+    "root": "sdkwork-notes",
+    "domain": "notes",
+    "capability": "notes",
+    "surface": "workspace",
+    "languages": [
+      "rust",
+      "typescript"
+    ],
+    "generated": false,
+    "private": false,
+    "manifests": [
+      "Cargo.toml",
+      "package.json",
+      "sdkwork.workflow.json",
+      "specs/topology.spec.json"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "README.md",
+      "path": "../sdkwork-specs/README.md",
+      "purpose": "SDKWork root standards entrypoint."
+    },
+    {
+      "file": "SDKWORK_WORKSPACE_SPEC.md",
+      "path": "../sdkwork-specs/SDKWORK_WORKSPACE_SPEC.md",
+      "purpose": "Repository root directory dictionary and .sdkwork workspace rules."
+    },
+    {
+      "file": "WEB_FRAMEWORK_SPEC.md",
+      "path": "../sdkwork-specs/WEB_FRAMEWORK_SPEC.md",
+      "purpose": "Mandatory sdkwork-web-framework integration for HTTP *-api surfaces."
+    },
+    {
+      "file": "DATABASE_SPEC.md",
+      "path": "../sdkwork-specs/DATABASE_SPEC.md",
+      "purpose": "Portable table contracts and schema evolution."
+    },
+    {
+      "file": "DEPLOYMENT_SPEC.md",
+      "path": "../sdkwork-specs/DEPLOYMENT_SPEC.md",
+      "purpose": "Standalone/cloud deployment profile parity."
+    },
+    {
+      "file": "GITHUB_WORKFLOW_SPEC.md",
+      "path": "../sdkwork-specs/GITHUB_WORKFLOW_SPEC.md",
+      "purpose": "Packaging workflow and artifact publication."
+    },
+    {
+      "file": "TEST_SPEC.md",
+      "path": "../sdkwork-specs/TEST_SPEC.md",
+      "purpose": "Contract, architecture, and verification evidence."
+    }
+  ],
+  "contracts": {
+    "publicExports": [],
+    "runtimeEntrypoints": [
+      "crates/sdkwork-notes-api-server",
+      "sdkwork-notes-pc-react"
+    ],
+    "routeManifest": null,
+    "sdkClients": [
+      "sdks/sdkwork-notes-app-sdk",
+      "sdks/sdkwork-notes-backend-sdk",
+      "sdks/sdkwork-notes-sdk"
+    ],
+    "sdkDependencies": [
+      {
+        "sdkFamily": "sdkwork-appbase-app-sdk",
+        "surface": "app-api",
+        "owner": "sdkwork-appbase"
+      },
+      {
+        "sdkFamily": "sdkwork-drive-app-sdk",
+        "surface": "app-api",
+        "owner": "sdkwork-drive"
+      }
+    ],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [
+      {
+        "sdkFamily": "sdkwork-appbase-app-sdk",
+        "surface": "app-api",
+        "runtimeMode": "embedded-or-split"
+      },
+      {
+        "sdkFamily": "sdkwork-drive-app-sdk",
+        "surface": "app-api",
+        "runtimeMode": "split-or-remote"
+      }
+    ],
+    "events": [],
+    "configKeys": [
+      "specs/topology.spec.json",
+      "configs/topology/*.env"
+    ]
+  },
+  "integration": {
+    "webFramework": "Rust HTTP runtimes integrate sdkwork-web-framework through sdkwork-web-axum and sdkwork-iam-web-adapter.",
+    "database": "Notes API server resolves SDKWORK_NOTES database config through sdkwork-database-config.",
+    "discovery": "Not required until RPC services are introduced."
+  },
+  "verification": {
+    "commands": [
+      "pnpm verify",
+      "node --test scripts/verify-notes-standard-architecture.test.mjs"
+    ]
+  },
+  "metadata": {
+    "managedBy": "sdkwork-notes-standard-alignment",
+    "standardVersion": "2026-06-18"
+  }
+}

@@ -70,7 +70,7 @@ sdks/_route-manifests/app-api
   -> route manifest parity with generated/openapi/notes-app-api.openapi.json
 ```
 
-Handlers remain thin and delegate to `NotesService`. Business rules remain in `sdkwork-notes-product`. Persistence remains limited to Notes workspace/page metadata, while content and versions remain delegated through the Drive port.
+Handlers remain thin and delegate to `NotesService`. Business rules remain in `sdkwork-notes-pages-service`. Persistence remains limited to Notes workspace/page metadata, while content and versions remain delegated through the Drive port.
 
 ## 4. Implemented App API Routes
 
@@ -141,8 +141,8 @@ Before production exposure, a later runtime phase must replace this with the sta
 Required commands from `sdkwork-notes` root:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 node --test scripts\verify-notes-contract-foundation.test.mjs

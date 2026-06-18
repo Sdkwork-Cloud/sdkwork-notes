@@ -24,7 +24,7 @@ async function loadTsModule(relativePath) {
   return import(createDataModuleUrl(transpiled.outputText));
 }
 
-const notesLocalSourcePath = 'packages/sdkwork-notes-local/src/index.ts';
+const notesLocalSourcePath = 'packages/sdkwork-notes-pc-local/src/index.ts';
 const notesLocalModule = await loadTsModule(notesLocalSourcePath);
 const notesLocalSource = await readFile(
   path.resolve(workspaceRoot, notesLocalSourcePath),

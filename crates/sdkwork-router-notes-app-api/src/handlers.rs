@@ -18,7 +18,7 @@ use crate::context::{
 use crate::error::{map_product_error, problem, ApiResult, ProblemDetail};
 use sdkwork_web_core::WebRequestContext;use axum::Json;
 use http::{HeaderMap, StatusCode};
-use sdkwork_notes_product::domain::{
+use sdkwork_notes_pages_service::domain::{
     AcceptAiSuggestionCommand, ApplyAiSuggestionCommand, CreateAiFeedbackCommand,
     CreateAiJobCommand, CreatePageCommand, CreateWorkspaceCommand, ListPageAiSuggestionsQuery,
     ListPageVersionsQuery, ListPagesQuery, ListWorkspacesQuery, PageKind,
@@ -28,7 +28,7 @@ use sdkwork_notes_product::domain::{
 };
 use crate::state::NotesAppState;
 use axum::extract::{Path, Query, State};
-use sdkwork_notes_product::ports::{DrivePageContentPort, NotesRepository};
+use sdkwork_notes_pages_service::ports::{DrivePageContentPort, NotesRepository};
 use serde_json::json;
 
 pub(crate) async fn list_workspaces<R, D>(

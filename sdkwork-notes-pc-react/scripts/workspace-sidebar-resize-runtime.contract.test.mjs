@@ -11,7 +11,7 @@ function createDataModuleUrl(source) {
 async function loadWorkspaceSidebarResizeRuntimeModule() {
   const entryPoint = path.resolve(
     process.cwd(),
-    'packages/sdkwork-notes-notes/src/services/noteWorkspaceSidebarResizeRuntime.ts',
+    'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceSidebarResizeRuntime.ts',
   );
   const source = await readFile(entryPoint, 'utf8');
   const transpiled = ts.transpileModule(source, {

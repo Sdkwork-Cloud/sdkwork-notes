@@ -4,7 +4,7 @@
 
 **Goal:** Align the Notes App API runtime to the SDKWork Rust route crate pattern and add the first workspace/page read model endpoints.
 
-**Architecture:** Keep `sdkwork-notes-product` as the business service crate and expose App API routes through `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api`. The route crate owns paths, handlers, DTOs, router assembly, and manifest projection; Notes content and versions remain delegated to Drive through `DrivePageContentPort`.
+**Architecture:** Keep `sdkwork-notes-pages-service` as the business service crate and expose App API routes through `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api`. The route crate owns paths, handlers, DTOs, router assembly, and manifest projection; Notes content and versions remain delegated to Drive through `DrivePageContentPort`.
 
 **Tech Stack:** Rust 2021, Axum 0.7, Tokio, SQLx AnyPool/SQLite tests, Serde, SDKWork route manifest JSON, Node.js static contract tests.
 
@@ -32,11 +32,11 @@ Create:
 Modify:
 
 - `Cargo.toml`
-- `services/sdkwork-notes-product/src/domain.rs`
-- `services/sdkwork-notes-product/src/ports.rs`
-- `services/sdkwork-notes-product/src/service.rs`
-- `services/sdkwork-notes-product/src/infrastructure/sql/notes_store.rs`
-- `services/sdkwork-notes-product/tests/page_service.rs`
+- `services/sdkwork-notes-pages-service/src/domain.rs`
+- `services/sdkwork-notes-pages-service/src/ports.rs`
+- `services/sdkwork-notes-pages-service/src/service.rs`
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/notes_store.rs`
+- `services/sdkwork-notes-pages-service/tests/page_service.rs`
 - `scripts/verify-notes-rust-service-skeleton.test.mjs`
 - `README.md`
 
@@ -49,10 +49,10 @@ Modify:
 
 ## Task 2: Product Read Models
 
-- [ ] Add a failing product service test in `services/sdkwork-notes-product/tests/page_service.rs` for workspace list pagination, page list search, workspace bootstrap, and metadata patch optimistic concurrency.
-- [ ] Run `cargo test -p sdkwork-notes-product read_models_list_bootstrap_and_update_page_metadata_without_drive_content_changes` and confirm the behavior is missing.
+- [ ] Add a failing product service test in `services/sdkwork-notes-pages-service/tests/page_service.rs` for workspace list pagination, page list search, workspace bootstrap, and metadata patch optimistic concurrency.
+- [ ] Run `cargo test -p sdkwork-notes-pages-service read_models_list_bootstrap_and_update_page_metadata_without_drive_content_changes` and confirm the behavior is missing.
 - [ ] Add domain query/result structs, repository port methods, SQL store queries, and `NotesService` methods for list/bootstrap/metadata update.
-- [ ] Re-run `cargo test -p sdkwork-notes-product`.
+- [ ] Re-run `cargo test -p sdkwork-notes-pages-service`.
 
 ## Task 3: App API Read Model Routes
 
@@ -78,8 +78,8 @@ Modify:
 - [ ] Run:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 node --test scripts\verify-notes-contract-foundation.test.mjs

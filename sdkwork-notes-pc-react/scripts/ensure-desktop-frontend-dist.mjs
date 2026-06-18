@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
-const distDir = path.resolve(process.cwd(), 'packages/sdkwork-notes-desktop/dist');
+const distDir = path.resolve(process.cwd(), 'packages/sdkwork-notes-pc-desktop/dist');
 const indexPath = path.join(distDir, 'index.html');
 
 if (!fs.existsSync(indexPath)) {

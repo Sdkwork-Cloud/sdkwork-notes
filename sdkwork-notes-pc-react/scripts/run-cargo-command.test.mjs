@@ -4,7 +4,7 @@ import { createCargoCommandPlan } from './run-cargo-command.mjs';
 
 test('createCargoCommandPlan preserves cargo args and prepends Windows cargo bin when needed', () => {
   const plan = createCargoCommandPlan({
-    args: ['test', '--manifest-path', 'packages/sdkwork-notes-desktop/src-tauri/Cargo.toml'],
+    args: ['test', '--manifest-path', 'packages/sdkwork-notes-pc-desktop/src-tauri/Cargo.toml'],
     runtimePlatform: 'win32',
     windowsCargoBinDir: 'C:\\Users\\admin\\.cargo\\bin',
     env: {
@@ -16,7 +16,7 @@ test('createCargoCommandPlan preserves cargo args and prepends Windows cargo bin
   assert.deepEqual(plan.args, [
     'test',
     '--manifest-path',
-    'packages/sdkwork-notes-desktop/src-tauri/Cargo.toml',
+    'packages/sdkwork-notes-pc-desktop/src-tauri/Cargo.toml',
   ]);
   assert.match(plan.env.PATH, /^C:\\Users\\admin\\\.cargo\\bin;/);
 });

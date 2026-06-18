@@ -22,16 +22,16 @@ async function transpileTypeScriptModule(relativePath) {
 
 async function loadWorkspaceCommandPaletteModule() {
   const commandPaletteModule = await transpileTypeScriptModule(
-    'packages/sdkwork-notes-notes/src/services/noteWorkspaceCommandPaletteModel.ts',
+    'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceCommandPaletteModel.ts',
   );
   const notesSearchModuleUrl = createDataModuleUrl(
     (
-      await transpileTypeScriptModule('packages/sdkwork-notes-search/src/index.ts')
+      await transpileTypeScriptModule('packages/sdkwork-notes-pc-search/src/index.ts')
     ).outputText,
   );
   const moduleSource = commandPaletteModule.outputText
-    .replaceAll("'@sdkwork/notes-search'", `'${notesSearchModuleUrl}'`)
-    .replaceAll('"@sdkwork/notes-search"', `"${notesSearchModuleUrl}"`);
+    .replaceAll("'@sdkwork/notes-pc-search'", `'${notesSearchModuleUrl}'`)
+    .replaceAll('"@sdkwork/notes-pc-search"', `"${notesSearchModuleUrl}"`);
 
   return import(createDataModuleUrl(moduleSource));
 }

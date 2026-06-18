@@ -1,4 +1,4 @@
-use sdkwork_notes_product::domain::{
+use sdkwork_notes_pages_service::domain::{
     AiFeedback, AiFeedbackPage, AiJob, AiJobPage, AiSuggestion, PageContent, PageInfo,
 };
 use serde::{Deserialize, Serialize};

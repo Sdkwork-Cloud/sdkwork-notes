@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-notes-pages-repository-sqlx",
+    "displayName": "SDKWork Notes Pages SQLx Repository",
+    "version": "0.1.0",
+    "type": "rust-repository-crate",
+    "root": "sdkwork-notes/crates/sdkwork-notes-pages-repository-sqlx",
+    "domain": "notes",
+    "capability": "pages",
+    "surface": "repository",
+    "languages": [
+      "rust"
+    ],
+    "generated": false,
+    "private": false,
+    "manifests": [
+      "Cargo.toml"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "CODE_STYLE_SPEC.md",
+      "path": "../../../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "purpose": "Authored source structure and generated-code boundaries."
+    },
+    {
+      "file": "NAMING_SPEC.md",
+      "path": "../../../sdkwork-specs/NAMING_SPEC.md",
+      "purpose": "Canonical Rust repository crate naming."
+    },
+    {
+      "file": "RUST_CODE_SPEC.md",
+      "path": "../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "purpose": "Rust repository crate layout and SQLx boundaries."
+    },
+    {
+      "file": "DATABASE_SPEC.md",
+      "path": "../../../sdkwork-specs/DATABASE_SPEC.md",
+      "purpose": "Portable table contracts and schema evolution."
+    },
+    {
+      "file": "WEB_BACKEND_SPEC.md",
+      "path": "../../../sdkwork-specs/WEB_BACKEND_SPEC.md",
+      "purpose": "Repository/service layering."
+    }
+  ],
+  "contracts": {
+    "publicExports": [
+      "sdkwork_notes_pages_repository_sqlx::SqlNotesStore",
+      "sdkwork_notes_pages_repository_sqlx::install_sqlite_schema"
+    ],
+    "runtimeEntrypoints": [
+      "sdkwork_notes_pages_repository_sqlx::install_sqlite_schema"
+    ],
+    "routeManifest": null,
+    "sdkClients": [],
+    "sdkDependencies": [],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "events": [],
+    "configKeys": []
+  },
+  "integration": {
+    "serviceBoundary": "Implements NotesRepository for sdkwork-notes-pages-service. Does not own HTTP routes or Drive content lifecycle."
+  },
+  "verification": {
+    "commands": [
+      "cargo test -p sdkwork-notes-pages-repository-sqlx",
+      "cargo test -p sdkwork-notes-pages-service"
+    ]
+  },
+  "metadata": {
+    "managedBy": "sdkwork-notes-standard-alignment",
+    "standardVersion": "2026-06-18"
+  }
+}

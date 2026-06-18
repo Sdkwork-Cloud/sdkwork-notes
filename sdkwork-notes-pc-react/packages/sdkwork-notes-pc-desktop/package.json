@@ -1,0 +1,48 @@
+{
+  "name": "@sdkwork/notes-pc-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:tauri": "vite --host 127.0.0.1 --port 1430 --strictPort",
+    "dev:tauri:test": "node ../../scripts/run-with-app-mode.mjs test -- pnpm exec vite --host 127.0.0.1 --port 1430 --strictPort --mode test",
+    "build": "vite build --mode production",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "tauri:dev": "node ../../scripts/run-desktop-tauri-dev.mjs",
+    "tauri:build": "tauri icon src-tauri/app-icon.svg && tauri build",
+    "tauri:icon": "tauri icon src-tauri/app-icon.svg",
+    "tauri:info": "tauri info"
+  },
+  "dependencies": {
+    "@sdkwork/notes-pc-core": "workspace:*",
+    "@sdkwork/notes-pc-i18n": "workspace:*",
+    "@sdkwork/notes-pc-shell": "workspace:*",
+    "@tauri-apps/api": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "catalog:",
+    "@tauri-apps/cli": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "^29.0.1",
+    "tailwindcss": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "^4.1.2"
+  }
+}

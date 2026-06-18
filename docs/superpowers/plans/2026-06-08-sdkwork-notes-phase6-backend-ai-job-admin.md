@@ -15,11 +15,11 @@
 Modify:
 
 - `Cargo.toml`: add the backend route crate workspace member and workspace dependency.
-- `services/sdkwork-notes-product/src/domain.rs`: add `AiJobPage`, `ListAiJobsQuery`, and `CancelAiJobCommand`.
-- `services/sdkwork-notes-product/src/ports.rs`: add AI job admin repository methods.
-- `services/sdkwork-notes-product/src/service.rs`: add list/retrieve/cancel use cases.
-- `services/sdkwork-notes-product/src/infrastructure/sql/notes_store.rs`: add AI job list/retrieve/cancel SQL.
-- `services/sdkwork-notes-product/tests/page_service.rs`: add product admin behavior test.
+- `services/sdkwork-notes-pages-service/src/domain.rs`: add `AiJobPage`, `ListAiJobsQuery`, and `CancelAiJobCommand`.
+- `services/sdkwork-notes-pages-service/src/ports.rs`: add AI job admin repository methods.
+- `services/sdkwork-notes-pages-service/src/service.rs`: add list/retrieve/cancel use cases.
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/notes_store.rs`: add AI job list/retrieve/cancel SQL.
+- `services/sdkwork-notes-pages-service/tests/page_service.rs`: add product admin behavior test.
 - `packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/**`: create backend route crate.
 - `sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json`: add backend route manifest.
 - `scripts/verify-notes-rust-service-skeleton.test.mjs`: verify backend route crate and manifest.
@@ -45,7 +45,7 @@ Do not modify:
 - [ ] Run:
 
 ```powershell
-cargo test -p sdkwork-notes-product backend_ai_job_admin_lists_retrieves_and_cancels_jobs
+cargo test -p sdkwork-notes-pages-service backend_ai_job_admin_lists_retrieves_and_cancels_jobs
 ```
 
 Expected: fail because product admin query/command methods do not exist.
@@ -59,8 +59,8 @@ Expected: fail because product admin query/command methods do not exist.
 - [ ] Re-run:
 
 ```powershell
-cargo test -p sdkwork-notes-product backend_ai_job_admin_lists_retrieves_and_cancels_jobs
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service backend_ai_job_admin_lists_retrieves_and_cancels_jobs
+cargo test -p sdkwork-notes-pages-service
 ```
 
 Expected: product tests pass.
@@ -122,8 +122,8 @@ node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 - [ ] Run:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -p sdkwork-routes-notes-backend-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -p sdkwork-routes-notes-backend-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 cargo test -p sdkwork-routes-notes-backend-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs

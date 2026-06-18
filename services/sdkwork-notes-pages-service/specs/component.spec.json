@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component.spec",
+  "component": {
+    "name": "sdkwork-notes-pages-service",
+    "displayName": "SDKWork Notes Pages Service",
+    "version": "0.1.0",
+    "type": "web-backend-service",
+    "root": "sdkwork-notes/services/sdkwork-notes-pages-service",
+    "domain": "notes",
+    "capability": "pages",
+    "surface": "service",
+    "languages": [
+      "rust"
+    ],
+    "generated": false,
+    "private": false,
+    "manifests": [
+      "Cargo.toml"
+    ]
+  },
+  "canonicalSpecs": [
+    {
+      "file": "COMPONENT_SPEC.md",
+      "path": "../../../../sdkwork-specs/COMPONENT_SPEC.md",
+      "purpose": "Local component spec and manifest rules."
+    },
+    {
+      "file": "CODE_STYLE_SPEC.md",
+      "path": "../../../../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "purpose": "Authored source structure and generated-code boundaries."
+    },
+    {
+      "file": "NAMING_SPEC.md",
+      "path": "../../../../sdkwork-specs/NAMING_SPEC.md",
+      "purpose": "Canonical package, database, API, and component naming."
+    },
+    {
+      "file": "RUST_CODE_SPEC.md",
+      "path": "../../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "purpose": "Rust crate/module layout, service boundaries, errors, and tests."
+    },
+    {
+      "file": "WEB_BACKEND_SPEC.md",
+      "path": "../../../../sdkwork-specs/WEB_BACKEND_SPEC.md",
+      "purpose": "Backend service/repository/provider layering."
+    },
+    {
+      "file": "DATABASE_SPEC.md",
+      "path": "../../../../sdkwork-specs/DATABASE_SPEC.md",
+      "purpose": "Portable table contracts, indexes, ownership, and schema evolution."
+    },
+    {
+      "file": "DRIVE_SPEC.md",
+      "path": "../../../../sdkwork-specs/DRIVE_SPEC.md",
+      "purpose": "Drive file/content/version ownership boundary."
+    },
+    {
+      "file": "TEST_SPEC.md",
+      "path": "../../../../sdkwork-specs/TEST_SPEC.md",
+      "purpose": "Required backend, database, Drive boundary, and contract verification."
+    }
+  ],
+  "contracts": {
+    "publicExports": [
+      ".",
+      "sdkwork_notes_pages_service::service::NotesService",
+      "sdkwork_notes_pages_service::ports::DrivePageContentPort"
+    ],
+    "runtimeEntrypoints": [],
+    "routeManifest": null,
+    "sdkClients": [],
+    "sdkDependencies": [
+      {
+        "sdkFamily": "sdkwork-drive-app-sdk",
+        "surface": "app-api",
+        "owner": "sdkwork-drive"
+      }
+    ],
+    "dependencyApiExports": [],
+    "dependencyApiSurfaces": [],
+    "events": [],
+    "configKeys": []
+  },
+  "integration": {
+    "driveBoundary": "Page content read/write, version list, and version restore operations depend on DrivePageContentPort. Notes stores only drive_space_id, drive_node_id, drive_uri, current_drive_version_id, and current_drive_version_no.",
+    "persistenceBoundary": "Phase 1 owns notes_workspace and notes_page only. Drive owns file, folder, object, upload, and version lifecycle."
+  },
+  "verification": {
+    "commands": [
+      "cargo test -p sdkwork-notes-pages-service",
+      "node --test scripts/verify-notes-rust-service-skeleton.test.mjs"
+    ]
+  },
+  "metadata": {
+    "managedBy": "sdkwork-notes-phase1-rust-service",
+    "standardVersion": "2026-06-08"
+  }
+}

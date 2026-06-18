@@ -57,11 +57,11 @@ test('package scripts pin local tauri commands to source SDK mode and release bu
   );
   assert.equal(
     scripts['tauri:build'],
-    'node scripts/run-with-shared-sdk-mode.mjs source -- pnpm --filter @sdkwork/notes-desktop run tauri:build',
+    'node scripts/run-with-shared-sdk-mode.mjs source -- pnpm --filter @sdkwork/notes-pc-desktop run tauri:build',
   );
   assert.equal(
     scripts['tauri:info'],
-    'node scripts/run-with-shared-sdk-mode.mjs source -- pnpm --filter @sdkwork/notes-desktop run tauri:info',
+    'node scripts/run-with-shared-sdk-mode.mjs source -- pnpm --filter @sdkwork/notes-pc-desktop run tauri:info',
   );
   assert.equal(
     scripts['release:desktop'],
@@ -69,7 +69,7 @@ test('package scripts pin local tauri commands to source SDK mode and release bu
   );
   assert.equal(
     scripts['test:desktop:rust'],
-    'node scripts/ensure-desktop-frontend-dist.mjs && node scripts/run-cargo-command.mjs test --manifest-path packages/sdkwork-notes-desktop/src-tauri/Cargo.toml',
+    'node scripts/ensure-desktop-frontend-dist.mjs && node scripts/run-cargo-command.mjs test --manifest-path packages/sdkwork-notes-pc-desktop/src-tauri/Cargo.toml',
   );
   assert.equal(
     desktopScripts['tauri:dev'],

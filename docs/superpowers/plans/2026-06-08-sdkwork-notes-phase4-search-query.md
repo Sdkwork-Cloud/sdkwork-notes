@@ -14,11 +14,11 @@
 
 Modify:
 
-- `services/sdkwork-notes-product/src/domain.rs`: add search query/result structs.
-- `services/sdkwork-notes-product/src/ports.rs`: add `NotesRepository::search_pages`.
-- `services/sdkwork-notes-product/src/service.rs`: add `NotesService::query_search`.
-- `services/sdkwork-notes-product/src/infrastructure/sql/notes_store.rs`: add SQL search query.
-- `services/sdkwork-notes-product/tests/page_service.rs`: add product service search test.
+- `services/sdkwork-notes-pages-service/src/domain.rs`: add search query/result structs.
+- `services/sdkwork-notes-pages-service/src/ports.rs`: add `NotesRepository::search_pages`.
+- `services/sdkwork-notes-pages-service/src/service.rs`: add `NotesService::query_search`.
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/notes_store.rs`: add SQL search query.
+- `services/sdkwork-notes-pages-service/tests/page_service.rs`: add product service search test.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/dto.rs`: add search query DTO fields and response mappings.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/handlers.rs`: add `query_search`.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/paths.rs`: add `SEARCH`.
@@ -46,7 +46,7 @@ Do not modify:
 - [ ] Run:
 
 ```powershell
-cargo test -p sdkwork-notes-product search_query_returns_page_summaries_with_drive_version_provenance
+cargo test -p sdkwork-notes-pages-service search_query_returns_page_summaries_with_drive_version_provenance
 ```
 
 Expected: fail because search query models and service method do not exist.
@@ -63,8 +63,8 @@ Expected: fail because search query models and service method do not exist.
 - [ ] Re-run:
 
 ```powershell
-cargo test -p sdkwork-notes-product search_query_returns_page_summaries_with_drive_version_provenance
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service search_query_returns_page_summaries_with_drive_version_provenance
+cargo test -p sdkwork-notes-pages-service
 ```
 
 Expected: product tests pass.
@@ -123,8 +123,8 @@ Expected: fail because manifest is missing search route.
 - [ ] Run:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 node --test scripts\verify-notes-contract-foundation.test.mjs

@@ -3,8 +3,8 @@ use crate::paths;
 use crate::state::NotesAppState;
 use axum::routing::{get, post};
 use axum::Router;
-use sdkwork_notes_product::ports::{DrivePageContentPort, NotesRepository};
-use sdkwork_notes_product::service::NotesService;
+use sdkwork_notes_pages_service::ports::{DrivePageContentPort, NotesRepository};
+use sdkwork_notes_pages_service::service::NotesService;
 
 pub fn build_router<R, D>(service: NotesService<R, D>) -> Router
 where

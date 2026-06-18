@@ -6,20 +6,20 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 
 export const INTERNAL_WORKSPACE_PACKAGES = [
-  '@sdkwork/notes-auth',
-  '@sdkwork/notes-commons',
-  '@sdkwork/notes-core',
-  '@sdkwork/notes-desktop',
-  '@sdkwork/notes-i18n',
-  '@sdkwork/notes-local',
-  '@sdkwork/notes-notes',
-  '@sdkwork/notes-observability',
-  '@sdkwork/notes-search',
-  '@sdkwork/notes-shell',
-  '@sdkwork/notes-sync',
-  '@sdkwork/notes-types',
-  '@sdkwork/notes-updater',
-  '@sdkwork/notes-user',
+  '@sdkwork/notes-pc-auth',
+  '@sdkwork/notes-pc-commons',
+  '@sdkwork/notes-pc-core',
+  '@sdkwork/notes-pc-desktop',
+  '@sdkwork/notes-pc-i18n',
+  '@sdkwork/notes-pc-local',
+  '@sdkwork/notes-pc-notes',
+  '@sdkwork/notes-pc-observability',
+  '@sdkwork/notes-pc-search',
+  '@sdkwork/notes-pc-shell',
+  '@sdkwork/notes-pc-sync',
+  '@sdkwork/notes-pc-types',
+  '@sdkwork/notes-pc-updater',
+  '@sdkwork/notes-pc-user',
 ];
 
 export function createInternalTurboArgs(task, extraArgs = []) {

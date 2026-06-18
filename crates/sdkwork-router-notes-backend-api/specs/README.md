@@ -12,6 +12,6 @@ Current scope:
 
 Boundary:
 
-- Handlers decode backend HTTP DTOs and delegate to `sdkwork_notes_product::service::NotesService`.
+- Handlers decode backend HTTP DTOs and delegate to `sdkwork_notes_pages_service::service::NotesService`.
 - AI execution, provider calls, Drive content reads/writes, and Drive lifecycle ownership are out of scope.
 - Avoid `/notes/notes`, `notes_note`, `notes_note_revision`, and Drive-owned storage lifecycle APIs.

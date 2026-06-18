@@ -27,7 +27,7 @@ test('future notes remote apply generated output contract resolves to applicatio
   assert.deepEqual(spec.owner, {
     family: 'notes-product-app-client-port-generated-output',
     applicationRoot: 'sdkwork-notes/sdkwork-notes-pc-react',
-    localPortFile: 'packages/sdkwork-notes-core/src/sdk/appSdkPort.ts',
+    localPortFile: 'packages/sdkwork-notes-pc-core/src/sdk/appSdkPort.ts',
     futureSdkFamily: 'sdkwork-notes-app-sdk',
     futureGeneratedTransport: 'sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi',
   });

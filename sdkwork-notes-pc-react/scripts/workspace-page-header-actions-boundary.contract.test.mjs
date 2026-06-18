@@ -10,11 +10,11 @@ function read(relativePath) {
 }
 
 test('workspace page delegates header action rendering to a dedicated component boundary', () => {
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const componentsIndexSource = read('packages/sdkwork-notes-notes/src/components/index.ts');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const componentsIndexSource = read('packages/sdkwork-notes-pc-notes/src/components/index.ts');
   const headerActionsBoundaryPath = path.join(
     workspaceRoot,
-    'packages/sdkwork-notes-notes/src/components/NotesWorkspaceHeaderActions.tsx',
+    'packages/sdkwork-notes-pc-notes/src/components/NotesWorkspaceHeaderActions.tsx',
   );
   const headerActionsBoundaryExists = fs.existsSync(headerActionsBoundaryPath);
   const headerActionsBoundarySource = headerActionsBoundaryExists

@@ -66,14 +66,18 @@ test('declares root Rust workspace service and app-api route crates for Notes ru
 
   const cargo = await read('Cargo.toml');
   assert.match(cargo, /\[workspace\]/);
-  assert.match(cargo, /"services\/sdkwork-notes-product"/);
+  assert.match(cargo, /"services\/sdkwork-notes-pages-service"/);
+  assert.match(cargo, /"crates\/sdkwork-notes-pages-repository-sqlx"/);
   assert.match(cargo, /"crates\/sdkwork-router-notes-app-api"/);
   assert.match(cargo, /"crates\/sdkwork-router-notes-backend-api"/);
   assert.doesNotMatch(cargo, /packages\/native-rust/);
   assert.doesNotMatch(cargo, /sdkwork-routes-notes/);
 
-  const productCargo = await read('services/sdkwork-notes-product/Cargo.toml');
-  assert.match(productCargo, /name\s*=\s*"sdkwork-notes-product"/);
+  const productCargo = await read('services/sdkwork-notes-pages-service/Cargo.toml');
+  assert.match(productCargo, /name\s*=\s*"sdkwork-notes-pages-service"/);
+
+  const repositoryCargo = await read('crates/sdkwork-notes-pages-repository-sqlx/Cargo.toml');
+  assert.match(repositoryCargo, /name\s*=\s*"sdkwork-notes-pages-repository-sqlx"/);
 
   const appApiCargo = await read('crates/sdkwork-router-notes-app-api/Cargo.toml');
   assert.match(appApiCargo, /name\s*=\s*"sdkwork-router-notes-app-api"/);
@@ -102,7 +106,8 @@ test('does not create generated SDK transport output inside Notes SDK families',
 
 test('declares component specs for new Rust service crates', async () => {
   for (const relativePath of [
-    'services/sdkwork-notes-product/specs/component.spec.json',
+    'services/sdkwork-notes-pages-service/specs/component.spec.json',
+    'crates/sdkwork-notes-pages-repository-sqlx/specs/component.spec.json',
     'crates/sdkwork-router-notes-app-api/specs/component.spec.json',
     'crates/sdkwork-router-notes-backend-api/specs/component.spec.json'
   ]) {
@@ -193,6 +198,8 @@ test('declares a route manifest artifact aligned with the Notes App OpenAPI auth
       apiAuthority: 'sdkwork-notes-app-api'
     });
     assert.equal(route.auth?.mode, 'dual-token');
+    assert.equal(route.requestContext, 'WebRequestContext');
+    assert.equal(route.apiSurface, 'app-api');
   }
 
   assert.deepEqual(new Set(manifestOperations.keys()), expectedImplementedOperations);
@@ -265,6 +272,8 @@ test('declares a backend route manifest artifact aligned with the Notes Backend 
       apiAuthority: 'sdkwork-notes-backend-api'
     });
     assert.equal(route.auth?.mode, 'dual-token');
+    assert.equal(route.requestContext, 'WebRequestContext');
+    assert.equal(route.apiSurface, 'backend-api');
   }
 
   assert.deepEqual(new Set(manifestOperations.keys()), expectedImplementedOperations);

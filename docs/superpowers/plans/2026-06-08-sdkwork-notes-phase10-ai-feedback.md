@@ -13,13 +13,13 @@
 ### Task 1: Product Service Feedback Ledger
 
 **Files:**
-- Modify: `services/sdkwork-notes-product/src/domain.rs`
-- Modify: `services/sdkwork-notes-product/src/ports.rs`
-- Modify: `services/sdkwork-notes-product/src/service.rs`
-- Modify: `services/sdkwork-notes-product/src/infrastructure/sql/sqlite_core.sql`
-- Modify: `services/sdkwork-notes-product/src/infrastructure/sql/notes_store.rs`
-- Test: `services/sdkwork-notes-product/tests/page_service.rs`
-- Test: `services/sdkwork-notes-product/tests/sqlite_schema_contract.rs`
+- Modify: `services/sdkwork-notes-pages-service/src/domain.rs`
+- Modify: `services/sdkwork-notes-pages-service/src/ports.rs`
+- Modify: `services/sdkwork-notes-pages-service/src/service.rs`
+- Modify: `services/sdkwork-notes-pages-service/src/infrastructure/sql/sqlite_core.sql`
+- Modify: `services/sdkwork-notes-pages-service/src/infrastructure/sql/notes_store.rs`
+- Test: `services/sdkwork-notes-pages-service/tests/page_service.rs`
+- Test: `services/sdkwork-notes-pages-service/tests/sqlite_schema_contract.rs`
 
 - [x] Step 1: Add failing product tests for feedback create/list and invalid feedback type.
 - [x] Step 2: Run the focused product test and verify it fails before implementation.

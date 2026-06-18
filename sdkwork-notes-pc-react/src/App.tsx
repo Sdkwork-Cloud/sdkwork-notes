@@ -1,5 +1,5 @@
-import { AppRoot } from '@sdkwork/notes-shell';
-import { appNoteSyncService } from '@sdkwork/notes-core';
+import { AppRoot } from '@sdkwork/notes-pc-shell';
+import { appNoteSyncService } from '@sdkwork/notes-pc-core';
 
 export default function App() {
   return (

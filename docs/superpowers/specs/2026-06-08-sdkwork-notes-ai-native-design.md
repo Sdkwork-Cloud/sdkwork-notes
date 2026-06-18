@@ -1077,7 +1077,7 @@ Target product root additions:
 ```text
 sdkwork-notes/
   services/
-    sdkwork-notes-product
+    sdkwork-notes-pages-service
     sdkwork-notes-app-api
     sdkwork-notes-backend-api
     sdkwork-notes-open-api

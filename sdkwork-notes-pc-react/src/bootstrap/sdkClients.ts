@@ -3,7 +3,7 @@ import {
   createNotesProductAppSdkClient,
   getNotesGlobalTokenManager,
   type AppSdkClientConfig,
-} from '@sdkwork/notes-core';
+} from '@sdkwork/notes-pc-core';
 
 /**
  * Wires generated Notes app SDK transport, IAM token manager, and the composed product client port.

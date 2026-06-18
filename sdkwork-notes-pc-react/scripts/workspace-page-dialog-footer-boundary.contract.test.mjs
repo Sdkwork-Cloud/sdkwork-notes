@@ -10,11 +10,11 @@ function read(relativePath) {
 }
 
 test('workspace page delegates dialog footer rendering to a dedicated component boundary', () => {
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const componentsIndexSource = read('packages/sdkwork-notes-notes/src/components/index.ts');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const componentsIndexSource = read('packages/sdkwork-notes-pc-notes/src/components/index.ts');
   const dialogFooterBoundaryPath = path.join(
     workspaceRoot,
-    'packages/sdkwork-notes-notes/src/components/NotesWorkspaceDialogFooter.tsx',
+    'packages/sdkwork-notes-pc-notes/src/components/NotesWorkspaceDialogFooter.tsx',
   );
   const dialogFooterBoundaryExists = fs.existsSync(dialogFooterBoundaryPath);
   const dialogFooterBoundarySource = dialogFooterBoundaryExists

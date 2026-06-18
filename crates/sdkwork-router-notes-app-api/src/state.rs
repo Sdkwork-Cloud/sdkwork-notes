@@ -1,5 +1,5 @@
-use sdkwork_notes_product::ports::{DrivePageContentPort, NotesRepository};
-use sdkwork_notes_product::service::NotesService;
+use sdkwork_notes_pages_service::ports::{DrivePageContentPort, NotesRepository};
+use sdkwork_notes_pages_service::service::NotesService;
 
 #[derive(Clone)]
 pub struct NotesAppState<R, D>

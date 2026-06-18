@@ -25,10 +25,10 @@ async function transpileTypeScriptModule(relativePath) {
 
 async function loadWorkspaceOrchestratorModule() {
   const workspaceTypesModuleUrl = createDataModuleUrl(
-    (await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/types/notesWorkspace.ts')).outputText,
+    (await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts')).outputText,
   );
   const orchestratorSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/services/noteWorkspaceOrchestrator.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceOrchestrator.ts')
   ).outputText.replace(
     "../types/notesWorkspace",
     workspaceTypesModuleUrl,

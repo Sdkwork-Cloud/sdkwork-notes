@@ -1,4 +1,4 @@
-use sdkwork_notes_product::domain::{
+use sdkwork_notes_pages_service::domain::{
     AiFeedback, AiJob, AiSuggestion, AiSuggestionPage, DriveVersionPage, DriveVersionSummary,
     ObjectTypeSummary, Page, PageContent, PageInfo, PageSummary, PageSummaryPage, SearchResult,
     SearchResultPage, Workspace, WorkspaceBootstrap, WorkspacePage,

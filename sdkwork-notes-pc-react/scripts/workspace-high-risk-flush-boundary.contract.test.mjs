@@ -10,7 +10,7 @@ function read(relativePath) {
 }
 
 test('workspace store flushes dirty drafts and waits for in-flight saves before high-risk transitions that can discard or replace the active note', () => {
-  const storeSource = read('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts');
+  const storeSource = read('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts');
 
   assert.match(storeSource, /const persistUnsavedActiveNoteIfNeeded = async \(\) => \{/);
   assert.match(
@@ -49,7 +49,7 @@ test('workspace store flushes dirty drafts and waits for in-flight saves before 
 });
 
 test('trashed notes stay read-only in the editor so trash-only destructive actions do not bypass editable dirty drafts', () => {
-  const editorSource = read('packages/sdkwork-notes-notes/src/components/NoteEditorPane.tsx');
+  const editorSource = read('packages/sdkwork-notes-pc-notes/src/components/NoteEditorPane.tsx');
 
   assert.match(editorSource, /editable: Boolean\(note && !note\.deletedAt\),/);
   assert.match(editorSource, /if \(!note \|\| note\.deletedAt\) \{\s*return;\s*\}/s);

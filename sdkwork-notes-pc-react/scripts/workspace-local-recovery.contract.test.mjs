@@ -30,7 +30,7 @@ async function loadTsModule(relativePath) {
 }
 
 const recoveryModule = await loadTsModule(
-  'packages/sdkwork-notes-notes/src/services/noteWorkspaceRecovery.ts',
+  'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceRecovery.ts',
 );
 
 test('local recovery service exposes only drafts that still belong to live notes in the current workspace', () => {
@@ -189,9 +189,9 @@ test('restoring a recovered draft replays the local fields back into the active 
 });
 
 test('workspace store and page wire local recovery candidates onto the main editor flow', () => {
-  const storeSource = read('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts');
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const componentSource = read('packages/sdkwork-notes-notes/src/components/index.ts');
+  const storeSource = read('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const componentSource = read('packages/sdkwork-notes-pc-notes/src/components/index.ts');
 
   assert.match(storeSource, /recoveredDrafts: NotesWorkspaceRecoveredDraft\[\];/);
   assert.match(storeSource, /activeRecoveredDraft: NotesWorkspaceRecoveredDraft \| null;/);

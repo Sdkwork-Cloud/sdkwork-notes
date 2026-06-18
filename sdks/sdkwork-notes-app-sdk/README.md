@@ -2,7 +2,7 @@
 
 SDKWork Notes App API SDK family metadata skeleton.
 
-This directory declares the owner-authored SDK family contract for the app/client surface generated from `../../generated/openapi/notes-app-api.openapi.json`.
+This directory declares the owner-authored SDK family contract for the app/client surface generated from `../../apis/app-api/notes/notes-app-api.openapi.json`.
 
 Status:
 

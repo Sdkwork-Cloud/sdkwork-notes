@@ -34,12 +34,12 @@ async function transpileTypeScriptModule(relativePath) {
 async function loadWorkspaceStoreModule() {
   const typesModuleUrl = createDataModuleUrl(
     (
-      await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/types/notesWorkspace.ts')
+      await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts')
     ).outputText,
   );
   const notesSyncModuleUrl = createDataModuleUrl(
     (
-      await transpileTypeScriptModule('packages/sdkwork-notes-sync/src/index.ts')
+      await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
     ).outputText,
   );
 
@@ -390,7 +390,7 @@ export function restoreNotesWorkspaceRecoveredDraft(note, draft, restoredAt) {
 `);
 
   const workspaceStoreSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts')
   ).outputText;
   const patchedWorkspaceStoreSource = replaceModuleSpecifier(
     replaceModuleSpecifier(
@@ -401,10 +401,10 @@ export function restoreNotesWorkspaceRecoveredDraft(note, draft, restoredAt) {
             'zustand/vanilla',
             zustandVanillaStubUrl,
           ),
-          '@sdkwork/notes-local',
+          '@sdkwork/notes-pc-local',
           notesLocalStubUrl,
         ),
-        '@sdkwork/notes-sync',
+        '@sdkwork/notes-pc-sync',
         notesSyncModuleUrl,
       ),
       '../services',

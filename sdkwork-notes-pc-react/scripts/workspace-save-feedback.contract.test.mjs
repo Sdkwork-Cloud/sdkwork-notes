@@ -18,7 +18,7 @@ function read(relativePath) {
 async function loadWorkspaceSaveFeedbackModule() {
   const entryPoint = path.resolve(
     workspaceRoot,
-    'packages/sdkwork-notes-notes/src/services/noteWorkspaceSaveFeedback.ts',
+    'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceSaveFeedback.ts',
   );
   const source = await readFile(entryPoint, 'utf8');
   const transpiled = ts.transpileModule(source, {
@@ -94,11 +94,11 @@ test('save feedback runtime models retrying and recovered states as a first-clas
 });
 
 test('workspace save feedback boundary centralizes recovery semantics across store, editor, and error banner', () => {
-  const servicesIndexSource = read('packages/sdkwork-notes-notes/src/services/index.ts');
-  const storeSource = read('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts');
-  const editorSource = read('packages/sdkwork-notes-notes/src/components/NoteEditorPane.tsx');
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const errorBannerSource = read('packages/sdkwork-notes-notes/src/components/NotesWorkspaceErrorBanner.tsx');
+  const servicesIndexSource = read('packages/sdkwork-notes-pc-notes/src/services/index.ts');
+  const storeSource = read('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts');
+  const editorSource = read('packages/sdkwork-notes-pc-notes/src/components/NoteEditorPane.tsx');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const errorBannerSource = read('packages/sdkwork-notes-pc-notes/src/components/NotesWorkspaceErrorBanner.tsx');
 
   assert.match(servicesIndexSource, /noteWorkspaceSaveFeedback/);
 

@@ -38,12 +38,12 @@ async function loadTsModule(relativePath) {
 
 async function loadWorkspaceModules() {
   const typesModuleSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/types/notesWorkspace.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts')
   ).outputText;
   const typesModuleUrl = createDataModuleUrl(typesModuleSource);
 
   const orchestratorModuleSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/services/noteWorkspaceOrchestrator.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceOrchestrator.ts')
   ).outputText.replace(
     "../types/notesWorkspace",
     typesModuleUrl,
@@ -51,11 +51,11 @@ async function loadWorkspaceModules() {
   const orchestratorModuleUrl = createDataModuleUrl(orchestratorModuleSource);
 
   const recoveryModuleSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/services/noteWorkspaceRecovery.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceRecovery.ts')
   ).outputText;
   const recoveryModuleUrl = createDataModuleUrl(recoveryModuleSource);
   const notesSyncModuleSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-sync/src/index.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
   ).outputText;
   const notesSyncModuleUrl = createDataModuleUrl(notesSyncModuleSource);
 
@@ -287,7 +287,7 @@ export function resolveNotesWorkspaceSaveSuccessState(currentSaveState) {
 `);
 
   const workspaceStoreSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts')
   ).outputText;
   let patchedWorkspaceStoreSource = workspaceStoreSource;
   patchedWorkspaceStoreSource = replaceModuleSpecifier(
@@ -302,12 +302,12 @@ export function resolveNotesWorkspaceSaveSuccessState(currentSaveState) {
   );
   patchedWorkspaceStoreSource = replaceModuleSpecifier(
     patchedWorkspaceStoreSource,
-    '@sdkwork/notes-local',
+    '@sdkwork/notes-pc-local',
     notesLocalStubUrl,
   );
   patchedWorkspaceStoreSource = replaceModuleSpecifier(
     patchedWorkspaceStoreSource,
-    '@sdkwork/notes-sync',
+    '@sdkwork/notes-pc-sync',
     notesSyncModuleUrl,
   );
   patchedWorkspaceStoreSource = replaceModuleSpecifier(
@@ -322,7 +322,7 @@ export function resolveNotesWorkspaceSaveSuccessState(currentSaveState) {
   );
 
   const storeModule = await import(createDataModuleUrl(patchedWorkspaceStoreSource));
-  const notesLocalModule = await loadTsModule('packages/sdkwork-notes-local/src/index.ts');
+  const notesLocalModule = await loadTsModule('packages/sdkwork-notes-pc-local/src/index.ts');
   const typesModule = await import(typesModuleUrl);
   const orchestratorModule = await import(orchestratorModuleUrl);
 

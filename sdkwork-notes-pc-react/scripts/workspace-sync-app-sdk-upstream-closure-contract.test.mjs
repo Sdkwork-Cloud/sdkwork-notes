@@ -27,8 +27,8 @@ test('future notes remote apply upstream closure targets the local typed product
   assert.deepEqual(spec.owner, {
     family: 'notes-product-app-client-port-closure',
     applicationRoot: 'sdkwork-notes/sdkwork-notes-pc-react',
-    localPortFile: 'packages/sdkwork-notes-core/src/sdk/appSdkPort.ts',
-    runtimeFactory: 'packages/sdkwork-notes-core/src/sdk/useAppSdkClient.ts#configureAppSdkClientFactory',
+    localPortFile: 'packages/sdkwork-notes-pc-core/src/sdk/appSdkPort.ts',
+    runtimeFactory: 'packages/sdkwork-notes-pc-core/src/sdk/useAppSdkClient.ts#configureAppSdkClientFactory',
     futureSdkFamily: 'sdkwork-notes-app-sdk',
   });
   assert.deepEqual(spec.target, {

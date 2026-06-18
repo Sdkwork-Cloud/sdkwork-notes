@@ -1,5 +1,5 @@
 use http::StatusCode;
-use sdkwork_notes_product::domain::NotesActorContext;
+use sdkwork_notes_pages_service::domain::NotesActorContext;
 use sdkwork_web_core::WebRequestContext;
 
 #[derive(Debug, Clone)]

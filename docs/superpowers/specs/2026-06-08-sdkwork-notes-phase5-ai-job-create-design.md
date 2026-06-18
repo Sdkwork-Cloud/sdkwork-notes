@@ -186,8 +186,8 @@ Those additions must preserve the current boundary: Notes owns AI intent, review
 Required commands from `sdkwork-notes` root:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 node --test scripts\verify-notes-contract-foundation.test.mjs

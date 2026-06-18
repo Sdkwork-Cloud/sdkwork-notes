@@ -8,12 +8,15 @@ The current primary deliverable is the desktop application in `sdkwork-notes-pc-
 
 The AI-native Notes contract foundation is now recorded as owner-authored planning and contract skeletons. This phase does not include backend implementation, database migrations, or generated SDK transport output.
 
+- Architecture alignment audit: [docs/architecture/sdkwork-specs-alignment-audit.md](docs/architecture/sdkwork-specs-alignment-audit.md)
+- Root layout dictionary: [docs/root-layout.md](docs/root-layout.md)
 - AI-native design spec: [docs/superpowers/specs/2026-06-08-sdkwork-notes-ai-native-design.md](docs/superpowers/specs/2026-06-08-sdkwork-notes-ai-native-design.md)
 - Contract implementation plan: [docs/superpowers/plans/2026-06-08-sdkwork-notes-contract-foundation.md](docs/superpowers/plans/2026-06-08-sdkwork-notes-contract-foundation.md)
 - Schema registry entrypoint: [docs/schema-registry/README.md](docs/schema-registry/README.md)
-- OpenAPI skeletons: [generated/openapi/notes-app-api.openapi.json](generated/openapi/notes-app-api.openapi.json), [generated/openapi/notes-open-api.openapi.json](generated/openapi/notes-open-api.openapi.json), [generated/openapi/notes-backend-api.openapi.json](generated/openapi/notes-backend-api.openapi.json)
+- OpenAPI authorities: [apis/app-api/notes/notes-app-api.openapi.json](apis/app-api/notes/notes-app-api.openapi.json), [apis/open-api/notes/notes-open-api.openapi.json](apis/open-api/notes/notes-open-api.openapi.json), [apis/backend-api/notes/notes-backend-api.openapi.json](apis/backend-api/notes/notes-backend-api.openapi.json)
 - SDK family skeletons: [sdks/sdkwork-notes-app-sdk/README.md](sdks/sdkwork-notes-app-sdk/README.md), [sdks/sdkwork-notes-sdk/README.md](sdks/sdkwork-notes-sdk/README.md), [sdks/sdkwork-notes-backend-sdk/README.md](sdks/sdkwork-notes-backend-sdk/README.md)
 - Contract verifier: [scripts/verify-notes-contract-foundation.mjs](scripts/verify-notes-contract-foundation.mjs)
+- Architecture verifier: [scripts/verify-notes-standard-architecture.test.mjs](scripts/verify-notes-standard-architecture.test.mjs)
 - Verifier tests: [scripts/verify-notes-contract-foundation.test.mjs](scripts/verify-notes-contract-foundation.test.mjs)
 
 Key contract decisions:
@@ -27,7 +30,7 @@ Key contract decisions:
 The first executable backend service layer has been started at the repository root. It is a Rust workspace that mirrors the SDKWork Drive service structure while keeping Drive as the content and version authority.
 
 - Root Rust workspace: [Cargo.toml](Cargo.toml)
-- Product service crate: [services/sdkwork-notes-product](services/sdkwork-notes-product)
+- Product service crate: [services/sdkwork-notes-pages-service](services/sdkwork-notes-pages-service)
 - App API route crate: [crates/sdkwork-router-notes-app-api](crates/sdkwork-router-notes-app-api)
 - Phase 1 service design: [docs/superpowers/specs/2026-06-08-sdkwork-notes-phase1-rust-service-design.md](docs/superpowers/specs/2026-06-08-sdkwork-notes-phase1-rust-service-design.md)
 - Phase 1 implementation plan: [docs/superpowers/plans/2026-06-08-sdkwork-notes-phase1-rust-service.md](docs/superpowers/plans/2026-06-08-sdkwork-notes-phase1-rust-service.md)
@@ -111,7 +114,7 @@ The first implementation searches current `notes_page` title/snippet metadata, s
 Backend verification commands:
 
 ```powershell
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-router-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 node scripts\verify-notes-contract-foundation.mjs
@@ -301,21 +304,21 @@ Reserved for future work:
 ```text
 sdkwork-notes/
 ├─ .github/
-│  └─ workflows/
-│     └─ sdkwork-notes-desktop-release.yml
+�? └─ workflows/
+�?    └─ sdkwork-notes-desktop-release.yml
 ├─ sdkwork-notes-pc-react/
-│  ├─ packages/
-│  │  ├─ sdkwork-notes-auth/
-│  │  ├─ sdkwork-notes-commons/
-│  │  ├─ sdkwork-notes-core/
-│  │  ├─ sdkwork-notes-desktop/
-│  │  ├─ sdkwork-notes-i18n/
-│  │  ├─ sdkwork-notes-notes/
-│  │  ├─ sdkwork-notes-shell/
-│  │  ├─ sdkwork-notes-types/
-│  │  └─ sdkwork-notes-user/
-│  ├─ scripts/
-│  └─ src/
+�? ├─ packages/
+�? �? ├─ sdkwork-notes-auth/
+�? �? ├─ sdkwork-notes-commons/
+�? �? ├─ sdkwork-notes-core/
+�? �? ├─ sdkwork-notes-desktop/
+�? �? ├─ sdkwork-notes-i18n/
+�? �? ├─ sdkwork-notes-notes/
+�? �? ├─ sdkwork-notes-shell/
+�? �? ├─ sdkwork-notes-types/
+�? �? └─ sdkwork-notes-user/
+�? ├─ scripts/
+�? └─ src/
 ├─ sdkwork-notes-mobile-react/
 └─ sdkwork-notes-mobile-flutter/
 ```
@@ -437,32 +440,23 @@ This repository is currently centered on the desktop Notes product. The mobile d
 
 ### 仓库说明
 
-`sdkwork-notes` 是 Notes 产品线的独立工作区仓库。
-
-当前已经完成的核心交付物是 `sdkwork-notes-pc-react`，它采用 pnpm workspace + 分包架构，并集成了 Tauri 桌面端外壳。仓库同时预留了 `sdkwork-notes-mobile-react` 和 `sdkwork-notes-mobile-flutter` 两个目录，便于后续扩展多端形态。
-
-### 当前已完成内容
-
-- `sdkwork-notes-pc-react` 桌面端 Notes 工作区
-- React + Vite + pnpm workspace 架构
-- Tauri 桌面端架构、托盘行为与跨平台打包能力
-- 本地开发使用相对路径 / source 模式共享 SDK
+`sdkwork-notes` �?Notes 产品线的独立工作区仓库�?
+当前已经完成的核心交付物�?`sdkwork-notes-pc-react`，它采用 pnpm workspace + 分包架构，并集成�?Tauri 桌面端外壳。仓库同时预留了 `sdkwork-notes-mobile-react` �?`sdkwork-notes-mobile-flutter` 两个目录，便于后续扩展多端形态�?
+### 当前已完成内�?
+- `sdkwork-notes-pc-react` 桌面�?Notes 工作�?- React + Vite + pnpm workspace 架构
+- Tauri 桌面端架构、托盘行为与跨平台打包能�?- 本地开发使用相对路�?/ source 模式共享 SDK
 - Release 打包使用 git 模式共享 SDK
 - GitHub Actions 多平台、多架构桌面端发布工作流
 
 ### 目录结构
 
-仓库顶层结构如下：
-
+仓库顶层结构如下�?
 - `.github/workflows`
   - 仓库自身的桌面端 release workflow
 - `sdkwork-notes-pc-react`
-  - 当前主应用，包含桌面端 Notes 工作区
-- `sdkwork-notes-mobile-react`
-  - React 移动端预留目录
-- `sdkwork-notes-mobile-flutter`
-  - Flutter 移动端预留目录
-
+  - 当前主应用，包含桌面�?Notes 工作�?- `sdkwork-notes-mobile-react`
+  - React 移动端预留目�?- `sdkwork-notes-mobile-flutter`
+  - Flutter 移动端预留目�?
 ### 技术栈
 
 - Node.js 22
@@ -479,24 +473,22 @@ This repository is currently centered on the desktop Notes product. The mobile d
 
 在本地运行桌面端前，请确认：
 
-1. 已安装 Node.js 和 pnpm
-2. 已安装 Rust 与 Cargo
-3. 已安装当前操作系统所需的 Tauri 依赖
-4. 已准备共享 SDK 的本地源码，或者在 release 场景下使用 git 模式自动拉取
+1. 已安�?Node.js �?pnpm
+2. 已安�?Rust �?Cargo
+3. 已安装当前操作系统所需�?Tauri 依赖
+4. 已准备共�?SDK 的本地源码，或者在 release 场景下使�?git 模式自动拉取
 
 ### 共享 SDK 模式说明
 
-当前桌面工作区支持两种共享 SDK 模式：
-
+当前桌面工作区支持两种共�?SDK 模式�?
 - `source`
   - 用于本地开发命令，例如 `tauri:dev`、`tauri:build`、`tauri:info`
   - 优先使用本地相对路径 SDK
 - `git`
-  - 用于发布命令，例如 `release:desktop`
+  - 用于发布命令，例�?`release:desktop`
   - 通过 git 仓库准备共享 SDK 依赖
 
-如需自定义本地共享 SDK 目录，可使用以下环境变量：
-
+如需自定义本地共�?SDK 目录，可使用以下环境变量�?
 - `SDKWORK_SHARED_SDK_APP_LOCAL_ROOT`
 - `SDKWORK_SHARED_SDK_COMMON_LOCAL_ROOT`
 
@@ -505,19 +497,16 @@ This repository is currently centered on the desktop Notes product. The mobile d
 - `../legacy-java-plus-app-api`
 - `../sdk`
 
-### 快速开始
-
-在仓库根目录执行：
-
+### 快速开�?
+在仓库根目录执行�?
 ```bash
 cd sdkwork-notes-pc-react
 pnpm install
 pnpm dev
 ```
 
-### 桌面端常用命令
-
-在 `sdkwork-notes-pc-react` 目录下执行：
+### 桌面端常用命�?
+�?`sdkwork-notes-pc-react` 目录下执行：
 
 ```bash
 pnpm test
@@ -530,15 +519,12 @@ pnpm tauri:build
 pnpm release:desktop -- --target x86_64-pc-windows-msvc
 ```
 
-### Release 工作流
-
-仓库已内置桌面端 release workflow：
-
+### Release 工作�?
+仓库已内置桌面端 release workflow�?
 - `.github/workflows/sdkwork-notes-desktop-release.yml`
 
-触发方式：
-
-- 推送符合 `sdkwork-notes-release-*` 规则的 tag
+触发方式�?
+- 推送符�?`sdkwork-notes-release-*` 规则�?tag
 - 手动触发 `workflow_dispatch`
 
 当前已配置的桌面端发布矩阵包括：
@@ -552,4 +538,4 @@ pnpm release:desktop -- --target x86_64-pc-windows-msvc
 
 ### 当前定位
 
-当前仓库重点是桌面端 Notes 产品。移动端目录暂时作为占位保留，后续可以在不改变顶层仓库结构的前提下继续扩展为完整的多端 Notes 工作区。
+当前仓库重点是桌面端 Notes 产品。移动端目录暂时作为占位保留，后续可以在不改变顶层仓库结构的前提下继续扩展为完整的多�?Notes 工作区�?

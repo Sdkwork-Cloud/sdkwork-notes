@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ensureI18n } from '@sdkwork/notes-i18n';
+import { ensureI18n } from '@sdkwork/notes-pc-i18n';
 import { bootstrapSdkClients } from './bootstrap';
 import App from './App';
 

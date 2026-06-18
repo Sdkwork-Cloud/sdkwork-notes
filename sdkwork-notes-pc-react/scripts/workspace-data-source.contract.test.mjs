@@ -26,13 +26,13 @@ async function loadTypeScriptModule(relativePath) {
 }
 
 const workspaceTypesModule = await loadTypeScriptModule(
-  'packages/sdkwork-notes-notes/src/types/notesWorkspace.ts',
+  'packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts',
 );
 const workspaceTypesModuleUrl = createDataModuleUrl(
-  (await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/types/notesWorkspace.ts')).outputText,
+  (await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts')).outputText,
 );
 const workspaceOrchestratorSource = (
-  await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/services/noteWorkspaceOrchestrator.ts')
+  await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceOrchestrator.ts')
 ).outputText.replace(
   "../types/notesWorkspace",
   workspaceTypesModuleUrl,

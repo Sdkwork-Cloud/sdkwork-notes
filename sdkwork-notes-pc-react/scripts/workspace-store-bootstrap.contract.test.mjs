@@ -41,12 +41,12 @@ async function transpileTypeScriptModule(relativePath) {
 async function loadWorkspaceStoreModule() {
   const typesModuleUrl = createDataModuleUrl(
     (
-      await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/types/notesWorkspace.ts')
+      await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts')
     ).outputText,
   );
   const notesSyncModuleUrl = createDataModuleUrl(
     (
-      await transpileTypeScriptModule('packages/sdkwork-notes-sync/src/index.ts')
+      await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
     ).outputText,
   );
 
@@ -376,7 +376,7 @@ export function restoreNotesWorkspaceRecoveredDraft(note, draft, restoredAt) {
 `);
 
   const workspaceStoreSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts')
   ).outputText;
   const patchedWorkspaceStoreSource = replaceModuleSpecifier(
     replaceModuleSpecifier(
@@ -387,10 +387,10 @@ export function restoreNotesWorkspaceRecoveredDraft(note, draft, restoredAt) {
             'zustand/vanilla',
             zustandVanillaStubUrl,
           ),
-          '@sdkwork/notes-local',
+          '@sdkwork/notes-pc-local',
           notesLocalStubUrl,
         ),
-        '@sdkwork/notes-sync',
+        '@sdkwork/notes-pc-sync',
         notesSyncModuleUrl,
       ),
       '../services',
@@ -455,11 +455,11 @@ export function createNotesWorkspaceSyncRuntime(options) {
 `);
 
   const source = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-notes/src/bootstrap/notesWorkspaceStoreBootstrap.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/bootstrap/notesWorkspaceStoreBootstrap.ts')
   ).outputText;
   const patchedSource = replaceModuleSpecifier(
     replaceModuleSpecifier(
-      replaceModuleSpecifier(source, '@sdkwork/notes-sync', notesSyncStubUrl),
+      replaceModuleSpecifier(source, '@sdkwork/notes-pc-sync', notesSyncStubUrl),
       '../services',
       servicesStubUrl,
     ),
@@ -681,9 +681,9 @@ test('bootstrapNotesWorkspaceStore accepts an explicit remote apply handler and 
 });
 
 test('AppProviders owns the notes workspace store bootstrap boundary at the authenticated shell layer', () => {
-  const notesIndexSource = read('packages/sdkwork-notes-notes/src/index.ts');
-  const bootstrapIndexSource = read('packages/sdkwork-notes-notes/src/bootstrap/index.ts');
-  const appProvidersSource = read('packages/sdkwork-notes-shell/src/application/providers/AppProviders.tsx');
+  const notesIndexSource = read('packages/sdkwork-notes-pc-notes/src/index.ts');
+  const bootstrapIndexSource = read('packages/sdkwork-notes-pc-notes/src/bootstrap/index.ts');
+  const appProvidersSource = read('packages/sdkwork-notes-pc-shell/src/application/providers/AppProviders.tsx');
 
   assert.match(notesIndexSource, /export \* from '\.\/bootstrap';/);
   assert.match(bootstrapIndexSource, /bootstrapNotesWorkspaceStore/);
@@ -702,12 +702,12 @@ test('AppProviders owns the notes workspace store bootstrap boundary at the auth
 });
 
 test('AppProviders, AppRoot, and desktop bootstrap expose a single top-level injection path for workspace remote apply bootstrap options', () => {
-  const bootstrapIndexSource = read('packages/sdkwork-notes-notes/src/bootstrap/index.ts');
-  const appProvidersSource = read('packages/sdkwork-notes-shell/src/application/providers/AppProviders.tsx');
-  const appRootSource = read('packages/sdkwork-notes-shell/src/application/AppRoot.tsx');
-  const shellIndexSource = read('packages/sdkwork-notes-shell/src/index.ts');
-  const desktopBootstrapAppSource = read('packages/sdkwork-notes-desktop/src/desktop/bootstrap/DesktopBootstrapApp.tsx');
-  const createDesktopAppSource = read('packages/sdkwork-notes-desktop/src/desktop/bootstrap/createDesktopApp.tsx');
+  const bootstrapIndexSource = read('packages/sdkwork-notes-pc-notes/src/bootstrap/index.ts');
+  const appProvidersSource = read('packages/sdkwork-notes-pc-shell/src/application/providers/AppProviders.tsx');
+  const appRootSource = read('packages/sdkwork-notes-pc-shell/src/application/AppRoot.tsx');
+  const shellIndexSource = read('packages/sdkwork-notes-pc-shell/src/index.ts');
+  const desktopBootstrapAppSource = read('packages/sdkwork-notes-pc-desktop/src/desktop/bootstrap/DesktopBootstrapApp.tsx');
+  const createDesktopAppSource = read('packages/sdkwork-notes-pc-desktop/src/desktop/bootstrap/createDesktopApp.tsx');
 
   assert.match(bootstrapIndexSource, /NotesWorkspaceStoreBootstrapOptions/);
 

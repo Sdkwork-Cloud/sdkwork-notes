@@ -11,12 +11,12 @@ use crate::error::{map_product_error, ApiResult};
 use crate::state::NotesBackendState;
 use axum::extract::{Path, Query, State};
 use axum::Json;
-use sdkwork_notes_product::domain::{
+use sdkwork_notes_pages_service::domain::{
     AcceptAiSuggestionCommand, ApplyAiSuggestionCommand, ClaimAiJobCommand, CompleteAiJobCommand,
     CompleteAiSuggestionInput, FailAiJobCommand, ListAiJobsQuery, ListAiSuggestionFeedbackQuery,
     RejectAiSuggestionCommand,
 };
-use sdkwork_notes_product::ports::{DrivePageContentPort, NotesRepository};
+use sdkwork_notes_pages_service::ports::{DrivePageContentPort, NotesRepository};
 use sdkwork_web_core::WebRequestContext;
 pub(crate) async fn list_ai_jobs<R, D>(
     State(state): State<NotesBackendState<R, D>>,

@@ -7,7 +7,7 @@ import ts from 'typescript';
 
 const workspaceRoot = process.cwd();
 const workspaceSaveRetryPolicyModulePath =
-  'packages/sdkwork-notes-notes/src/services/noteWorkspaceSaveRetryPolicy.ts';
+  'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceSaveRetryPolicy.ts';
 
 function createDataModuleUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
@@ -40,11 +40,11 @@ test('workspace save retry policy exists, is exported from the services boundary
     'Expected noteWorkspaceSaveRetryPolicy.ts to exist.',
   );
 
-  const servicesIndexSource = read('packages/sdkwork-notes-notes/src/services/index.ts');
+  const servicesIndexSource = read('packages/sdkwork-notes-pc-notes/src/services/index.ts');
   assert.match(servicesIndexSource, /noteWorkspaceSaveRetryPolicy/);
 
-  const notesPackage = JSON.parse(read('packages/sdkwork-notes-notes/package.json'));
-  assert.equal(notesPackage.dependencies?.['@sdkwork/notes-observability'], 'workspace:*');
+  const notesPackage = JSON.parse(read('packages/sdkwork-notes-pc-notes/package.json'));
+  assert.equal(notesPackage.dependencies?.['@sdkwork/notes-pc-observability'], 'workspace:*');
 
   const workspaceSaveRetryPolicyModule = await loadWorkspaceSaveRetryPolicyModule();
   assert.equal(typeof workspaceSaveRetryPolicyModule.createNotesWorkspaceSaveRetryPolicy, 'function');
@@ -128,7 +128,7 @@ test('save retry policy records retry scheduling, recovery, and retry exhaustion
 });
 
 test('workspace store consumes the retry policy for automatic backoff, recovery telemetry, and capped terminal failures', () => {
-  const storeSource = read('packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts');
+  const storeSource = read('packages/sdkwork-notes-pc-notes/src/store/useNotesWorkspaceStore.ts');
 
   assert.match(storeSource, /createNotesWorkspaceSaveRetryPolicy/);
   assert.match(

@@ -1,19 +1,19 @@
 use async_trait::async_trait;
 use axum::body::{to_bytes, Body};
 use http::{Method, Request, StatusCode};
-use sdkwork_notes_product::domain::{
+use sdkwork_notes_pages_service::domain::{
     ClaimAiJobCommand, CompleteAiJobCommand, CompleteAiSuggestionInput, CreateAiJobCommand,
     CreatePageCommand, CreateWorkspaceCommand, DrivePageContentSnapshot, DriveVersionPage,
     DriveVersionSummary, NotesActorContext, PageInfo, PageKind,
 };
-use sdkwork_notes_product::infrastructure::sql::install_sqlite_schema;
-use sdkwork_notes_product::infrastructure::sql::notes_store::SqlNotesStore;
-use sdkwork_notes_product::ports::{
+use sdkwork_notes_pages_repository_sqlx::install_sqlite_schema;
+use sdkwork_notes_pages_repository_sqlx::notes_store::SqlNotesStore;
+use sdkwork_notes_pages_service::ports::{
     CreateDrivePageContentCommand, DrivePageContentPort, ListDrivePageContentVersionsCommand,
     ReadDrivePageContentCommand, RestoreDrivePageContentVersionCommand,
     UpdateDrivePageContentCommand,
 };
-use sdkwork_notes_product::service::NotesService;
+use sdkwork_notes_pages_service::service::NotesService;
 use sdkwork_router_notes_app_api::routes::build_router;
 use serde_json::json;
 use sqlx::any::AnyPoolOptions;
@@ -1380,7 +1380,7 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn create_page_content(
         &self,
         command: CreateDrivePageContentCommand,
-    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_pages_service::error::NotesProductError> {
         let snapshot = DrivePageContentSnapshot {
             drive_space_id: command.drive_space_id.clone(),
             drive_node_id: format!("drive-node-{}", command.page_id),
@@ -1414,7 +1414,7 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn update_page_content(
         &self,
         command: UpdateDrivePageContentCommand,
-    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_pages_service::error::NotesProductError> {
         let snapshot = DrivePageContentSnapshot {
             drive_space_id: command.drive_space_id.clone(),
             drive_node_id: command.drive_node_id.clone(),
@@ -1445,14 +1445,14 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn read_page_content(
         &self,
         command: ReadDrivePageContentCommand,
-    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_pages_service::error::NotesProductError> {
         self.records
             .lock()
             .await
             .get(&command.page_id)
             .cloned()
             .ok_or_else(|| {
-                sdkwork_notes_product::error::NotesProductError::NotFound(
+                sdkwork_notes_pages_service::error::NotesProductError::NotFound(
                     "page content not found".to_string(),
                 )
             })
@@ -1461,7 +1461,7 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn restore_page_content_version(
         &self,
         command: RestoreDrivePageContentVersionCommand,
-    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_pages_service::error::NotesProductError> {
         let source = self
             .versions
             .lock()
@@ -1474,7 +1474,7 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
                     .cloned()
             })
             .ok_or_else(|| {
-                sdkwork_notes_product::error::NotesProductError::NotFound(
+                sdkwork_notes_pages_service::error::NotesProductError::NotFound(
                     "page content version not found".to_string(),
                 )
             })?;
@@ -1510,7 +1510,7 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn list_page_content_versions(
         &self,
         command: ListDrivePageContentVersionsCommand,
-    ) -> Result<DriveVersionPage, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DriveVersionPage, sdkwork_notes_pages_service::error::NotesProductError> {
         let current = self
             .records
             .lock()
@@ -1518,7 +1518,7 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
             .get(&command.page_id)
             .cloned()
             .ok_or_else(|| {
-                sdkwork_notes_product::error::NotesProductError::NotFound(
+                sdkwork_notes_pages_service::error::NotesProductError::NotFound(
                     "page content not found".to_string(),
                 )
             })?;

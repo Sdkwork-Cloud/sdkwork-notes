@@ -105,7 +105,7 @@ test('notes-auth owns the shared auth runtime boundary and the rest of the works
 
   const directSharedAuthImports = collectSourceFiles(packagesRootPath)
     .map((filePath) => path.relative(workspaceRoot, filePath).replaceAll('\\', '/'))
-    .filter((relativePath) => !relativePath.startsWith('packages/sdkwork-notes-auth/'))
+    .filter((relativePath) => !relativePath.startsWith('packages/sdkwork-notes-pc-auth/'))
     .filter((relativePath) =>
       fs.readFileSync(path.resolve(workspaceRoot, relativePath), 'utf8').includes('@sdkwork/auth-pc-react'),
     );
@@ -113,7 +113,7 @@ test('notes-auth owns the shared auth runtime boundary and the rest of the works
   assert.deepEqual(
     directSharedAuthImports,
     [],
-    'Expected only @sdkwork/notes-auth to import @sdkwork/auth-pc-react directly.',
+    'Expected only @sdkwork/notes-pc-auth to import @sdkwork/auth-pc-react directly.',
   );
 });
 

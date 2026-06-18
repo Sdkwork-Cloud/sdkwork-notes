@@ -11,7 +11,7 @@ function createDataModuleUrl(source) {
 async function loadWorkspaceDialogStateModule() {
   const entryPoint = path.resolve(
     process.cwd(),
-    'packages/sdkwork-notes-notes/src/services/noteWorkspaceDialogState.ts',
+    'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceDialogState.ts',
   );
   const source = await readFile(entryPoint, 'utf8');
   const transpiled = ts.transpileModule(source, {

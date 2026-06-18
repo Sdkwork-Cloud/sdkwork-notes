@@ -31,7 +31,7 @@ This phase proves three executable facts:
 In scope:
 
 - Root Rust workspace for Notes service crates.
-- `sdkwork-notes-product` crate with domain models, service commands, ports, SQL schema, and SQL store.
+- `sdkwork-notes-pages-service` crate with domain models, service commands, ports, SQL schema, and SQL store.
 - `sdkwork-notes-app-api` crate with an Axum router for the first App API page routes.
 - Tests for SQL schema installation, page creation, content update, App API route paths, and forbidden Drive-owned storage terms.
 
@@ -52,7 +52,7 @@ sdkwork-notes-app-api
   -> NotesService
   -> NotesRepository + DrivePageContentPort
 
-sdkwork-notes-product
+sdkwork-notes-pages-service
   -> domain models
   -> service/use case layer
   -> repository port
@@ -110,7 +110,7 @@ Forbidden in Notes SQL and service source:
 
 ## 6. Error Model
 
-`sdkwork-notes-product` exposes `NotesProductError` with validation, conflict, not found, permission denied, and internal variants.
+`sdkwork-notes-pages-service` exposes `NotesProductError` with validation, conflict, not found, permission denied, and internal variants.
 
 `sdkwork-notes-app-api` maps those errors into RFC 9457-compatible problem detail responses.
 
@@ -120,9 +120,9 @@ Required commands from `sdkwork-notes` root:
 
 ```powershell
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-notes-app-api
-cargo fmt -p sdkwork-notes-product -p sdkwork-notes-app-api -- --check
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-notes-app-api -- --check
 node --test scripts\verify-notes-contract-foundation.test.mjs
 node scripts\verify-notes-contract-foundation.mjs
 ```

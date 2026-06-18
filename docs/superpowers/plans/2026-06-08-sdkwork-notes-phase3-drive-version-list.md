@@ -14,10 +14,10 @@
 
 Modify:
 
-- `services/sdkwork-notes-product/src/domain.rs`: add Drive version summary/page/query structs.
-- `services/sdkwork-notes-product/src/ports.rs`: add `ListDrivePageContentVersionsCommand` and Drive port method.
-- `services/sdkwork-notes-product/src/service.rs`: add `NotesService::list_page_versions`.
-- `services/sdkwork-notes-product/tests/page_service.rs`: add product service test and fake Drive version data.
+- `services/sdkwork-notes-pages-service/src/domain.rs`: add Drive version summary/page/query structs.
+- `services/sdkwork-notes-pages-service/src/ports.rs`: add `ListDrivePageContentVersionsCommand` and Drive port method.
+- `services/sdkwork-notes-pages-service/src/service.rs`: add `NotesService::list_page_versions`.
+- `services/sdkwork-notes-pages-service/tests/page_service.rs`: add product service test and fake Drive version data.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/paths.rs`: add `PAGE_VERSIONS`.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/dto.rs`: add Drive version response DTOs.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/handlers.rs`: add versions handler.
@@ -29,13 +29,13 @@ Modify:
 
 Do not modify:
 
-- `services/sdkwork-notes-product/src/infrastructure/sql/sqlite_core.sql`, unless a non-version metadata fix is required.
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/sqlite_core.sql`, unless a non-version metadata fix is required.
 - generated SDK transport output.
 - Drive-owned schema or SDK files.
 
 ## Task 1: Product Service RED
 
-- [ ] Add a failing test in `services/sdkwork-notes-product/tests/page_service.rs` named `page_versions_are_listed_from_drive_without_notes_revision_rows`.
+- [ ] Add a failing test in `services/sdkwork-notes-pages-service/tests/page_service.rs` named `page_versions_are_listed_from_drive_without_notes_revision_rows`.
 - [ ] The test should:
   - create a workspace;
   - create a page;
@@ -47,7 +47,7 @@ Do not modify:
 - [ ] Run:
 
 ```powershell
-cargo test -p sdkwork-notes-product page_versions_are_listed_from_drive_without_notes_revision_rows
+cargo test -p sdkwork-notes-pages-service page_versions_are_listed_from_drive_without_notes_revision_rows
 ```
 
 Expected: fail because the service method and Drive port method do not exist.
@@ -69,8 +69,8 @@ Expected: fail because the service method and Drive port method do not exist.
 - [ ] Re-run:
 
 ```powershell
-cargo test -p sdkwork-notes-product page_versions_are_listed_from_drive_without_notes_revision_rows
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service page_versions_are_listed_from_drive_without_notes_revision_rows
+cargo test -p sdkwork-notes-pages-service
 ```
 
 Expected: product tests pass.
@@ -141,8 +141,8 @@ Expected: fail because manifest is missing the route.
 - [ ] Run:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
 node --test scripts\verify-notes-contract-foundation.test.mjs

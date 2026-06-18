@@ -1,19 +1,19 @@
 use async_trait::async_trait;
 use axum::body::{to_bytes, Body};
 use http::{Method, Request, StatusCode};
-use sdkwork_notes_product::domain::{
+use sdkwork_notes_pages_service::domain::{
     ClaimAiJobCommand, CompleteAiJobCommand, CompleteAiSuggestionInput, CreateAiFeedbackCommand,
     CreateAiJobCommand, CreatePageCommand, CreateWorkspaceCommand, DrivePageContentSnapshot,
     DriveVersionPage, ListPageAiSuggestionsQuery, PageInfo, PageKind,
 };
-use sdkwork_notes_product::infrastructure::sql::install_sqlite_schema;
-use sdkwork_notes_product::infrastructure::sql::notes_store::SqlNotesStore;
-use sdkwork_notes_product::ports::{
+use sdkwork_notes_pages_repository_sqlx::install_sqlite_schema;
+use sdkwork_notes_pages_repository_sqlx::notes_store::SqlNotesStore;
+use sdkwork_notes_pages_service::ports::{
     CreateDrivePageContentCommand, DrivePageContentPort, ListDrivePageContentVersionsCommand,
     ReadDrivePageContentCommand, RestoreDrivePageContentVersionCommand,
     UpdateDrivePageContentCommand,
 };
-use sdkwork_notes_product::service::NotesService;
+use sdkwork_notes_pages_service::service::NotesService;
 use sdkwork_router_notes_backend_api::routes::build_router;
 use serde_json::json;
 use sqlx::any::AnyPoolOptions;
@@ -342,7 +342,7 @@ async fn backend_api_routes_list_ai_suggestion_feedback() {
     let (summary_id, _) = seed_ai_suggestions(&service).await;
     service
         .create_ai_feedback(CreateAiFeedbackCommand {
-            context: sdkwork_notes_product::domain::NotesActorContext {
+            context: sdkwork_notes_pages_service::domain::NotesActorContext {
                 tenant_id: "tenant-001".to_string(),
                 organization_id: "org-001".to_string(),
                 operator_id: "user-001".to_string(),
@@ -380,7 +380,7 @@ async fn backend_api_routes_list_ai_suggestion_feedback() {
 }
 
 async fn seed_ai_job(service: &NotesService<SqlNotesStore, FakeDrivePageContentPort>) {
-    let actor = sdkwork_notes_product::domain::NotesActorContext {
+    let actor = sdkwork_notes_pages_service::domain::NotesActorContext {
         tenant_id: "tenant-001".to_string(),
         organization_id: "org-001".to_string(),
         operator_id: "user-001".to_string(),
@@ -434,7 +434,7 @@ async fn seed_ai_job(service: &NotesService<SqlNotesStore, FakeDrivePageContentP
 async fn seed_ai_suggestions(
     service: &NotesService<SqlNotesStore, FakeDrivePageContentPort>,
 ) -> (String, String) {
-    let actor = sdkwork_notes_product::domain::NotesActorContext {
+    let actor = sdkwork_notes_pages_service::domain::NotesActorContext {
         tenant_id: "tenant-001".to_string(),
         organization_id: "org-001".to_string(),
         operator_id: "user-001".to_string(),
@@ -539,7 +539,7 @@ async fn seed_ai_suggestions(
 async fn seed_applicable_ai_suggestion(
     service: &NotesService<SqlNotesStore, FakeDrivePageContentPort>,
 ) -> String {
-    let actor = sdkwork_notes_product::domain::NotesActorContext {
+    let actor = sdkwork_notes_pages_service::domain::NotesActorContext {
         tenant_id: "tenant-001".to_string(),
         organization_id: "org-001".to_string(),
         operator_id: "user-001".to_string(),
@@ -672,7 +672,7 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn create_page_content(
         &self,
         command: CreateDrivePageContentCommand,
-    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_pages_service::error::NotesProductError> {
         let snapshot = DrivePageContentSnapshot {
             drive_space_id: command.drive_space_id.clone(),
             drive_node_id: format!("drive-node-{}", command.page_id),
@@ -700,7 +700,7 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn update_page_content(
         &self,
         command: UpdateDrivePageContentCommand,
-    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_pages_service::error::NotesProductError> {
         let snapshot = DrivePageContentSnapshot {
             drive_space_id: command.drive_space_id,
             drive_node_id: command.drive_node_id,
@@ -725,14 +725,14 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn read_page_content(
         &self,
         command: ReadDrivePageContentCommand,
-    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_pages_service::error::NotesProductError> {
         self.records
             .lock()
             .await
             .get(&command.page_id)
             .cloned()
             .ok_or_else(|| {
-                sdkwork_notes_product::error::NotesProductError::NotFound(
+                sdkwork_notes_pages_service::error::NotesProductError::NotFound(
                     "page content not found".to_string(),
                 )
             })
@@ -741,14 +741,14 @@ impl DrivePageContentPort for FakeDrivePageContentPort {
     async fn restore_page_content_version(
         &self,
         _: RestoreDrivePageContentVersionCommand,
-    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DrivePageContentSnapshot, sdkwork_notes_pages_service::error::NotesProductError> {
         unreachable!("backend AI routes must not restore Drive page content versions")
     }
 
     async fn list_page_content_versions(
         &self,
         command: ListDrivePageContentVersionsCommand,
-    ) -> Result<DriveVersionPage, sdkwork_notes_product::error::NotesProductError> {
+    ) -> Result<DriveVersionPage, sdkwork_notes_pages_service::error::NotesProductError> {
         Ok(DriveVersionPage {
             items: Vec::new(),
             page_info: PageInfo {

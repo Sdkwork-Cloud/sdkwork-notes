@@ -11,7 +11,7 @@ Responsibilities:
 - Keep Axum router composition in `src/routes.rs`.
 - Keep HTTP DTO decode and service delegation in `src/handlers.rs`.
 - Expose the deterministic route manifest through `src/manifest.rs`.
-- Map HTTP DTOs to `sdkwork-notes-product` service commands.
+- Map HTTP DTOs to `sdkwork-notes-pages-service` service commands.
 - Expose page content version listing and restore routes as Notes business facades over Drive-owned versions.
 - Return problem detail errors.
 - Avoid `/notes/notes`, `notes_note`, `notes_note_revision`, and Drive-owned storage lifecycle APIs.

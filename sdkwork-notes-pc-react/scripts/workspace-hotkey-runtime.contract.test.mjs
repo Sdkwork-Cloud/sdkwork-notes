@@ -11,7 +11,7 @@ function createDataModuleUrl(source) {
 async function loadWorkspaceHotkeyRuntimeModule() {
   const entryPoint = path.resolve(
     process.cwd(),
-    'packages/sdkwork-notes-notes/src/services/noteWorkspaceHotkeyRuntime.ts',
+    'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceHotkeyRuntime.ts',
   );
   const source = await readFile(entryPoint, 'utf8');
   const transpiled = ts.transpileModule(source, {

@@ -10,8 +10,8 @@ function read(relativePath) {
 }
 
 test('workspace page centralizes manual save, shortcut save, and hide-triggered flush behind a shared flushDraft entry', () => {
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const autosaveSource = read('packages/sdkwork-notes-notes/src/services/noteWorkspaceAutosave.ts');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const autosaveSource = read('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceAutosave.ts');
 
   assert.match(autosaveSource, /shouldFlush:/);
   assert.match(autosaveSource, /saveState === 'error'/);

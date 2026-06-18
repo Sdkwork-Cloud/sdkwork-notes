@@ -52,7 +52,7 @@ function createFolder(id, name, overrides = {}) {
   };
 }
 
-const notesSearchSourcePath = 'packages/sdkwork-notes-search/src/index.ts';
+const notesSearchSourcePath = 'packages/sdkwork-notes-pc-search/src/index.ts';
 const notesSearchModule = await loadTsModule(notesSearchSourcePath);
 const notesSearchSource = await readFile(
   path.resolve(workspaceRoot, notesSearchSourcePath),
@@ -85,7 +85,7 @@ test('notes search package freezes a shared index document and query/result cont
   assert.match(notesSearchSource, /export function buildNotesSearchDocuments\(/);
   assert.match(notesSearchSource, /export function createNotesSearchResult\(/);
 
-  assert.equal(notesSearchModule.NOTES_SEARCH_PACKAGE, '@sdkwork/notes-search');
+  assert.equal(notesSearchModule.NOTES_SEARCH_PACKAGE, '@sdkwork/notes-pc-search');
   assert.equal(notesSearchModule.NOTES_SEARCH_QUERY_LIMIT_DEFAULT, 20);
   assert.equal(typeof notesSearchModule.normalizeNotesSearchQuery, 'function');
   assert.equal(typeof notesSearchModule.buildNotesSearchDocuments, 'function');

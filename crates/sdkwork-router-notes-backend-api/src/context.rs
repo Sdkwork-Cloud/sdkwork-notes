@@ -3,7 +3,7 @@ use crate::dto::{
     BackendContextQuery, FailAiJobRequest,
 };
 use crate::error::{map_api_problem, ApiResult};
-use sdkwork_notes_product::domain::NotesActorContext;
+use sdkwork_notes_pages_service::domain::NotesActorContext;
 use sdkwork_web_core::WebRequestContext;
 use sdkwork_router_notes_http_auth::{
     actor_context::{

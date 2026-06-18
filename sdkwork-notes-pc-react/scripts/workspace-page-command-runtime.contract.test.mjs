@@ -9,7 +9,7 @@ import { createRequire } from 'node:module';
 async function loadWorkspacePageCommandRuntimeModule() {
   const servicesRoot = path.resolve(
     process.cwd(),
-    'packages/sdkwork-notes-notes/src/services',
+    'packages/sdkwork-notes-pc-notes/src/services',
   );
   const tempDir = await mkdtemp(path.join(os.tmpdir(), 'workspace-page-command-runtime-'));
   const require = createRequire(import.meta.url);

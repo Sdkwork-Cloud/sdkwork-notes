@@ -52,7 +52,7 @@ test('workspace env defaults align topology surface urls with sdkwork-notes prof
 
 test('web and desktop vite configs load workspace env files and allow overriding app mode', () => {
   const webViteConfig = read('vite.config.ts');
-  const desktopViteConfig = read('packages/sdkwork-notes-desktop/vite.config.ts');
+  const desktopViteConfig = read('packages/sdkwork-notes-pc-desktop/vite.config.ts');
 
   assert.match(webViteConfig, /loadEnv\(.*workspaceRootDir.*''\)/);
   assert.match(webViteConfig, /envDir:\s*workspaceRootDir/);

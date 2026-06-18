@@ -10,11 +10,11 @@ function read(relativePath) {
 }
 
 test('workspace page delegates shortcut hint rendering to a dedicated component boundary', () => {
-  const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
-  const componentsIndexSource = read('packages/sdkwork-notes-notes/src/components/index.ts');
+  const pageSource = read('packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx');
+  const componentsIndexSource = read('packages/sdkwork-notes-pc-notes/src/components/index.ts');
   const shortcutHintsBoundaryPath = path.join(
     workspaceRoot,
-    'packages/sdkwork-notes-notes/src/components/NotesWorkspaceShortcutHints.tsx',
+    'packages/sdkwork-notes-pc-notes/src/components/NotesWorkspaceShortcutHints.tsx',
   );
   const shortcutHintsBoundaryExists = fs.existsSync(shortcutHintsBoundaryPath);
   const shortcutHintsBoundarySource = shortcutHintsBoundaryExists

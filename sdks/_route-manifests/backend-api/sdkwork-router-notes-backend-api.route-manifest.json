@@ -43,7 +43,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     },
     {
       "method": "GET",
@@ -74,7 +76,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     },
     {
       "method": "POST",
@@ -105,7 +109,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     },
     {
       "method": "POST",
@@ -136,7 +142,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     },
     {
       "method": "POST",
@@ -167,7 +175,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     },
     {
       "method": "POST",
@@ -198,7 +208,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     },
     {
       "method": "POST",
@@ -229,7 +241,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     },
     {
       "method": "POST",
@@ -260,7 +274,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     },
     {
       "method": "GET",
@@ -291,7 +307,9 @@
       },
       "source": {
         "file": "crates/sdkwork-router-notes-backend-api/src/handlers.rs"
-      }
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "backend-api"
     }
   ]
 }

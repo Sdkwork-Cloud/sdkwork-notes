@@ -34,7 +34,7 @@ The core resource remains `Page`. The implementation must not introduce `/notes/
 
 ## Data Model
 
-`notes_ai_feedback` is an append-style ledger table owned by `sdkwork-notes-product`.
+`notes_ai_feedback` is an append-style ledger table owned by `sdkwork-notes-pages-service`.
 
 Required columns:
 
@@ -59,8 +59,8 @@ Indexes:
 Required narrow checks:
 
 ```powershell
-cargo test -p sdkwork-notes-product ai_suggestion_feedback_is_recorded_for_quality_loop
-cargo test -p sdkwork-notes-product invalid_ai_suggestion_feedback_type_is_rejected
+cargo test -p sdkwork-notes-pages-service ai_suggestion_feedback_is_recorded_for_quality_loop
+cargo test -p sdkwork-notes-pages-service invalid_ai_suggestion_feedback_type_is_rejected
 cargo test -p sdkwork-routes-notes-app-api app_api_routes_create_ai_suggestion_feedback
 cargo test -p sdkwork-routes-notes-backend-api backend_api_routes_list_ai_suggestion_feedback
 ```
@@ -68,7 +68,7 @@ cargo test -p sdkwork-routes-notes-backend-api backend_api_routes_list_ai_sugges
 Required aggregate checks:
 
 ```powershell
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 cargo test -p sdkwork-routes-notes-backend-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs

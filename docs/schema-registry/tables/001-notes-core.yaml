@@ -7,7 +7,7 @@ tables:
   - table: notes_workspace
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Notes workspace metadata and binding to a Drive notes space.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -39,7 +39,7 @@ tables:
   - table: notes_page
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Page business metadata. Page content and versions are Drive file facts referenced by drive_* columns.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -88,7 +88,7 @@ tables:
   - table: notes_tag
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Workspace-local tag dictionary.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -112,7 +112,7 @@ tables:
   - table: notes_page_tag
     profile: relation_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Page-to-tag relation.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -133,7 +133,7 @@ tables:
   - table: notes_page_asset
     profile: relation_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Business relation from a page/block to a Drive-backed asset. Drive owns the asset bytes and lifecycle.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -161,7 +161,7 @@ tables:
   - table: notes_page_link
     profile: relation_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Page graph edge for mentions, backlinks, embeds, references, and parent relationships.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -185,7 +185,7 @@ tables:
   - table: notes_page_alias
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: User, import, or AI-proposed page aliases used for search and unlinked mention detection.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -206,7 +206,7 @@ tables:
   - table: notes_template
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Workspace template metadata. Template content is a Drive-backed file.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }

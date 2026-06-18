@@ -84,7 +84,7 @@
     "configKeys": []
   },
   "integration": {
-    "handlerBoundary": "Backend handlers decode DTOs and call NotesService. Business logic stays in sdkwork-notes-product.",
+    "handlerBoundary": "Backend handlers decode DTOs and call NotesService. Business logic stays in sdkwork-notes-pages-service.",
     "driveBoundary": "Backend handlers never implement upload, object, or version lifecycle. AI job admin reads Notes-owned AI ledgers only."
   },
   "verification": {

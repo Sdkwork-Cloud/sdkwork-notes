@@ -7,7 +7,7 @@ tables:
   - table: notes_import_job
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Import job from external or Drive-backed source material.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -30,7 +30,7 @@ tables:
   - table: notes_export_job
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Export job that writes output through Drive.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -56,7 +56,7 @@ tables:
   - table: notes_publication
     profile: tenant_entity
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Published page state tied to an immutable Drive version.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }
@@ -80,7 +80,7 @@ tables:
   - table: notes_sync_mutation_batch
     profile: ledger_event
     system_of_record: true
-    write_owner: sdkwork-notes-product
+    write_owner: sdkwork-notes-pages-service
     description: Remote mutation batch for local-first sync replay and idempotency.
     columns:
       - { name: id, type: varchar(64), constraints: [primary_key] }

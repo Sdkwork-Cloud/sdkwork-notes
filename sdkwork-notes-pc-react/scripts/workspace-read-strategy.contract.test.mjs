@@ -11,7 +11,7 @@ function createDataModuleUrl(source) {
 async function loadWorkspaceReadStrategyModule() {
   const entryPoint = path.resolve(
     process.cwd(),
-    'packages/sdkwork-notes-notes/src/repository/noteWorkspaceReadStrategy.ts',
+    'packages/sdkwork-notes-pc-notes/src/repository/noteWorkspaceReadStrategy.ts',
   );
   const source = await readFile(entryPoint, 'utf8');
   const transpiled = ts.transpileModule(source, {

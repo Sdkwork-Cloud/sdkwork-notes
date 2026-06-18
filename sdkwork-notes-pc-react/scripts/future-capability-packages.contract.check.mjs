@@ -8,23 +8,23 @@ const packagesRoot = path.resolve(workspaceRoot, 'packages');
 const expectedPackages = [
   {
     directory: 'sdkwork-notes-local',
-    packageName: '@sdkwork/notes-local',
+    packageName: '@sdkwork/notes-pc-local',
   },
   {
     directory: 'sdkwork-notes-search',
-    packageName: '@sdkwork/notes-search',
+    packageName: '@sdkwork/notes-pc-search',
   },
   {
     directory: 'sdkwork-notes-sync',
-    packageName: '@sdkwork/notes-sync',
+    packageName: '@sdkwork/notes-pc-sync',
   },
   {
     directory: 'sdkwork-notes-observability',
-    packageName: '@sdkwork/notes-observability',
+    packageName: '@sdkwork/notes-pc-observability',
   },
   {
     directory: 'sdkwork-notes-updater',
-    packageName: '@sdkwork/notes-updater',
+    packageName: '@sdkwork/notes-pc-updater',
   },
 ];
 

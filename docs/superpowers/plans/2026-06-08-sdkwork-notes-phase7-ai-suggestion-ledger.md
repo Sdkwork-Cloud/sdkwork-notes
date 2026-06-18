@@ -4,7 +4,7 @@
 
 **Goal:** Implement the minimal AI job worker and suggestion ledger loop.
 
-**Architecture:** Extend `sdkwork-notes-product` with a Notes-owned `notes_ai_suggestion` ledger and service methods for claim, complete, and list page suggestions. Extend backend route crate with worker/admin claim and complete commands, and extend app route crate with page suggestion listing.
+**Architecture:** Extend `sdkwork-notes-pages-service` with a Notes-owned `notes_ai_suggestion` ledger and service methods for claim, complete, and list page suggestions. Extend backend route crate with worker/admin claim and complete commands, and extend app route crate with page suggestion listing.
 
 **Tech Stack:** Rust 2021, Axum 0.7, Tokio, SQLx AnyPool/SQLite tests, Serde, SDKWork route manifests, OpenAPI JSON skeletons, Node.js static contract tests.
 
@@ -16,12 +16,12 @@ Modify:
 
 - `generated/openapi/notes-app-api.openapi.json`: add page AI suggestion list operation and schemas.
 - `generated/openapi/notes-backend-api.openapi.json`: add AI job claim/complete operations and request schema.
-- `services/sdkwork-notes-product/src/domain.rs`: add AI suggestion structs, claim/complete commands, and list query.
-- `services/sdkwork-notes-product/src/ports.rs`: add repository methods.
-- `services/sdkwork-notes-product/src/service.rs`: add claim/complete/list suggestion use cases.
-- `services/sdkwork-notes-product/src/infrastructure/sql/sqlite_core.sql`: add `notes_ai_suggestion`.
-- `services/sdkwork-notes-product/src/infrastructure/sql/notes_store.rs`: add SQL implementations and suggestion counts.
-- `services/sdkwork-notes-product/tests/page_service.rs`: add product behavior test.
+- `services/sdkwork-notes-pages-service/src/domain.rs`: add AI suggestion structs, claim/complete commands, and list query.
+- `services/sdkwork-notes-pages-service/src/ports.rs`: add repository methods.
+- `services/sdkwork-notes-pages-service/src/service.rs`: add claim/complete/list suggestion use cases.
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/sqlite_core.sql`: add `notes_ai_suggestion`.
+- `services/sdkwork-notes-pages-service/src/infrastructure/sql/notes_store.rs`: add SQL implementations and suggestion counts.
+- `services/sdkwork-notes-pages-service/tests/page_service.rs`: add product behavior test.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/src/*`: add app route, DTO, handler, manifest coverage.
 - `packages/native-rust/routes/app-api/sdkwork-routes-notes-app-api/tests/*`: add route and manifest tests.
 - `packages/native-rust/routes/backend-api/sdkwork-routes-notes-backend-api/src/*`: add backend routes, DTOs, handlers, manifest coverage.
@@ -53,7 +53,7 @@ Do not modify:
 - [ ] Run:
 
 ```powershell
-cargo test -p sdkwork-notes-product ai_job_worker_claims_completes_and_lists_page_suggestions
+cargo test -p sdkwork-notes-pages-service ai_job_worker_claims_completes_and_lists_page_suggestions
 ```
 
 Expected: fail because methods and schema do not exist.
@@ -69,8 +69,8 @@ Expected: fail because methods and schema do not exist.
 - [ ] Re-run:
 
 ```powershell
-cargo test -p sdkwork-notes-product ai_job_worker_claims_completes_and_lists_page_suggestions
-cargo test -p sdkwork-notes-product
+cargo test -p sdkwork-notes-pages-service ai_job_worker_claims_completes_and_lists_page_suggestions
+cargo test -p sdkwork-notes-pages-service
 ```
 
 Expected: product tests pass.
@@ -136,8 +136,8 @@ Expected: Node checks pass.
 - [ ] Run:
 
 ```powershell
-cargo fmt -p sdkwork-notes-product -p sdkwork-routes-notes-app-api -p sdkwork-routes-notes-backend-api -- --check
-cargo test -p sdkwork-notes-product
+cargo fmt -p sdkwork-notes-pages-service -p sdkwork-routes-notes-app-api -p sdkwork-routes-notes-backend-api -- --check
+cargo test -p sdkwork-notes-pages-service
 cargo test -p sdkwork-routes-notes-app-api
 cargo test -p sdkwork-routes-notes-backend-api
 node --test scripts\verify-notes-rust-service-skeleton.test.mjs
