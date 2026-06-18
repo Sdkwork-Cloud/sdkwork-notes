@@ -105,7 +105,7 @@ export function NotesWorkspacePage() {
       selectedFolderId,
       activeNote,
       locale: i18n.language,
-      syncTasks: syncQueueSnapshot.tasks,
+      syncTasks: syncQueueSnapshot?.tasks ?? [],
     }),
     [
       activeNote,
@@ -115,7 +115,7 @@ export function NotesWorkspacePage() {
       notes,
       searchQuery,
       selectedFolderId,
-      syncQueueSnapshot.tasks,
+      syncQueueSnapshot?.tasks,
       trashedNotes,
     ],
   );

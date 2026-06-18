@@ -35,7 +35,7 @@ const authBridgeMocks = vi.hoisted(() => {
         const client = options.getClient?.();
         const login = client?.auth?.login;
         const session = await login?.(payload);
-        options.persistSession?.(session);
+        options.commitSession?.(session);
         return {
           accessToken: options.resolveAccessToken?.() ?? session?.accessToken ?? '',
           authToken: session?.authToken ?? '',
@@ -50,7 +50,7 @@ const authBridgeMocks = vi.hoisted(() => {
         const client = options.getClient?.();
         const oauthLogin = client?.auth?.oauthLogin;
         const session = await oauthLogin?.(payload);
-        options.persistSession?.(session);
+        options.commitSession?.(session);
         return {
           accessToken: options.resolveAccessToken?.() ?? session?.accessToken ?? '',
           authToken: session?.authToken ?? '',
@@ -179,9 +179,9 @@ describe('notes auth bridge runtime contract', () => {
     const rawLogin = client.auth.login;
     await expect(rawLogin({ username: 'demo-user' })).rejects.toThrow();
 
-    const boundClient = bindNotesAuthClient(client);
-    const login = boundClient.auth.login;
-    const getUserProfile = boundClient.user?.getUserProfile;
+    const boundClient = bindNotesAuthClient(client as never);
+    const login = (boundClient as TestNotesAuthClient).auth.login;
+    const getUserProfile = (boundClient as TestNotesAuthClient).user?.getUserProfile;
 
     await expect(login({ username: 'demo-user' })).resolves.toEqual({
       authToken: 'demo-user',
@@ -239,17 +239,10 @@ describe('notes auth bridge runtime contract', () => {
     expect(notesCoreMocks.clearAppSdkSessionTokens).toHaveBeenCalledTimes(1);
   });
 
-  it('creates controllers from the notes auth service and forwards locale and messages', async () => {
+  it('creates controllers from the notes auth service and forwards service overrides', async () => {
     const signOutOverride = vi.fn(async () => undefined);
-    const messages: NonNullable<NotesAuthControllerOptions['messages']> = {
-      login: {
-        title: 'Notes Login',
-      },
-    };
 
     const controller = createNotesAuthController({
-      locale: 'zh-CN',
-      messages,
       service: {
         signOut: signOutOverride,
       },
@@ -257,14 +250,13 @@ describe('notes auth bridge runtime contract', () => {
 
     expect(authBridgeMocks.sharedServiceFactoryCalls).toHaveLength(1);
     expect(authBridgeMocks.sharedServiceFactoryCalls[0]).toMatchObject({
-      locale: 'zh-CN',
-      messages,
+      clearSession: expect.any(Function),
+      commitSession: expect.any(Function),
+      getClient: expect.any(Function),
+      readSession: expect.any(Function),
+      resolveAccessToken: expect.any(Function),
     });
     expect(authBridgeMocks.controllerFactoryCalls).toHaveLength(1);
-    expect(authBridgeMocks.controllerFactoryCalls[0]).toMatchObject({
-      locale: 'zh-CN',
-      messages,
-    });
     expect(authBridgeMocks.controllerFactoryCalls[0]?.service).toMatchObject({
       getCurrentSession: expect.any(Function),
       signIn: expect.any(Function),

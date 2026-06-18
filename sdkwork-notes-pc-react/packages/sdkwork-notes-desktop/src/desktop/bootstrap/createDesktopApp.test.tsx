@@ -87,8 +87,13 @@ describe('createDesktopApp', () => {
     await createDesktopApp({ appRootProps });
 
     expect(bootstrapMocks.render).toHaveBeenCalledTimes(1);
-    expect(bootstrapMocks.desktopBootstrapApp).toHaveBeenCalledTimes(1);
-    expect(bootstrapMocks.desktopBootstrapApp.mock.calls[0]?.[0]).toMatchObject({
+    const renderedElement = bootstrapMocks.render.mock.calls[0]?.[0] as {
+      props: {
+        appRootProps: typeof appRootProps;
+        hasNativeRuntime: boolean;
+      };
+    };
+    expect(renderedElement.props).toMatchObject({
       appRootProps,
       hasNativeRuntime: true,
     });

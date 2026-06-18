@@ -232,6 +232,37 @@
       }
     },
     {
+      "method": "POST",
+      "path": "/app/v3/api/notes/pages/{pageId}/remote_apply",
+      "operationId": "pages.remoteApply",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_router_notes_app_api::handlers",
+        "name": "remote_apply_page"
+      },
+      "schemas": {
+        "request": "NoteRemoteApplyRequest",
+        "response": "NoteRemoteApplyResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-router-notes-app-api/src/handlers.rs"
+      }
+    },
+    {
       "method": "GET",
       "path": "/app/v3/api/notes/pages/{pageId}/content",
       "operationId": "pages.content.retrieve",

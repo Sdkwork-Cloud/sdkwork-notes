@@ -40,7 +40,7 @@ test('future notes remote apply upstream closure targets the local typed product
   });
   assert.equal(
     spec.closure.currentStatus,
-    'product SDK family is not present in this application root',
+    'composed client delegates remoteApply to sdkwork-notes-app-sdk generated pages API',
   );
   assert.deepEqual(spec.closure.forbiddenIntegration, [
     'retired generic app or backend SDK packages',

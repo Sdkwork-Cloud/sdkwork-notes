@@ -15,35 +15,39 @@ test('workspace ships explicit development, test, production, and example env fi
     '.env.development',
     '.env.test',
     '.env.production',
+    '.env.development.local.example',
   ]) {
     assert.equal(fs.existsSync(path.join(workspaceRoot, relativePath)), true, `${relativePath} is required`);
   }
 });
 
-test('workspace env defaults align base api url and access token with claw-studio', () => {
+test('workspace env defaults align topology surface urls with sdkwork-notes profiles', () => {
   const envExample = read('.env.example');
   const envDevelopment = read('.env.development');
   const envTest = read('.env.test');
   const envProduction = read('.env.production');
 
-  assert.match(envExample, /VITE_API_BASE_URL=https:\/\/api-dev\.sdkwork\.com/);
+  for (const envText of [envExample, envDevelopment, envTest, envProduction]) {
+    assert.match(envText, /VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL=/);
+    assert.match(envText, /VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL=/);
+    assert.match(envText, /VITE_SDKWORK_APPBASE_APP_API_BASE_URL=/);
+    assert.doesNotMatch(envText, /VITE_APP_API_BASE_URL=/);
+    assert.doesNotMatch(envText, /VITE_API_BASE_URL=/);
+  }
+
+  assert.match(envExample, /VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL=https:\/\/api-dev\.sdkwork\.com/);
   assert.match(envExample, /VITE_ACCESS_TOKEN=$/m);
   assert.match(envExample, /VITE_APP_OWNER_MODE=tenant/);
 
   assert.match(envDevelopment, /VITE_APP_ENV=development/);
-  assert.match(envDevelopment, /VITE_API_BASE_URL=https:\/\/api-dev\.sdkwork\.com/);
-  assert.match(envDevelopment, /VITE_ACCESS_TOKEN=$/m);
-  assert.match(envDevelopment, /VITE_APP_OWNER_MODE=tenant/);
+  assert.match(envDevelopment, /VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL=https:\/\/api-dev\.sdkwork\.com/);
 
   assert.match(envTest, /VITE_APP_ENV=test/);
-  assert.match(envTest, /VITE_API_BASE_URL=https:\/\/api-test\.sdkwork\.com/);
-  assert.match(envTest, /VITE_ACCESS_TOKEN=$/m);
-  assert.match(envTest, /VITE_APP_OWNER_MODE=tenant/);
+  assert.match(envTest, /VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL=https:\/\/api-test\.sdkwork\.com/);
 
   assert.match(envProduction, /VITE_APP_ENV=production/);
-  assert.match(envProduction, /VITE_API_BASE_URL=https:\/\/api\.sdkwork\.com/);
-  assert.match(envProduction, /VITE_ACCESS_TOKEN=$/m);
-  assert.match(envProduction, /VITE_APP_OWNER_MODE=tenant/);
+  assert.match(envProduction, /VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL=https:\/\/notes\.sdkwork\.com/);
+  assert.match(envProduction, /VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL=https:\/\/api\.sdkwork\.com/);
 });
 
 test('web and desktop vite configs load workspace env files and allow overriding app mode', () => {

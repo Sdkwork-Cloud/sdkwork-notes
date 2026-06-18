@@ -44,6 +44,16 @@ pub struct CompleteAiJobRequest {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct FailAiJobRequest {
+    pub tenant_id: String,
+    pub organization_id: String,
+    pub operator_id: String,
+    pub error_code: String,
+    pub error_message: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CompleteAiSuggestionRequest {
     pub page_id: Option<String>,
     pub suggestion_type: String,

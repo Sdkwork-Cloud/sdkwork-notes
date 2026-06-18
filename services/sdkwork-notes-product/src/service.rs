@@ -2,10 +2,11 @@ use crate::domain::{
     AcceptAiSuggestionCommand, AiFeedback, AiFeedbackPage, AiJob, AiJobPage, AiJobSource,
     AiSuggestion, AiSuggestionPage, ApplyAiSuggestionCommand, ClaimAiJobCommand,
     CompleteAiJobCommand, CreateAiFeedbackCommand, CreateAiJobCommand, CreatePageCommand,
-    CreateWorkspaceCommand, DriveVersionPage, ListAiJobsQuery, ListAiSuggestionFeedbackQuery,
+    CreateWorkspaceCommand, DriveVersionPage, FailAiJobCommand, ListAiJobsQuery, ListAiSuggestionFeedbackQuery,
     ListPageAiSuggestionsQuery, NewAiFeedback, NewAiJob, NewAiJobSource, NewAiSuggestion, NewPage,
-    NewWorkspace, NotesActorContext, Page, PageContent, PageInfo, PageMetadataPatch, PageSummary,
-    PageSummaryPage, RejectAiSuggestionCommand, RestorePageVersionCommand, SearchResult,
+    NewWorkspace, NotesActorContext, Page, PageContent, PageInfo, PageKind, PageMetadataPatch, PageSummary,
+    PageSummaryPage, RejectAiSuggestionCommand, RemoteApplyConflict, RemoteApplyMutation,
+    RemoteApplyPageCommand, RemoteApplyPageResult, RestorePageVersionCommand, SearchResult,
     SearchResultPage, UpdatePageContentCommand, UpdatePageMetadataCommand, Workspace,
     WorkspaceBootstrap, WorkspacePage,
 };
@@ -299,8 +300,25 @@ where
             && command.favorite.is_none()
             && command.archive_status.is_none()
             && command.publish_status.is_none()
+            && command.parent_page_id.is_none()
         {
             return Ok(current);
+        }
+
+        if let Some(parent_page_id) = command.parent_page_id.as_ref() {
+            if let Some(parent_page_id) = parent_page_id.as_deref() {
+                let parent_page = self.repository.find_page(&context, parent_page_id).await?;
+                if parent_page.workspace_id != current.workspace_id {
+                    return Err(NotesProductError::NotFound(
+                        "parent page not found in workspace".to_string(),
+                    ));
+                }
+                if parent_page_id == page_id {
+                    return Err(NotesProductError::Validation(
+                        "page cannot be its own parent".to_string(),
+                    ));
+                }
+            }
         }
 
         let title = command
@@ -348,10 +366,192 @@ where
                     favorite: command.favorite.unwrap_or(current.favorite),
                     archive_status,
                     publish_status,
+                    parent_page_id: command.parent_page_id,
                 },
                 expected_version_for_update,
             )
             .await
+    }
+
+    pub async fn remote_apply_page(
+        &self,
+        command: RemoteApplyPageCommand,
+    ) -> Result<RemoteApplyPageResult, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let page_id = normalize_required_string("page id", &command.page_id)?;
+        let idempotency_key = normalize_required_string("idempotencyKey", &command.idempotency_key)?;
+        let task_id = normalize_required_string("taskId", &command.task_id)?;
+        let entity_type = normalize_required_string("entityType", &command.entity_type)?;
+        let entity_id = normalize_required_string("entityId", &command.entity_id)?;
+        let operation = normalize_required_string("operation", &command.operation)?;
+
+        if page_id != entity_id {
+            return Err(NotesProductError::Validation(
+                "path page id must match request entityId".to_string(),
+            ));
+        }
+        if entity_type != "note" {
+            return Err(NotesProductError::Validation(
+                "request entityType must remain note".to_string(),
+            ));
+        }
+        let _ = idempotency_key;
+
+        let current = match self.repository.find_page(&context, &page_id).await {
+            Ok(page) => page,
+            Err(NotesProductError::NotFound(_)) => {
+                return Ok(remote_apply_conflict_result(
+                    task_id,
+                    command.base_remote_cursor,
+                    "deleted-remotely",
+                    "page not found",
+                ));
+            }
+            Err(error) => return Err(error),
+        };
+
+        if let Some(base_remote_cursor) = normalize_optional_string(command.base_remote_cursor) {
+            if base_remote_cursor != current.current_drive_version_id {
+                return Ok(remote_apply_conflict_result(
+                    task_id,
+                    Some(current.current_drive_version_id),
+                    "stale-base-version",
+                    "Remote cursor does not match the current page version.",
+                ));
+            }
+        }
+
+        let applied_page = match operation.as_str() {
+            "upsert" => {
+                let RemoteApplyMutation::UpsertPatch {
+                    title,
+                    content,
+                    parent_id,
+                    is_favorite,
+                    publish_status,
+                } = command.mutation
+                else {
+                    return Err(NotesProductError::Validation(
+                        "upsert remote apply requires a patch mutation".to_string(),
+                    ));
+                };
+
+                if title.is_some() || is_favorite.is_some() || publish_status.is_some() || parent_id.is_some() {
+                    self.update_page_metadata(UpdatePageMetadataCommand {
+                        context: context.clone(),
+                        page_id: page_id.clone(),
+                        title,
+                        favorite: is_favorite,
+                        archive_status: None,
+                        publish_status,
+                        parent_page_id: parent_id,
+                        expected_version: None,
+                    })
+                    .await?;
+                }
+
+                if let Some(content_text) = content {
+                    let refreshed = self.repository.find_page(&context, &page_id).await?;
+                    let content_value = serde_json::json!({ "text": content_text });
+                    self.update_page_content(UpdatePageContentCommand {
+                        context: context.clone(),
+                        page_id: page_id.clone(),
+                        content: content_value,
+                        content_type: None,
+                        content_schema_version: None,
+                        change_summary: None,
+                        expected_drive_version_id: Some(refreshed.current_drive_version_id),
+                        create_checkpoint: false,
+                    })
+                    .await?;
+                }
+
+                self.repository.find_page(&context, &page_id).await?
+            }
+            "move" => {
+                let RemoteApplyMutation::Move { target_parent_id } = command.mutation else {
+                    return Err(NotesProductError::Validation(
+                        "move remote apply requires targetParentId".to_string(),
+                    ));
+                };
+                self.update_page_metadata(UpdatePageMetadataCommand {
+                    context: context.clone(),
+                    page_id: page_id.clone(),
+                    title: None,
+                    favorite: None,
+                    archive_status: None,
+                    publish_status: None,
+                    parent_page_id: Some(target_parent_id),
+                    expected_version: None,
+                })
+                .await?
+            }
+            "delete" => {
+                self.update_page_metadata(UpdatePageMetadataCommand {
+                    context: context.clone(),
+                    page_id: page_id.clone(),
+                    title: None,
+                    favorite: None,
+                    archive_status: Some("archived".to_string()),
+                    publish_status: None,
+                    parent_page_id: None,
+                    expected_version: None,
+                })
+                .await?
+            }
+            "restore" => {
+                self.update_page_metadata(UpdatePageMetadataCommand {
+                    context: context.clone(),
+                    page_id: page_id.clone(),
+                    title: None,
+                    favorite: None,
+                    archive_status: Some("active".to_string()),
+                    publish_status: None,
+                    parent_page_id: None,
+                    expected_version: None,
+                })
+                .await?
+            }
+            "permanent-delete" => {
+                if !matches!(command.mutation, RemoteApplyMutation::PermanentDeleteIntent) {
+                    return Err(NotesProductError::Validation(
+                        "permanent-delete remote apply requires a permanent-delete intent"
+                            .to_string(),
+                    ));
+                }
+                if current.archive_status != "archived" && current.page_kind != PageKind::Folder {
+                    return Ok(remote_apply_conflict_result(
+                        task_id,
+                        Some(current.current_drive_version_id),
+                        "page-not-in-trash",
+                        "Permanent delete requires the page to be archived first.",
+                    ));
+                }
+                let remote_cursor = current.current_drive_version_id.clone();
+                let applied_at = current.updated_at.clone();
+                self.repository.delete_page(&context, &page_id).await?;
+                return Ok(RemoteApplyPageResult {
+                    outcome: "applied".to_string(),
+                    task_id,
+                    remote_cursor: Some(remote_cursor),
+                    applied_at: Some(applied_at),
+                    conflict: None,
+                });
+            }
+            _ => {
+                return Err(NotesProductError::Validation(format!(
+                    "unsupported remote apply operation \"{operation}\""
+                )));
+            }
+        };
+
+        Ok(RemoteApplyPageResult {
+            outcome: "applied".to_string(),
+            task_id,
+            remote_cursor: Some(applied_page.current_drive_version_id),
+            applied_at: Some(applied_page.updated_at),
+            conflict: None,
+        })
     }
 
     pub async fn update_page_content(
@@ -877,6 +1077,18 @@ where
             .await
     }
 
+    pub async fn fail_ai_job(&self, command: FailAiJobCommand) -> Result<AiJob, NotesProductError> {
+        let context = normalize_actor_context(command.context)?;
+        let ai_job_id = normalize_required_string("AI job id", &command.ai_job_id)?;
+        let error_code = normalize_required_string("error code", &command.error_code)?;
+        validate_max_chars("error code", &error_code, 64)?;
+        let error_message = normalize_required_string("error message", &command.error_message)?;
+        validate_max_chars("error message", &error_message, 2000)?;
+        self.repository
+            .fail_ai_job(&context, &ai_job_id, &error_code, &error_message)
+            .await
+    }
+
     pub async fn list_page_ai_suggestions(
         &self,
         query: ListPageAiSuggestionsQuery,
@@ -1266,6 +1478,33 @@ fn require_non_empty(field: &str, value: &str) -> Result<(), NotesProductError> 
         )));
     }
     Ok(())
+}
+
+fn remote_apply_conflict_result(
+    task_id: String,
+    remote_cursor: Option<String>,
+    code: &str,
+    message: &str,
+) -> RemoteApplyPageResult {
+    RemoteApplyPageResult {
+        outcome: "conflict".to_string(),
+        task_id,
+        remote_cursor,
+        applied_at: None,
+        conflict: Some(RemoteApplyConflict {
+            code: code.to_string(),
+            message: message.to_string(),
+            occurred_at: chrono_like_timestamp(),
+        }),
+    }
+}
+
+fn chrono_like_timestamp() -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let duration = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default();
+    format!("{}.{:03}Z", duration.as_secs(), duration.subsec_millis())
 }
 
 fn normalize_required_string(field: &str, value: &str) -> Result<String, NotesProductError> {

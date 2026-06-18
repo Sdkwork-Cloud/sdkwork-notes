@@ -236,6 +236,19 @@ beforeEach(() => {
         sdkCalls.push({ method: 'note.deleteFolder', body: folderId });
         return { code: '2000', msg: 'success', data: null };
       },
+      async remoteApply(noteId, body) {
+        sdkCalls.push({ method: 'note.remoteApply', body: { noteId, ...body } });
+        return {
+          code: '2000',
+          msg: 'success',
+          data: {
+            outcome: 'applied',
+            taskId: body.taskId,
+            remoteCursor: 'remote-cursor-1',
+            appliedAt: '2026-03-30T12:00:00Z',
+          },
+        };
+      },
     },
     filesystem: {
       async moveNode(nodeId, body) {

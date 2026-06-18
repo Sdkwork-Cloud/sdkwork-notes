@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS notes_page (
     FOREIGN KEY (workspace_id) REFERENCES notes_workspace(id) ON DELETE CASCADE,
     FOREIGN KEY (parent_page_id) REFERENCES notes_page(id) ON DELETE SET NULL,
     CHECK (length(trim(title)) BETWEEN 1 AND 512),
-    CHECK (page_kind IN ('doc', 'article', 'code', 'log', 'database', 'canvas')),
+    CHECK (page_kind IN ('doc', 'article', 'code', 'log', 'database', 'canvas', 'folder')),
     CHECK (drive_uri = 'drive://spaces/' || drive_space_id || '/nodes/' || drive_node_id),
     CHECK (current_drive_version_no >= 1),
     CHECK (favorite IN (0, 1)),

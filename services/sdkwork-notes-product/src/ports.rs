@@ -70,6 +70,12 @@ pub trait NotesRepository: Clone + Send + Sync + 'static {
         expected_version: Option<i64>,
     ) -> Result<Page, NotesProductError>;
 
+    async fn delete_page(
+        &self,
+        context: &NotesActorContext,
+        page_id: &str,
+    ) -> Result<(), NotesProductError>;
+
     async fn update_page_drive_snapshot(
         &self,
         context: &NotesActorContext,
@@ -117,6 +123,14 @@ pub trait NotesRepository: Clone + Send + Sync + 'static {
         context: &NotesActorContext,
         ai_job_id: &str,
     ) -> Result<Vec<AiJobSource>, NotesProductError>;
+
+    async fn fail_ai_job(
+        &self,
+        context: &NotesActorContext,
+        ai_job_id: &str,
+        error_code: &str,
+        error_message: &str,
+    ) -> Result<AiJob, NotesProductError>;
 
     async fn complete_ai_job(
         &self,

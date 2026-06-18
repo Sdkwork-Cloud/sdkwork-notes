@@ -11,7 +11,7 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
-    Router::new()
+    let router = Router::new()
         .route(
             paths::WORKSPACES,
             get(handlers::list_workspaces::<R, D>).post(handlers::create_workspace::<R, D>),
@@ -27,6 +27,10 @@ where
         .route(
             paths::PAGE,
             get(handlers::get_page::<R, D>).patch(handlers::update_page::<R, D>),
+        )
+        .route(
+            paths::PAGE_REMOTE_APPLY,
+            post(handlers::remote_apply_page::<R, D>),
         )
         .route(
             paths::PAGE_CONTENT,
@@ -62,5 +66,6 @@ where
         )
         .route(paths::SEARCH, get(handlers::query_search::<R, D>))
         .route(paths::AI_JOBS, post(handlers::create_ai_job::<R, D>))
-        .with_state(NotesAppState::new(service))
+        .with_state(NotesAppState::new(service));
+    sdkwork_router_notes_http_auth::layer::with_notes_request_context(router)
 }

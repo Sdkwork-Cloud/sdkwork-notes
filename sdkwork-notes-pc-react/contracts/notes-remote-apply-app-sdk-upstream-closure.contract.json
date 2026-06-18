@@ -14,7 +14,7 @@
     "callShape": "client.note.remoteApply(request.entityId, request)"
   },
   "closure": {
-    "currentStatus": "product SDK family is not present in this application root",
+    "currentStatus": "composed client delegates remoteApply to sdkwork-notes-app-sdk generated pages API",
     "allowedIntegration": [
       "inject a generated product app SDK client from the application root SDK family",
       "inject an approved composed runtime client that preserves the typed port",

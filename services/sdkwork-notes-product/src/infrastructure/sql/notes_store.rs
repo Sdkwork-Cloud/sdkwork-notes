@@ -152,7 +152,9 @@ impl NotesRepository for SqlNotesStore {
         .await
         .map_err(map_insert_error("insert notes_page failed"))?;
 
-        self.find_page(&page.context, &page.id).await
+        let page = self.find_page(&page.context, &page.id).await?;
+        self.upsert_page_search_projection(&page).await?;
+        Ok(page)
     }
 
     async fn page_id_is_reserved(&self, page_id: &str) -> Result<bool, NotesProductError> {
@@ -385,32 +387,63 @@ impl NotesRepository for SqlNotesStore {
         patch: &PageMetadataPatch,
         expected_version: Option<i64>,
     ) -> Result<Page, NotesProductError> {
-        let affected = sqlx::query(
-            "UPDATE notes_page
-             SET title=$1,
-                 favorite=$2,
-                 archive_status=$3,
-                 publish_status=$4,
-                 updated_by=$5,
-                 updated_at=CURRENT_TIMESTAMP,
-                 version=version + 1
-             WHERE tenant_id=$6
-               AND organization_id=$7
-               AND id=$8
-               AND lifecycle_status='active'
-               AND ($9 IS NULL OR version=$9)",
-        )
-        .bind(&patch.title)
-        .bind(if patch.favorite { 1_i64 } else { 0_i64 })
-        .bind(&patch.archive_status)
-        .bind(&patch.publish_status)
-        .bind(&context.operator_id)
-        .bind(&context.tenant_id)
-        .bind(&context.organization_id)
-        .bind(page_id)
-        .bind(expected_version)
-        .execute(&self.pool)
-        .await
+        let affected = if let Some(parent_page_id) = &patch.parent_page_id {
+            sqlx::query(
+                "UPDATE notes_page
+                 SET title=$1,
+                     favorite=$2,
+                     archive_status=$3,
+                     publish_status=$4,
+                     parent_page_id=$5,
+                     updated_by=$6,
+                     updated_at=CURRENT_TIMESTAMP,
+                     version=version + 1
+                 WHERE tenant_id=$7
+                   AND organization_id=$8
+                   AND id=$9
+                   AND lifecycle_status='active'
+                   AND ($10 IS NULL OR version=$10)",
+            )
+            .bind(&patch.title)
+            .bind(if patch.favorite { 1_i64 } else { 0_i64 })
+            .bind(&patch.archive_status)
+            .bind(&patch.publish_status)
+            .bind(parent_page_id.as_deref())
+            .bind(&context.operator_id)
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(page_id)
+            .bind(expected_version)
+            .execute(&self.pool)
+            .await
+        } else {
+            sqlx::query(
+                "UPDATE notes_page
+                 SET title=$1,
+                     favorite=$2,
+                     archive_status=$3,
+                     publish_status=$4,
+                     updated_by=$5,
+                     updated_at=CURRENT_TIMESTAMP,
+                     version=version + 1
+                 WHERE tenant_id=$6
+                   AND organization_id=$7
+                   AND id=$8
+                   AND lifecycle_status='active'
+                   AND ($9 IS NULL OR version=$9)",
+            )
+            .bind(&patch.title)
+            .bind(if patch.favorite { 1_i64 } else { 0_i64 })
+            .bind(&patch.archive_status)
+            .bind(&patch.publish_status)
+            .bind(&context.operator_id)
+            .bind(&context.tenant_id)
+            .bind(&context.organization_id)
+            .bind(page_id)
+            .bind(expected_version)
+            .execute(&self.pool)
+            .await
+        }
         .map_err(internal_sql_error("update notes_page metadata failed"))?
         .rows_affected();
 
@@ -423,7 +456,55 @@ impl NotesRepository for SqlNotesStore {
             return Err(NotesProductError::NotFound("page not found".to_string()));
         }
 
-        self.find_page(context, page_id).await
+        let page = self.find_page(context, page_id).await?;
+        self.upsert_page_search_projection(&page).await?;
+        Ok(page)
+    }
+
+    async fn delete_page(
+        &self,
+        context: &NotesActorContext,
+        page_id: &str,
+    ) -> Result<(), NotesProductError> {
+        let affected = sqlx::query(
+            "UPDATE notes_page
+             SET lifecycle_status='deleted',
+                 deleted_at=CURRENT_TIMESTAMP,
+                 updated_by=$1,
+                 updated_at=CURRENT_TIMESTAMP,
+                 version=version + 1
+             WHERE tenant_id=$2
+               AND organization_id=$3
+               AND id=$4
+               AND lifecycle_status='active'",
+        )
+        .bind(&context.operator_id)
+        .bind(&context.tenant_id)
+        .bind(&context.organization_id)
+        .bind(page_id)
+        .execute(&self.pool)
+        .await
+        .map_err(internal_sql_error("delete notes_page failed"))?
+        .rows_affected();
+
+        if affected == 0 {
+            return Err(NotesProductError::NotFound("page not found".to_string()));
+        }
+
+        sqlx::query(
+            "DELETE FROM notes_page_search_projection
+             WHERE tenant_id=$1
+               AND organization_id=$2
+               AND page_id=$3",
+        )
+        .bind(&context.tenant_id)
+        .bind(&context.organization_id)
+        .bind(page_id)
+        .execute(&self.pool)
+        .await
+        .map_err(internal_sql_error("delete notes_page_search_projection failed"))?;
+
+        Ok(())
     }
 
     async fn update_page_drive_snapshot(
@@ -485,7 +566,9 @@ impl NotesRepository for SqlNotesStore {
             return Err(NotesProductError::NotFound("page not found".to_string()));
         }
 
-        self.find_page(context, page_id).await
+        let page = self.find_page(context, page_id).await?;
+        self.upsert_page_search_projection(&page).await?;
+        Ok(page)
     }
 
     async fn find_ai_job_by_idempotency_key(
@@ -987,6 +1070,57 @@ impl NotesRepository for SqlNotesStore {
         self.find_ai_job(context, ai_job_id).await
     }
 
+    async fn fail_ai_job(
+        &self,
+        context: &NotesActorContext,
+        ai_job_id: &str,
+        error_code: &str,
+        error_message: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        let current = self.find_ai_job(context, ai_job_id).await?;
+        if current.status == "failed" {
+            return Ok(current);
+        }
+        if current.status != "running" {
+            return Err(NotesProductError::Conflict(
+                "AI job must be running before failure reporting".to_string(),
+            ));
+        }
+
+        let affected = sqlx::query(
+            "UPDATE notes_ai_job
+             SET status='failed',
+                 error_code=$1,
+                 error_message=$2,
+                 updated_by=$3,
+                 updated_at=CURRENT_TIMESTAMP,
+                 version=version + 1
+             WHERE tenant_id=$4
+               AND organization_id=$5
+               AND id=$6
+               AND status='running'
+               AND lifecycle_status='active'",
+        )
+        .bind(error_code)
+        .bind(error_message)
+        .bind(&context.operator_id)
+        .bind(&context.tenant_id)
+        .bind(&context.organization_id)
+        .bind(ai_job_id)
+        .execute(&self.pool)
+        .await
+        .map_err(internal_sql_error("fail notes_ai_job failed"))?
+        .rows_affected();
+
+        if affected == 0 {
+            return Err(NotesProductError::Conflict(
+                "AI job must be running before failure reporting".to_string(),
+            ));
+        }
+
+        self.find_ai_job(context, ai_job_id).await
+    }
+
     async fn list_page_ai_suggestions(
         &self,
         context: &NotesActorContext,
@@ -1469,6 +1603,50 @@ fn map_ai_suggestion(row: &sqlx::any::AnyRow) -> Result<AiSuggestion, NotesProdu
         created_by: row.get("created_by"),
         created_at: row.get("created_at"),
     })
+}
+
+impl SqlNotesStore {
+    async fn upsert_page_search_projection(&self, page: &Page) -> Result<(), NotesProductError> {
+        let projection_id = format!(
+            "search-projection-{}-{}",
+            page.id, page.current_drive_version_id
+        );
+        let plain_text = page.snippet.clone().unwrap_or_default();
+        let snippet = page.snippet.clone().unwrap_or_default();
+        sqlx::query(
+            "INSERT INTO notes_page_search_projection (
+                id, tenant_id, organization_id, workspace_id, page_id, drive_node_id,
+                source_drive_version_id, source_drive_version_no, title_snapshot,
+                plain_text, snippet, index_status, indexed_at, rebuild_version
+             ) VALUES (
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'indexed', CURRENT_TIMESTAMP, 1
+             )
+             ON CONFLICT(tenant_id, organization_id, page_id, source_drive_version_id) DO UPDATE SET
+                id=excluded.id,
+                title_snapshot=excluded.title_snapshot,
+                plain_text=excluded.plain_text,
+                snippet=excluded.snippet,
+                source_drive_version_id=excluded.source_drive_version_id,
+                source_drive_version_no=excluded.source_drive_version_no,
+                index_status='indexed',
+                indexed_at=CURRENT_TIMESTAMP",
+        )
+        .bind(&projection_id)
+        .bind(&page.tenant_id)
+        .bind(&page.organization_id)
+        .bind(&page.workspace_id)
+        .bind(&page.id)
+        .bind(&page.drive_node_id)
+        .bind(&page.current_drive_version_id)
+        .bind(page.current_drive_version_no)
+        .bind(&page.title)
+        .bind(&plain_text)
+        .bind(&snippet)
+        .execute(&self.pool)
+        .await
+        .map_err(internal_sql_error("upsert notes_page_search_projection failed"))?;
+        Ok(())
+    }
 }
 
 fn map_ai_feedback(row: &sqlx::any::AnyRow) -> AiFeedback {

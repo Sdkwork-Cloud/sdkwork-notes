@@ -73,7 +73,13 @@ function mergeSdkworkAuthUser(
   const lastName = profile.lastName?.trim() || currentUser?.lastName || displayNameParts.lastName;
 
   return {
-    avatarUrl: profile.avatarUrl || currentUser?.avatarUrl,
+    avatar: profile.avatarUrl?.trim()
+      ? {
+          kind: 'image',
+          source: 'external_url',
+          url: profile.avatarUrl.trim(),
+        }
+      : currentUser?.avatar,
     displayName: fallbackName,
     email: profile.email.trim() || currentUser?.email || '',
     firstName,
@@ -89,7 +95,9 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
   const state = useSdkworkAuthControllerState(controller);
 
   useEffect(() => {
-    void controller.bootstrap().catch(() => null);
+    void controller.bootstrap().catch((error: unknown) => {
+      console.error('[notes-auth] session bootstrap failed', error);
+    });
   }, [controller]);
 
   const value = useMemo<NotesAuthStoreState>(
@@ -118,9 +126,10 @@ export function AuthStoreProvider({ children }: PropsWithChildren) {
 
 export function useAuthController(): SdkworkAuthController {
   const controller = useContext(AuthControllerContext);
-  const [fallbackController] = useState(() => createNotesAuthController());
-
-  return controller ?? fallbackController;
+  if (!controller) {
+    throw new Error('useAuthController must be used within AuthStoreProvider');
+  }
+  return controller;
 }
 
 export function useAuthStore<T>(selector: (state: NotesAuthStoreState) => T): T {

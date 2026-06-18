@@ -41,7 +41,7 @@ test('package scripts pin local tauri commands to source SDK mode and release bu
   );
   assert.equal(
     scripts.test,
-    'pnpm test:workspace:contracts && pnpm prepare:shared-sdk && pnpm -r --if-present test && pnpm test:app',
+    'pnpm test:workspace:contracts && pnpm prepare:shared-sdk && node scripts/run-internal-packages-turbo.mjs test && pnpm test:app',
   );
   assert.equal(
     scripts['test:desktop:contracts'],
@@ -69,7 +69,7 @@ test('package scripts pin local tauri commands to source SDK mode and release bu
   );
   assert.equal(
     scripts['test:desktop:rust'],
-    'node scripts/run-cargo-command.mjs test --manifest-path packages/sdkwork-notes-desktop/src-tauri/Cargo.toml',
+    'node scripts/ensure-desktop-frontend-dist.mjs && node scripts/run-cargo-command.mjs test --manifest-path packages/sdkwork-notes-desktop/src-tauri/Cargo.toml',
   );
   assert.equal(
     desktopScripts['tauri:dev'],

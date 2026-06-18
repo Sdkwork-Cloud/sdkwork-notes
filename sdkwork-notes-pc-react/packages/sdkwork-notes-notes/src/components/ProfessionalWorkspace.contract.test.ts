@@ -10,11 +10,13 @@ function read(relativePath: string) {
 
 describe('professional notes workspace contracts', () => {
   it('renders a workspace overview grid with metric cards and a current-focus panel', () => {
-    const source = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
+    const insightsSource = read('packages/sdkwork-notes-notes/src/components/NotesWorkspaceInsightsPanel.tsx');
+    const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
 
-    expect(source).toMatch(/data-slot="workspace-insight-grid"/);
-    expect(source).toMatch(/data-slot="workspace-metric-card"/);
-    expect(source).toMatch(/data-slot="workspace-focus-card"/);
+    expect(insightsSource).toMatch(/data-slot="workspace-insight-grid"/);
+    expect(insightsSource).toMatch(/data-slot="workspace-metric-card"/);
+    expect(insightsSource).toMatch(/data-slot="workspace-focus-card"/);
+    expect(pageSource).toMatch(/NotesWorkspaceInsightsPanel/);
   });
 
   it('renders document insights in the editor pane and structure controls in the inspector', () => {
@@ -22,6 +24,7 @@ describe('professional notes workspace contracts', () => {
     const inspectorSource = read('packages/sdkwork-notes-notes/src/components/NoteInspectorPanel.tsx');
     const pageSource = read('packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx');
     const commandPaletteSource = read('packages/sdkwork-notes-notes/src/components/NoteCommandPalette.tsx');
+    const hotkeySource = read('packages/sdkwork-notes-notes/src/services/noteWorkspacePageActions.ts');
 
     expect(editorSource).toMatch(/data-slot="editor-insight-strip"/);
     expect(editorSource).toMatch(/data-slot="editor-tag-chip"/);
@@ -30,6 +33,7 @@ describe('professional notes workspace contracts', () => {
     expect(inspectorSource).toMatch(/data-slot="inspector-outline-list"/);
     expect(commandPaletteSource).toMatch(/data-slot="command-palette"/);
     expect(commandPaletteSource).toMatch(/data-slot="command-palette-item"/);
-    expect(pageSource).toMatch(/key === 'k'/);
+    expect(pageSource).toMatch(/bindNotesWorkspaceHotkeys/);
+    expect(hotkeySource).toMatch(/normalizedKey === 'k'/);
   });
 });

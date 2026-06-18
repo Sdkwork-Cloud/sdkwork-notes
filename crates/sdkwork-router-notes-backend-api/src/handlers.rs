@@ -1,7 +1,11 @@
+use crate::context::{
+    authenticated_apply_body, authenticated_backend_query, authenticated_fail_body,
+    authenticated_feedback_list_query, authenticated_list_query, authenticated_suggestion_body,
+};
 use crate::dto::{
     AiFeedbackListQuery, AiFeedbackPageResponse, AiJobListQuery, AiJobPageResponse, AiJobResponse,
     AiSuggestionApplyRequest, AiSuggestionDecisionRequest, AiSuggestionResponse,
-    BackendContextQuery, CompleteAiJobRequest, PageContentResponse,
+    BackendContextQuery, CompleteAiJobRequest, FailAiJobRequest, PageContentResponse,
 };
 use crate::error::{map_product_error, ApiResult};
 use crate::state::NotesBackendState;
@@ -9,23 +13,25 @@ use axum::extract::{Path, Query, State};
 use axum::Json;
 use sdkwork_notes_product::domain::{
     AcceptAiSuggestionCommand, ApplyAiSuggestionCommand, ClaimAiJobCommand, CompleteAiJobCommand,
-    CompleteAiSuggestionInput, ListAiJobsQuery, ListAiSuggestionFeedbackQuery, NotesActorContext,
+    CompleteAiSuggestionInput, FailAiJobCommand, ListAiJobsQuery, ListAiSuggestionFeedbackQuery,
     RejectAiSuggestionCommand,
 };
 use sdkwork_notes_product::ports::{DrivePageContentPort, NotesRepository};
-
+use sdkwork_web_core::WebRequestContext;
 pub(crate) async fn list_ai_jobs<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Query(query): Query<AiJobListQuery>,
 ) -> ApiResult<Json<AiJobPageResponse>>
 where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context = authenticated_list_query(&app_ctx, "notes.backend.ai_jobs.read", &query)?;
     let page = state
         .service
         .list_ai_jobs(ListAiJobsQuery {
-            context: context_from_list_query(&query),
+            context,
             workspace_id: query.workspace_id,
             page: query.page.unwrap_or(1),
             page_size: query.page_size.unwrap_or(20),
@@ -38,6 +44,7 @@ where
 
 pub(crate) async fn get_ai_job<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Path(ai_job_id): Path<String>,
     Query(query): Query<BackendContextQuery>,
 ) -> ApiResult<Json<AiJobResponse>>
@@ -45,9 +52,10 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context = authenticated_backend_query(&app_ctx, "notes.backend.ai_jobs.read", query)?;
     let job = state
         .service
-        .get_ai_job(&context_from_query(query), &ai_job_id)
+        .get_ai_job(&context, &ai_job_id)
         .await
         .map_err(map_product_error)?;
 
@@ -56,6 +64,7 @@ where
 
 pub(crate) async fn cancel_ai_job<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Path(ai_job_id): Path<String>,
     Query(query): Query<BackendContextQuery>,
 ) -> ApiResult<Json<AiJobResponse>>
@@ -63,9 +72,10 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context = authenticated_backend_query(&app_ctx, "notes.backend.ai_jobs.write", query)?;
     let job = state
         .service
-        .cancel_ai_job(&context_from_query(query), &ai_job_id)
+        .cancel_ai_job(&context, &ai_job_id)
         .await
         .map_err(map_product_error)?;
 
@@ -74,6 +84,7 @@ where
 
 pub(crate) async fn claim_ai_job<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Path(ai_job_id): Path<String>,
     Query(query): Query<BackendContextQuery>,
 ) -> ApiResult<Json<AiJobResponse>>
@@ -81,10 +92,11 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context = authenticated_backend_query(&app_ctx, "notes.backend.ai_jobs.write", query)?;
     let job = state
         .service
         .claim_ai_job(ClaimAiJobCommand {
-            context: context_from_query(query),
+            context,
             ai_job_id,
         })
         .await
@@ -95,6 +107,7 @@ where
 
 pub(crate) async fn complete_ai_job<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Path(ai_job_id): Path<String>,
     Query(query): Query<BackendContextQuery>,
     Json(payload): Json<CompleteAiJobRequest>,
@@ -103,10 +116,11 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context = authenticated_backend_query(&app_ctx, "notes.backend.ai_jobs.write", query)?;
     let job = state
         .service
         .complete_ai_job(CompleteAiJobCommand {
-            context: context_from_query(query),
+            context,
             ai_job_id,
             suggestions: payload
                 .suggestions
@@ -124,8 +138,34 @@ where
     Ok(Json(job.into()))
 }
 
+pub(crate) async fn fail_ai_job<R, D>(
+    State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
+    Path(ai_job_id): Path<String>,
+    Json(payload): Json<FailAiJobRequest>,
+) -> ApiResult<Json<AiJobResponse>>
+where
+    R: NotesRepository,
+    D: DrivePageContentPort,
+{
+    let context = authenticated_fail_body(&app_ctx, "notes.backend.ai_jobs.write", &payload)?;
+    let job = state
+        .service
+        .fail_ai_job(FailAiJobCommand {
+            context,
+            ai_job_id,
+            error_code: payload.error_code,
+            error_message: payload.error_message,
+        })
+        .await
+        .map_err(map_product_error)?;
+
+    Ok(Json(job.into()))
+}
+
 pub(crate) async fn accept_ai_suggestion<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Path(ai_suggestion_id): Path<String>,
     Json(payload): Json<AiSuggestionDecisionRequest>,
 ) -> ApiResult<Json<AiSuggestionResponse>>
@@ -133,14 +173,12 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context =
+        authenticated_suggestion_body(&app_ctx, "notes.backend.ai_suggestions.write", &payload)?;
     let suggestion = state
         .service
         .accept_ai_suggestion(AcceptAiSuggestionCommand {
-            context: NotesActorContext {
-                tenant_id: payload.tenant_id,
-                organization_id: payload.organization_id,
-                operator_id: payload.operator_id,
-            },
+            context,
             ai_suggestion_id,
         })
         .await
@@ -151,6 +189,7 @@ where
 
 pub(crate) async fn reject_ai_suggestion<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Path(ai_suggestion_id): Path<String>,
     Json(payload): Json<AiSuggestionDecisionRequest>,
 ) -> ApiResult<Json<AiSuggestionResponse>>
@@ -158,14 +197,12 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context =
+        authenticated_suggestion_body(&app_ctx, "notes.backend.ai_suggestions.write", &payload)?;
     let suggestion = state
         .service
         .reject_ai_suggestion(RejectAiSuggestionCommand {
-            context: NotesActorContext {
-                tenant_id: payload.tenant_id,
-                organization_id: payload.organization_id,
-                operator_id: payload.operator_id,
-            },
+            context,
             ai_suggestion_id,
         })
         .await
@@ -176,6 +213,7 @@ where
 
 pub(crate) async fn apply_ai_suggestion<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Path(ai_suggestion_id): Path<String>,
     Json(payload): Json<AiSuggestionApplyRequest>,
 ) -> ApiResult<Json<PageContentResponse>>
@@ -183,14 +221,12 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context =
+        authenticated_apply_body(&app_ctx, "notes.backend.ai_suggestions.write", &payload)?;
     let content = state
         .service
         .apply_ai_suggestion(ApplyAiSuggestionCommand {
-            context: NotesActorContext {
-                tenant_id: payload.tenant_id,
-                organization_id: payload.organization_id,
-                operator_id: payload.operator_id,
-            },
+            context,
             ai_suggestion_id,
             expected_drive_version_id: payload.expected_drive_version_id,
             create_checkpoint: payload.create_checkpoint.unwrap_or(true),
@@ -203,6 +239,7 @@ where
 
 pub(crate) async fn list_ai_suggestion_feedback<R, D>(
     State(state): State<NotesBackendState<R, D>>,
+    app_ctx: WebRequestContext,
     Path(ai_suggestion_id): Path<String>,
     Query(query): Query<AiFeedbackListQuery>,
 ) -> ApiResult<Json<AiFeedbackPageResponse>>
@@ -210,10 +247,15 @@ where
     R: NotesRepository,
     D: DrivePageContentPort,
 {
+    let context = authenticated_feedback_list_query(
+        &app_ctx,
+        "notes.backend.ai_suggestions.feedback.read",
+        &query,
+    )?;
     let page = state
         .service
         .list_ai_suggestion_feedback(ListAiSuggestionFeedbackQuery {
-            context: context_from_feedback_query(&query),
+            context,
             ai_suggestion_id,
             page: query.page.unwrap_or(1),
             page_size: query.page_size.unwrap_or(20),
@@ -222,36 +264,4 @@ where
         .map_err(map_product_error)?;
 
     Ok(Json(page.into()))
-}
-
-fn context_from_query(query: BackendContextQuery) -> NotesActorContext {
-    NotesActorContext {
-        tenant_id: query.tenant_id,
-        organization_id: query.organization_id,
-        operator_id: query
-            .operator_id
-            .unwrap_or_else(|| "operator-unset".to_string()),
-    }
-}
-
-fn context_from_list_query(query: &AiJobListQuery) -> NotesActorContext {
-    NotesActorContext {
-        tenant_id: query.tenant_id.clone(),
-        organization_id: query.organization_id.clone(),
-        operator_id: query
-            .operator_id
-            .clone()
-            .unwrap_or_else(|| "operator-unset".to_string()),
-    }
-}
-
-fn context_from_feedback_query(query: &AiFeedbackListQuery) -> NotesActorContext {
-    NotesActorContext {
-        tenant_id: query.tenant_id.clone(),
-        organization_id: query.organization_id.clone(),
-        operator_id: query
-            .operator_id
-            .clone()
-            .unwrap_or_else(|| "operator-unset".to_string()),
-    }
 }

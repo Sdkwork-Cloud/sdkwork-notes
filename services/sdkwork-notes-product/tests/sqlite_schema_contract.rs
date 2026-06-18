@@ -319,6 +319,7 @@ async fn sql_repository_rejects_stale_metadata_and_drive_pointer_writes_atomical
                 favorite: true,
                 archive_status: "active".to_string(),
                 publish_status: "private".to_string(),
+                parent_page_id: None,
             },
             Some(2),
         )
@@ -917,7 +918,13 @@ async fn insert_search_projection(
          ) VALUES (
             $1, 'tenant-001', 'org-001', 'workspace-001', $2, 'drive-node-page-001',
             $3, $4, 'Roadmap', $5, $5, 'indexed', CURRENT_TIMESTAMP, 1
-         )",
+         )
+         ON CONFLICT(tenant_id, organization_id, page_id, source_drive_version_id) DO UPDATE SET
+            id=excluded.id,
+            plain_text=excluded.plain_text,
+            snippet=excluded.snippet,
+            index_status='indexed',
+            indexed_at=CURRENT_TIMESTAMP",
     )
     .bind(id)
     .bind(page_id)

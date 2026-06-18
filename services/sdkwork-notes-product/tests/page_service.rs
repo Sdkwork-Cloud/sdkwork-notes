@@ -218,6 +218,7 @@ async fn page_workflows_normalize_context_and_resource_ids_before_repository_and
             favorite: Some(true),
             archive_status: Some(" active ".to_string()),
             publish_status: Some(" private ".to_string()),
+            parent_page_id: None,
             expected_version: Some(" 1 ".to_string()),
         })
         .await
@@ -1888,6 +1889,7 @@ async fn read_models_list_bootstrap_and_update_page_metadata_without_drive_conte
             favorite: Some(true),
             archive_status: Some("archived".to_string()),
             publish_status: Some("unlisted".to_string()),
+            parent_page_id: None,
             expected_version: Some(first_page.version.to_string()),
         })
         .await
@@ -1911,6 +1913,7 @@ async fn read_models_list_bootstrap_and_update_page_metadata_without_drive_conte
             favorite: None,
             archive_status: None,
             publish_status: None,
+            parent_page_id: None,
             expected_version: Some("1".to_string()),
         })
         .await;
@@ -2661,6 +2664,7 @@ async fn update_page_metadata_rejects_when_repository_version_changed_after_serv
             favorite: None,
             archive_status: None,
             publish_status: None,
+            parent_page_id: None,
             expected_version: Some("1".to_string()),
         })
         .await;
@@ -2875,23 +2879,19 @@ async fn search_query_highlights_current_projection_snippet_when_match_comes_fro
         .expect("page should be created");
 
     sqlx::query(
-        "INSERT INTO notes_page_search_projection (
-            id, tenant_id, organization_id, workspace_id, page_id, drive_node_id,
-            source_drive_version_id, source_drive_version_no, title_snapshot,
-            plain_text, snippet, index_status, indexed_at, rebuild_version
-         ) VALUES (
-            'projection-current', 'tenant-001', 'org-001', 'workspace-001', $1, $2,
-            $3, $4, 'Roadmap', 'Indexed body mentions Atlas only here',
-            'Atlas projection snippet', 'indexed', CURRENT_TIMESTAMP, 1
-         )",
+        "UPDATE notes_page_search_projection
+         SET plain_text='Indexed body mentions Atlas only here',
+             snippet='Atlas projection snippet',
+             index_status='indexed',
+             indexed_at=CURRENT_TIMESTAMP
+         WHERE tenant_id='tenant-001'
+           AND organization_id='org-001'
+           AND page_id=$1",
     )
     .bind(&page.id)
-    .bind(&page.drive_node_id)
-    .bind(&page.current_drive_version_id)
-    .bind(page.current_drive_version_no)
     .execute(&pool)
     .await
-    .expect("current search projection should be inserted");
+    .expect("current search projection should be updated");
 
     let search = service
         .query_search(SearchQuery {
@@ -5478,6 +5478,14 @@ impl NotesRepository for ConcurrentMetadataRepository {
         unreachable!("concurrency test does not update Drive snapshots")
     }
 
+    async fn delete_page(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+    ) -> Result<(), NotesProductError> {
+        unreachable!("concurrency test does not delete pages")
+    }
+
     async fn find_ai_job_by_idempotency_key(
         &self,
         _: &NotesActorContext,
@@ -5530,6 +5538,16 @@ impl NotesRepository for ConcurrentMetadataRepository {
         _: &str,
     ) -> Result<Vec<AiJobSource>, NotesProductError> {
         unreachable!("concurrency test does not list AI job sources")
+    }
+
+    async fn fail_ai_job(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+        _: &str,
+        _: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        unreachable!("test fake does not fail AI jobs")
     }
 
     async fn complete_ai_job(
@@ -5772,6 +5790,14 @@ impl NotesRepository for ConcurrentPageInsertRepository {
         unreachable!("concurrency test does not update Drive snapshots")
     }
 
+    async fn delete_page(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+    ) -> Result<(), NotesProductError> {
+        unreachable!("concurrency test does not delete pages")
+    }
+
     async fn find_ai_job_by_idempotency_key(
         &self,
         _: &NotesActorContext,
@@ -5824,6 +5850,16 @@ impl NotesRepository for ConcurrentPageInsertRepository {
         _: &str,
     ) -> Result<Vec<AiJobSource>, NotesProductError> {
         unreachable!("concurrency test does not list AI job sources")
+    }
+
+    async fn fail_ai_job(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+        _: &str,
+        _: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        unreachable!("test fake does not fail AI jobs")
     }
 
     async fn complete_ai_job(
@@ -6002,6 +6038,14 @@ impl NotesRepository for PanicOnAiJobTargetRepository {
         unreachable!("target validation should run before Drive pointer update")
     }
 
+    async fn delete_page(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+    ) -> Result<(), NotesProductError> {
+        unreachable!("target validation should run before page delete")
+    }
+
     async fn find_ai_job_by_idempotency_key(
         &self,
         _: &NotesActorContext,
@@ -6054,6 +6098,16 @@ impl NotesRepository for PanicOnAiJobTargetRepository {
         _: &str,
     ) -> Result<Vec<AiJobSource>, NotesProductError> {
         unreachable!("target validation should run before AI job source list")
+    }
+
+    async fn fail_ai_job(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+        _: &str,
+        _: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        unreachable!("test fake does not fail AI jobs")
     }
 
     async fn complete_ai_job(
@@ -6234,6 +6288,14 @@ impl NotesRepository for ConcurrentAiJobIdempotencyRepository {
         unreachable!("concurrency test does not update Drive snapshots")
     }
 
+    async fn delete_page(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+    ) -> Result<(), NotesProductError> {
+        unreachable!("concurrency test does not delete pages")
+    }
+
     async fn find_ai_job_by_idempotency_key(
         &self,
         _: &NotesActorContext,
@@ -6308,6 +6370,16 @@ impl NotesRepository for ConcurrentAiJobIdempotencyRepository {
         _: &str,
     ) -> Result<Vec<AiJobSource>, NotesProductError> {
         unreachable!("concurrency test does not list AI job sources")
+    }
+
+    async fn fail_ai_job(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+        _: &str,
+        _: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        unreachable!("test fake does not fail AI jobs")
     }
 
     async fn complete_ai_job(
@@ -6483,6 +6555,14 @@ impl NotesRepository for ConcurrentAiFeedbackIdempotencyRepository {
         unreachable!("concurrency test does not update Drive snapshots")
     }
 
+    async fn delete_page(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+    ) -> Result<(), NotesProductError> {
+        unreachable!("concurrency test does not delete pages")
+    }
+
     async fn find_ai_job_by_idempotency_key(
         &self,
         _: &NotesActorContext,
@@ -6535,6 +6615,16 @@ impl NotesRepository for ConcurrentAiFeedbackIdempotencyRepository {
         _: &str,
     ) -> Result<Vec<AiJobSource>, NotesProductError> {
         unreachable!("concurrency test does not list AI job sources")
+    }
+
+    async fn fail_ai_job(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+        _: &str,
+        _: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        unreachable!("test fake does not fail AI jobs")
     }
 
     async fn complete_ai_job(
@@ -6744,6 +6834,14 @@ impl NotesRepository for ConcurrentDriveSnapshotRepository {
         unreachable!("stale drive version should conflict before returning")
     }
 
+    async fn delete_page(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+    ) -> Result<(), NotesProductError> {
+        unreachable!("concurrency test does not delete pages")
+    }
+
     async fn find_ai_job_by_idempotency_key(
         &self,
         _: &NotesActorContext,
@@ -6796,6 +6894,16 @@ impl NotesRepository for ConcurrentDriveSnapshotRepository {
         _: &str,
     ) -> Result<Vec<AiJobSource>, NotesProductError> {
         unreachable!("concurrency test does not list AI job sources")
+    }
+
+    async fn fail_ai_job(
+        &self,
+        _: &NotesActorContext,
+        _: &str,
+        _: &str,
+        _: &str,
+    ) -> Result<AiJob, NotesProductError> {
+        unreachable!("test fake does not fail AI jobs")
     }
 
     async fn complete_ai_job(

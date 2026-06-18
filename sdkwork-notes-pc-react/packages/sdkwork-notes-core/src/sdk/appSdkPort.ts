@@ -117,6 +117,46 @@ export interface NoteContentVO {
   text?: string | null;
 }
 
+export interface NoteRemoteApplyMutationPatch {
+  title?: string;
+  content?: string;
+  type?: string;
+  parentId?: string | null;
+  tags?: string[];
+  isFavorite?: boolean;
+  publishStatus?: string;
+}
+
+export type NoteRemoteApplyMutation =
+  | { patch: NoteRemoteApplyMutationPatch }
+  | { targetParentId: string | null }
+  | { intent: 'move-to-trash' | 'restore-from-trash' | 'permanent-delete' };
+
+export interface NoteRemoteApplyRequest {
+  idempotencyKey: string;
+  taskId: string;
+  entityType: 'note' | 'folder';
+  entityId: string;
+  operation: 'upsert' | 'delete' | 'restore' | 'move' | 'permanent-delete';
+  localRevision?: number | null;
+  baseRemoteCursor?: string | null;
+  mutation: NoteRemoteApplyMutation;
+}
+
+export interface NoteRemoteApplyConflictVO {
+  code: string;
+  message: string;
+  occurredAt: string;
+}
+
+export interface NoteRemoteApplyResultVO {
+  outcome: 'applied' | 'conflict';
+  taskId: string;
+  remoteCursor?: string | null;
+  appliedAt?: string;
+  conflict?: NoteRemoteApplyConflictVO;
+}
+
 export interface NotesAppUserClient {
   getUserProfile(): Promise<AppSdkClientResponse<UserProfileVO>>;
   updateUserProfile(body: { nickname: string }): Promise<AppSdkClientResponse<UserProfileVO>>;
@@ -143,6 +183,7 @@ export interface NotesAppNoteClient {
   updateFolder(folderId: string, body: { name: string }): Promise<AppSdkClientResponse<NoteFolderVO>>;
   updateNote(noteId: string, body: NoteUpdateRequest): Promise<AppSdkClientResponse<NoteVO | null>>;
   updateNoteContent(noteId: string, body: NoteContentUpdateRequest): Promise<AppSdkClientResponse<NoteContentVO | null>>;
+  remoteApply(noteId: string, body: NoteRemoteApplyRequest): Promise<AppSdkClientResponse<NoteRemoteApplyResultVO>>;
 }
 
 export interface NotesAppFilesystemClient {

@@ -44,10 +44,10 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
     let list_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/backend/v3/api/notes/ai_jobs?tenantId=tenant-001&organizationId=org-001&operatorId=admin-001&workspace_id=workspace-001&page=1&page_size=20",
+                    "/backend/v3/api/notes/ai_jobs?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&workspace_id=workspace-001&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("AI job list request should be built"),
@@ -68,10 +68,10 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
     let retrieve_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}?tenantId=tenant-001&organizationId=org-001&operatorId=admin-001"
+                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}?tenantId=tenant-001&organizationId=org-001&operatorId=user-001"
                 ))
                 .body(Body::empty())
                 .expect("AI job retrieve request should be built"),
@@ -86,10 +86,10 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
     let cancel_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/cancel?tenantId=tenant-001&organizationId=org-001&operatorId=admin-001"
+                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/cancel?tenantId=tenant-001&organizationId=org-001&operatorId=user-001"
                 ))
                 .body(Body::empty())
                 .expect("AI job cancel request should be built"),
@@ -124,10 +124,10 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
     let list_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/backend/v3/api/notes/ai_jobs?tenantId=tenant-001&organizationId=org-001&operatorId=admin-001&workspace_id=workspace-001&page=1&page_size=20",
+                    "/backend/v3/api/notes/ai_jobs?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&workspace_id=workspace-001&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("AI job list request should be built"),
@@ -143,10 +143,10 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
     let claim_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/claim?tenantId=tenant-001&organizationId=org-001&operatorId=admin-001"
+                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/claim?tenantId=tenant-001&organizationId=org-001&operatorId=user-001"
                 ))
                 .body(Body::empty())
                 .expect("AI job claim request should be built"),
@@ -161,10 +161,10 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
     let complete_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/complete?tenantId=tenant-001&organizationId=org-001&operatorId=admin-001"
+                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/complete?tenantId=tenant-001&organizationId=org-001&operatorId=user-001"
                 ))
                 .header("content-type", "application/json")
                 .body(Body::from(
@@ -220,7 +220,7 @@ async fn backend_api_routes_accept_and_reject_ai_suggestions() {
             json!({
                 "tenantId": "tenant-001",
                 "organizationId": "org-001",
-                "operatorId": "admin-001"
+                "operatorId": "user-001"
             }),
         ))
         .await
@@ -238,7 +238,7 @@ async fn backend_api_routes_accept_and_reject_ai_suggestions() {
             json!({
                 "tenantId": "tenant-001",
                 "organizationId": "org-001",
-                "operatorId": "admin-001"
+                "operatorId": "user-001"
             }),
         ))
         .await
@@ -255,7 +255,7 @@ async fn backend_api_routes_accept_and_reject_ai_suggestions() {
             json!({
                 "tenantId": "tenant-001",
                 "organizationId": "org-001",
-                "operatorId": "admin-001"
+                "operatorId": "user-001"
             }),
         ))
         .await
@@ -290,7 +290,7 @@ async fn backend_api_routes_apply_accepted_ai_suggestion() {
             json!({
                 "tenantId": "tenant-001",
                 "organizationId": "org-001",
-                "operatorId": "admin-001"
+                "operatorId": "user-001"
             }),
         ))
         .await
@@ -304,7 +304,7 @@ async fn backend_api_routes_apply_accepted_ai_suggestion() {
             json!({
                 "tenantId": "tenant-001",
                 "organizationId": "org-001",
-                "operatorId": "admin-001",
+                "operatorId": "user-001",
                 "expectedDriveVersionId": "drive-version-page-001-v1",
                 "createCheckpoint": true
             }),
@@ -345,7 +345,7 @@ async fn backend_api_routes_list_ai_suggestion_feedback() {
             context: sdkwork_notes_product::domain::NotesActorContext {
                 tenant_id: "tenant-001".to_string(),
                 organization_id: "org-001".to_string(),
-                operator_id: "admin-001".to_string(),
+                operator_id: "user-001".to_string(),
             },
             ai_suggestion_id: summary_id.clone(),
             feedback_type: "helpful".to_string(),
@@ -357,10 +357,10 @@ async fn backend_api_routes_list_ai_suggestion_feedback() {
 
     let feedback_response = app
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_suggestions/{summary_id}/feedback?tenantId=tenant-001&organizationId=org-001&operatorId=admin-001&page=1&page_size=20"
+                    "/backend/v3/api/notes/ai_suggestions/{summary_id}/feedback?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20"
                 ))
                 .body(Body::empty())
                 .expect("AI suggestion feedback request should be built"),
@@ -383,14 +383,14 @@ async fn seed_ai_job(service: &NotesService<SqlNotesStore, FakeDrivePageContentP
     let actor = sdkwork_notes_product::domain::NotesActorContext {
         tenant_id: "tenant-001".to_string(),
         organization_id: "org-001".to_string(),
-        operator_id: "admin-001".to_string(),
+        operator_id: "user-001".to_string(),
     };
     let workspace = service
         .create_workspace(CreateWorkspaceCommand {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "admin-001".to_string(),
+            owner_subject_id: "user-001".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -437,14 +437,14 @@ async fn seed_ai_suggestions(
     let actor = sdkwork_notes_product::domain::NotesActorContext {
         tenant_id: "tenant-001".to_string(),
         organization_id: "org-001".to_string(),
-        operator_id: "admin-001".to_string(),
+        operator_id: "user-001".to_string(),
     };
     let workspace = service
         .create_workspace(CreateWorkspaceCommand {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "admin-001".to_string(),
+            owner_subject_id: "user-001".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -542,14 +542,14 @@ async fn seed_applicable_ai_suggestion(
     let actor = sdkwork_notes_product::domain::NotesActorContext {
         tenant_id: "tenant-001".to_string(),
         organization_id: "org-001".to_string(),
-        operator_id: "admin-001".to_string(),
+        operator_id: "user-001".to_string(),
     };
     let workspace = service
         .create_workspace(CreateWorkspaceCommand {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "admin-001".to_string(),
+            owner_subject_id: "user-001".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -629,8 +629,23 @@ async fn seed_applicable_ai_suggestion(
     suggestions.items[0].id.clone()
 }
 
-fn json_request(method: Method, uri: &str, body: serde_json::Value) -> Request<Body> {
+fn auth_request_builder() -> http::request::Builder {
     Request::builder()
+        .header(
+            "authorization",
+            format!(
+                "Bearer {}",
+                sdkwork_router_notes_http_auth::test_support::default_test_auth_claim_token()
+            ),
+        )
+        .header(
+            "access-token",
+            sdkwork_router_notes_http_auth::test_support::default_test_access_claim_token(),
+        )
+}
+
+fn json_request(method: Method, uri: &str, body: serde_json::Value) -> Request<Body> {
+    auth_request_builder()
         .method(method)
         .uri(uri)
         .header("content-type", "application/json")

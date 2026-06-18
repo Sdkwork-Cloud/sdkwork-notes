@@ -79,3 +79,8 @@ test('internal turbo typecheck graph excludes external shared sdk packages', () 
   const graph = runTurboDryRun('typecheck');
   assertGraphStaysInsideWorkspace(graph, 'typecheck');
 });
+
+test('internal turbo test graph excludes external shared sdk packages', () => {
+  const graph = runTurboDryRun('test');
+  assertGraphStaysInsideWorkspace(graph, 'test');
+});

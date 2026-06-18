@@ -401,6 +401,19 @@ importers:
         version: 6.0.3
 
   ../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-runtime-pc-react:
+    dependencies:
+      '@sdkwork/appbase-app-sdk':
+        specifier: workspace:*
+        version: link:../../../../sdks/sdkwork-appbase-app-sdk/sdkwork-appbase-app-sdk-typescript/generated/server-openapi
+      '@sdkwork/iam-contracts':
+        specifier: workspace:*
+        version: link:../../../common/iam/sdkwork-iam-contracts
+      '@sdkwork/iam-runtime':
+        specifier: workspace:*
+        version: link:../../../common/iam/sdkwork-iam-runtime
+      '@sdkwork/sdk-common':
+        specifier: ^1.0.2
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
     devDependencies:
       typescript:
         specifier: ^6.0.2
@@ -633,11 +646,7 @@ importers:
         specifier: workspace:*
         version: link:../sdkwork-search-contracts
 
-  ../../sdkwork-search/packages/pc-react/foundation/sdkwork-search-pc-react:
-    dependencies:
-      '@sdkwork/search-contracts':
-        specifier: workspace:*
-        version: link:../../../common/search/sdkwork-search-contracts
+  ../../sdkwork-search/packages/pc-react/foundation/sdkwork-search-pc-react: {}
 
   ../../sdkwork-ui/sdkwork-ui-pc-react:
     dependencies:
@@ -695,9 +704,6 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@sdkwork/drive-app-sdk':
-        specifier: workspace:*
-        version: link:../../sdkwork-drive/sdks/sdkwork-drive-app-sdk/sdkwork-drive-app-sdk-typescript
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -781,11 +787,30 @@ importers:
         specifier: ^3.5.32
         version: 3.5.34(typescript@6.0.2)
 
+  ../sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi:
+    dependencies:
+      '@sdkwork/sdk-common':
+        specifier: ^1.0.2
+        version: link:../../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
+    devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.39
+      rollup:
+        specifier: ^4.0.0
+        version: 4.60.0
+      typescript:
+        specifier: ^5.3.0
+        version: 5.9.3
+
   packages/sdkwork-notes-auth:
     dependencies:
       '@sdkwork/auth-pc-react':
         specifier: workspace:*
         version: link:../../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-pc-react
+      '@sdkwork/auth-runtime-pc-react':
+        specifier: workspace:*
+        version: link:../../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-runtime-pc-react
       '@sdkwork/notes-core':
         specifier: workspace:*
         version: link:../sdkwork-notes-core
@@ -845,9 +870,18 @@ importers:
 
   packages/sdkwork-notes-core:
     dependencies:
+      '@sdkwork-internal/notes-app-sdk-generated':
+        specifier: workspace:*
+        version: link:../../../sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi
+      '@sdkwork/notes-sync':
+        specifier: workspace:*
+        version: link:../sdkwork-notes-sync
       '@sdkwork/notes-types':
         specifier: workspace:*
         version: link:../sdkwork-notes-types
+      '@sdkwork/sdk-common':
+        specifier: workspace:*
+        version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       react:
         specifier: 'catalog:'
         version: 19.2.4

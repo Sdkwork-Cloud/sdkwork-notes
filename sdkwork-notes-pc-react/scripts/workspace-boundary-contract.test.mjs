@@ -98,7 +98,8 @@ test('notes-auth owns the shared auth runtime boundary and the rest of the works
   assert.match(bridgeSource, /from '@sdkwork\/notes-core'/);
   assert.match(bridgeSource, /clearSession: options\.clearSession \?\? \(\(\) => clearAppSdkSessionTokens\(\)\)/);
   assert.match(bridgeSource, /getClient: \(\) => resolveBoundAuthClient\(options\.getClient\)/);
-  assert.match(bridgeSource, /persistSession: options\.persistSession \?\? \(\(session\) => persistAppSdkSessionTokens\(session\)\)/);
+  assert.match(bridgeSource, /commitSession: options\.commitSession \?\? \(\(session\) => \{/);
+  assert.match(bridgeSource, /persistAppSdkSessionTokens\(\{/);
   assert.match(bridgeSource, /readSession: options\.readSession \?\? \(\(\) => readAppSdkSessionTokens\(\)\)/);
   assert.match(bridgeSource, /resolveAccessToken: options\.resolveAccessToken \?\? \(\(\) => resolveAppSdkAccessToken\(\)\)/);
 

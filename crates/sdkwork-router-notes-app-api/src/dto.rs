@@ -76,7 +76,70 @@ pub struct UpdatePageRequest {
     pub favorite: Option<bool>,
     pub archive_status: Option<String>,
     pub publish_status: Option<String>,
+    #[serde(default)]
+    pub parent_page_id: Option<Option<String>>,
     pub expected_version: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoteRemoteApplyMutationPatchRequest {
+    pub title: Option<String>,
+    pub content: Option<String>,
+    pub parent_id: Option<Option<String>>,
+    pub is_favorite: Option<bool>,
+    pub publish_status: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum NoteRemoteApplyMutationRequest {
+    Patch {
+        patch: NoteRemoteApplyMutationPatchRequest,
+    },
+    Intent {
+        intent: String,
+    },
+    Move {
+        target_parent_id: Option<String>,
+    },
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoteRemoteApplyRequest {
+    pub tenant_id: String,
+    pub organization_id: String,
+    pub operator_id: String,
+    pub idempotency_key: String,
+    pub task_id: String,
+    pub entity_type: String,
+    pub entity_id: String,
+    pub operation: String,
+    pub local_revision: Option<i64>,
+    pub base_remote_cursor: Option<String>,
+    pub mutation: NoteRemoteApplyMutationRequest,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoteRemoteApplyConflictResponse {
+    pub code: String,
+    pub message: String,
+    pub occurred_at: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoteRemoteApplyResultResponse {
+    pub outcome: String,
+    pub task_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remote_cursor: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub applied_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conflict: Option<NoteRemoteApplyConflictResponse>,
 }
 
 #[derive(Debug, Deserialize)]

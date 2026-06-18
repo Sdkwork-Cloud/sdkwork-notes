@@ -34,6 +34,7 @@ fn route_manifest_matches_app_openapi_operations() {
         "POST /app/v3/api/notes/workspaces/{workspaceId}/pages".to_string(),
         "GET /app/v3/api/notes/pages/{pageId}".to_string(),
         "PATCH /app/v3/api/notes/pages/{pageId}".to_string(),
+        "POST /app/v3/api/notes/pages/{pageId}/remote_apply".to_string(),
         "GET /app/v3/api/notes/pages/{pageId}/content".to_string(),
         "PUT /app/v3/api/notes/pages/{pageId}/content".to_string(),
         "GET /app/v3/api/notes/pages/{pageId}/versions".to_string(),

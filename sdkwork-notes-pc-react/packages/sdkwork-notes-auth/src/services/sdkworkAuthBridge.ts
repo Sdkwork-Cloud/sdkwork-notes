@@ -74,12 +74,12 @@ export function bindNotesAuthClient<TClient extends SdkworkAuthClient>(client: T
     });
   }
 
-  if (client.user) {
+  if ('user' in client && client.user && typeof client.user === 'object') {
     Object.defineProperty(boundClient, 'user', {
       configurable: true,
       enumerable: true,
       writable: true,
-      value: bindSdkClientModule(client.user),
+      value: bindSdkClientModule(client.user as object),
     });
   }
 
@@ -107,7 +107,14 @@ export function createNotesAuthService(
     ...options,
     clearSession: options.clearSession ?? (() => clearAppSdkSessionTokens()),
     getClient: () => resolveBoundAuthClient(options.getClient),
-    persistSession: options.persistSession ?? ((session) => persistAppSdkSessionTokens(session)),
+    commitSession: options.commitSession ?? ((session) => {
+      persistAppSdkSessionTokens({
+        authToken: session.authToken,
+        accessToken: session.accessToken,
+        refreshToken: session.refreshToken,
+      });
+      return session;
+    }),
     readSession: options.readSession ?? (() => readAppSdkSessionTokens()),
     resolveAccessToken: options.resolveAccessToken ?? (() => resolveAppSdkAccessToken()),
   });
@@ -119,10 +126,7 @@ export function createNotesAuthController(
   return createSdkworkAuthController({
     ...options,
     service: {
-      ...createNotesAuthService({
-        locale: options.locale,
-        messages: options.messages,
-      }),
+      ...createNotesAuthService(),
       ...(options.service ?? {}),
     },
   });

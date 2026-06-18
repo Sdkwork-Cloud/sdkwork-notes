@@ -142,7 +142,7 @@
     "storeUrl": "https://sdkwork.com/apps/sdkwork-notes-pc-react",
     "stores": [],
     "config": {
-      "workspaceRoot": "apps/sdkwork-notes/sdkwork-notes-pc-react",
+      "workspaceRoot": ".",
       "framework": "react-tauri",
       "managedBy": "apps/scripts/initialize-sdkwork-app-standard-v3.mjs"
     }
@@ -228,7 +228,7 @@
         }
       ],
       "metadata": {
-        "workspaceRoot": "apps/sdkwork-notes/sdkwork-notes-pc-react",
+        "workspaceRoot": ".",
         "framework": "react-tauri",
         "packageManager": "pnpm@10.30.2",
         "migratedFromLegacyConfig": true
@@ -276,7 +276,7 @@
     "build": {
       "targets": []
     },
-    "sourceRoot": "apps/sdkwork-notes/sdkwork-notes-pc-react"
+    "sourceRoot": "."
   },
   "metadata": {
     "standardOwner": "sdkwork-platform",

@@ -47,7 +47,7 @@ tables:
       - { name: organization_id, type: varchar(64), required: true, default: "0" }
       - { name: workspace_id, type: varchar(64), required: true, references: notes_workspace.id }
       - { name: title, type: varchar(512), required: true }
-      - { name: page_kind, type: varchar(32), required: true, constraints: ["enum: [doc, article, code, log, database, canvas]"] }
+      - { name: page_kind, type: varchar(32), required: true, constraints: ["enum: [doc, article, code, log, database, canvas, folder]"] }
       - { name: parent_page_id, type: varchar(64), nullable: true, references: notes_page.id }
       - { name: folder_drive_node_id, type: varchar(64), nullable: true, description: Optional Drive folder node used by the folder facade. }
       - { name: drive_space_id, type: varchar(64), required: true }

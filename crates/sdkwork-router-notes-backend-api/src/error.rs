@@ -34,6 +34,19 @@ pub fn problem(
     )
 }
 
+pub fn map_api_problem(problem: sdkwork_router_notes_http_auth::actor_context::ApiProblem) -> (StatusCode, Json<ProblemDetail>) {
+    (
+        problem.status,
+        Json(ProblemDetail {
+            problem_type: "about:blank".to_string(),
+            title: problem.title,
+            status: problem.status.as_u16(),
+            detail: problem.detail,
+            code: problem.code,
+        }),
+    )
+}
+
 pub fn map_product_error(error: NotesProductError) -> (StatusCode, Json<ProblemDetail>) {
     match error {
         NotesProductError::Validation(detail) => problem(
@@ -60,10 +73,10 @@ pub fn map_product_error(error: NotesProductError) -> (StatusCode, Json<ProblemD
             detail,
             "notes.backend.permission_denied",
         ),
-        NotesProductError::Internal(detail) => problem(
+        NotesProductError::Internal(_) => problem(
             StatusCode::INTERNAL_SERVER_ERROR,
             "internal error",
-            detail,
+            "An unexpected error occurred".to_string(),
             "notes.backend.internal",
         ),
     }

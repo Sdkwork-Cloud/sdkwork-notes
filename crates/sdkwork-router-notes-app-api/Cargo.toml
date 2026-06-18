@@ -14,9 +14,12 @@ http.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sdkwork-notes-product.workspace = true
+sdkwork-router-notes-http-auth.workspace = true
+sdkwork-web-core.workspace = true
 sqlx.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
 async-trait.workspace = true
+sdkwork-router-notes-http-auth = { workspace = true, features = [] }
 tower.workspace = true

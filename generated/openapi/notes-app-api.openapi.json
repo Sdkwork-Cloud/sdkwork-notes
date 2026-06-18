@@ -389,6 +389,59 @@
         "x-sdkwork-audit-event": "notes.page.update"
       }
     },
+    "/app/v3/api/notes/pages/{pageId}/remote_apply": {
+      "post": {
+        "summary": "Apply a queued sync mutation to a Notes page.",
+        "operationId": "pages.remoteApply",
+        "tags": [
+          "notes"
+        ],
+        "security": [
+          {
+            "AuthToken": [],
+            "AccessToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageIdPath"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteRemoteApplyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Remote apply result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteRemoteApplyResult"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ProblemDetailResponse"
+          }
+        },
+        "x-sdkwork-owner": "sdkwork-notes",
+        "x-sdkwork-api-authority": "sdkwork-notes-app-api",
+        "x-sdkwork-domain": "notes",
+        "x-sdkwork-resource": "pages",
+        "x-sdkwork-permission": "notes.pages.write",
+        "x-sdkwork-tenant-scope": "tenant",
+        "x-sdkwork-data-scope": "organization",
+        "x-sdkwork-audit-event": "notes.page.remote_apply"
+      }
+    },
     "/app/v3/api/notes/pages/{pageId}/content": {
       "get": {
         "summary": "Retrieve Drive-backed page content through the Notes facade.",
@@ -1358,7 +1411,8 @@
               "code",
               "log",
               "database",
-              "canvas"
+              "canvas",
+              "folder"
             ]
           },
           "driveNodeId": {
@@ -1732,7 +1786,8 @@
               "code",
               "log",
               "database",
-              "canvas"
+              "canvas",
+              "folder"
             ]
           },
           "parentPageId": {
@@ -1786,6 +1841,12 @@
           "publishStatus": {
             "type": "string"
           },
+          "parentPageId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "expectedVersion": {
             "type": "string"
           }
@@ -1795,6 +1856,132 @@
           "organizationId",
           "operatorId"
         ]
+      },
+      "NoteRemoteApplyMutationPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "publishStatus": {
+            "type": "string"
+          }
+        }
+      },
+      "NoteRemoteApplyRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenantId",
+          "organizationId",
+          "operatorId",
+          "idempotencyKey",
+          "taskId",
+          "entityType",
+          "entityId",
+          "operation",
+          "mutation"
+        ],
+        "properties": {
+          "tenantId": {
+            "type": "string"
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "operatorId": {
+            "type": "string"
+          },
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "entityType": {
+            "type": "string"
+          },
+          "entityId": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "localRevision": {
+            "type": "integer"
+          },
+          "baseRemoteCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mutation": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "NoteRemoteApplyConflict": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "occurredAt"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "type": "string"
+          }
+        }
+      },
+      "NoteRemoteApplyResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "outcome",
+          "taskId"
+        ],
+        "properties": {
+          "outcome": {
+            "type": "string"
+          },
+          "taskId": {
+            "type": "string"
+          },
+          "remoteCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "appliedAt": {
+            "type": "string"
+          },
+          "conflict": {
+            "$ref": "#/components/schemas/NoteRemoteApplyConflict"
+          }
+        }
       },
       "UpdatePageContentRequest": {
         "type": "object",

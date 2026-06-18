@@ -213,7 +213,7 @@ function resolveRuntimeEnv(...values: Array<string | undefined>): AppRuntimeEnv 
 function resolveDefaultBaseUrl(env: AppRuntimeEnv): string {
   switch (env) {
     case 'production':
-      return 'https://api.sdkwork.com';
+      return 'https://notes.sdkwork.com';
     case 'test':
       return 'https://api-test.sdkwork.com';
     case 'staging':
@@ -601,8 +601,7 @@ export function createAppSdkClientConfig(
   const ownerMode = runtimeContext.ownerMode;
   const defaultBaseUrl = normalizeUrl(
     firstNonEmptyValue(
-      envSource.VITE_API_BASE_URL,
-      envSource.VITE_APP_API_BASE_URL,
+      envSource.VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL,
       envSource.VITE_APP_BASE_URL,
       envSource.SDKWORK_API_BASE_URL,
       resolveDefaultBaseUrl(env),

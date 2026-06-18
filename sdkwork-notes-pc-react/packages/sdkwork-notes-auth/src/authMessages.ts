@@ -1,4 +1,4 @@
-import type { SdkworkAuthMessagesOverrides, SdkworkAuthRuntimeConfig } from '@sdkwork/auth-pc-react';
+import type { SdkworkAuthMessages, SdkworkAuthRuntimeConfig } from '@sdkwork/auth-pc-react';
 
 type TranslateFn = (key: string) => string;
 
@@ -11,7 +11,7 @@ export const notesAuthRuntimeConfig: SdkworkAuthRuntimeConfig = {
   registerMethods: ['email', 'phone'],
 };
 
-export function createNotesAuthMessages(t: TranslateFn): SdkworkAuthMessagesOverrides {
+export function createNotesAuthMessages(t: TranslateFn): Partial<SdkworkAuthMessages> {
   return {
     callback: {
       backToLogin: t('auth.backToLogin'),
@@ -70,5 +70,5 @@ export function createNotesAuthMessages(t: TranslateFn): SdkworkAuthMessagesOver
       submit: t('auth.signUp'),
       title: t('auth.createAccount'),
     },
-  };
+  } as Partial<SdkworkAuthMessages>;
 }

@@ -12,6 +12,7 @@ import {
   type NoteWorkspaceSnapshot,
 } from '../types/notesWorkspace';
 import { createNotesWorkspaceStore, type NoteWorkspaceStoreService } from './useNotesWorkspaceStore';
+import { createNotesWorkspaceSaveRetryPolicy } from '../services/noteWorkspaceSaveRetryPolicy';
 
 function ok<T>(data: T): ServiceResult<T> {
   return { success: true, data };
@@ -64,6 +65,15 @@ function createWorkspaceServiceStub(overrides: Partial<NoteWorkspaceStoreService
     ...createWorkspaceServiceDefaults(),
     ...overrides,
   };
+}
+
+function createStoreWithoutSaveRetries(
+  overrides: Parameters<typeof createNotesWorkspaceStore>[0] = {},
+) {
+  return createNotesWorkspaceStore({
+    saveRetryPolicy: createNotesWorkspaceSaveRetryPolicy({ retryDelaysMs: [] }),
+    ...overrides,
+  });
 }
 
 function createWorkspaceServiceDefaults(): NoteWorkspaceStoreService {
@@ -517,7 +527,7 @@ describe('createNotesWorkspaceStore', () => {
       save: vi.fn(async () => ({ success: false, message: 'Save failed' })),
     });
 
-    const store = createNotesWorkspaceStore({
+    const store = createStoreWithoutSaveRetries({
       workspaceService,
       layoutService: {
         getSidebarWidth: vi.fn(() => 300),
@@ -593,7 +603,7 @@ describe('createNotesWorkspaceStore', () => {
       )),
     });
 
-    const store = createNotesWorkspaceStore({
+    const store = createStoreWithoutSaveRetries({
       workspaceService,
       layoutService: {
         getSidebarWidth: vi.fn(() => 300),

@@ -17,6 +17,7 @@ pub enum PageKind {
     Log,
     Database,
     Canvas,
+    Folder,
 }
 
 impl PageKind {
@@ -28,6 +29,7 @@ impl PageKind {
             Self::Log => "log",
             Self::Database => "database",
             Self::Canvas => "canvas",
+            Self::Folder => "folder",
         }
     }
 
@@ -39,6 +41,7 @@ impl PageKind {
             "log" => Some(Self::Log),
             "database" => Some(Self::Database),
             "canvas" => Some(Self::Canvas),
+            "folder" => Some(Self::Folder),
             _ => None,
         }
     }
@@ -455,6 +458,14 @@ pub struct CompleteAiJobCommand {
 }
 
 #[derive(Debug, Clone)]
+pub struct FailAiJobCommand {
+    pub context: NotesActorContext,
+    pub ai_job_id: String,
+    pub error_code: String,
+    pub error_message: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct CompleteAiSuggestionInput {
     pub page_id: Option<String>,
     pub suggestion_type: String,
@@ -481,6 +492,7 @@ pub struct UpdatePageMetadataCommand {
     pub favorite: Option<bool>,
     pub archive_status: Option<String>,
     pub publish_status: Option<String>,
+    pub parent_page_id: Option<Option<String>>,
     pub expected_version: Option<String>,
 }
 
@@ -490,6 +502,54 @@ pub struct PageMetadataPatch {
     pub favorite: bool,
     pub archive_status: String,
     pub publish_status: String,
+    pub parent_page_id: Option<Option<String>>,
+}
+
+#[derive(Debug, Clone)]
+pub struct RemoteApplyConflict {
+    pub code: String,
+    pub message: String,
+    pub occurred_at: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct RemoteApplyPageResult {
+    pub outcome: String,
+    pub task_id: String,
+    pub remote_cursor: Option<String>,
+    pub applied_at: Option<String>,
+    pub conflict: Option<RemoteApplyConflict>,
+}
+
+#[derive(Debug, Clone)]
+pub enum RemoteApplyMutation {
+    UpsertPatch {
+        title: Option<String>,
+        content: Option<String>,
+        parent_id: Option<Option<String>>,
+        is_favorite: Option<bool>,
+        publish_status: Option<String>,
+    },
+    Move {
+        target_parent_id: Option<String>,
+    },
+    TrashIntent,
+    RestoreIntent,
+    PermanentDeleteIntent,
+}
+
+#[derive(Debug, Clone)]
+pub struct RemoteApplyPageCommand {
+    pub context: NotesActorContext,
+    pub page_id: String,
+    pub idempotency_key: String,
+    pub task_id: String,
+    pub entity_type: String,
+    pub entity_id: String,
+    pub operation: String,
+    pub local_revision: Option<i64>,
+    pub base_remote_cursor: Option<String>,
+    pub mutation: RemoteApplyMutation,
 }
 
 #[derive(Debug, Clone)]

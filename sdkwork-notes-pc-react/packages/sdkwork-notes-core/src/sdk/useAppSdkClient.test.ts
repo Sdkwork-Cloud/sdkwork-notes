@@ -65,7 +65,7 @@ describe('createAppSdkClientConfig', () => {
   it('prefers injected desktop env values when tauri forwards an app mode outside vite runtime mode', () => {
     globalThis.__SDKWORK_NOTES_ENV__ = {
       VITE_APP_ENV: 'test',
-      VITE_APP_API_BASE_URL: 'https://api-test.sdkwork.com',
+      VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL: 'https://api-test.sdkwork.com',
       VITE_APP_PLATFORM: 'desktop',
       VITE_ACCESS_TOKEN: '',
       VITE_TENANT_ID: 'tenant-test',
@@ -86,7 +86,7 @@ describe('createAppSdkClientConfig', () => {
     globalThis.__SDKWORK_NOTES_ENV__ = {
       VITE_APP_ENV: 'development',
       VITE_OWNER_MODE: 'organization',
-      VITE_API_BASE_URL: 'https://api-root.sdkwork.com',
+      VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL: 'https://api-root.sdkwork.com',
       VITE_ORGANIZATION_API_BASE_URL: 'https://api-org.sdkwork.com/',
       VITE_ACCESS_TOKEN: 'root-access-token',
       VITE_ORGANIZATION_ACCESS_TOKEN: 'organization-access-token',
@@ -101,7 +101,7 @@ describe('createAppSdkClientConfig', () => {
     expect(config.platform).toBe('desktop');
   });
 
-  it('falls back to claw-studio aligned base urls when no explicit env url is provided', () => {
+  it('falls back to topology-aligned base urls when no explicit env url is provided', () => {
     globalThis.__SDKWORK_NOTES_ENV__ = {
       VITE_APP_ENV: 'test',
       VITE_APP_PLATFORM: 'desktop',
@@ -123,6 +123,15 @@ describe('createAppSdkClientConfig', () => {
     expect(developmentConfig.env).toBe('development');
     expect(developmentConfig.baseUrl).toBe('https://api-dev.sdkwork.com');
     expect(developmentConfig.accessToken).toBeUndefined();
+
+    globalThis.__SDKWORK_NOTES_ENV__ = {
+      VITE_APP_ENV: 'production',
+      VITE_APP_PLATFORM: 'desktop',
+    };
+
+    const productionConfig = createAppSdkClientConfig();
+
+    expect(productionConfig.baseUrl).toBe('https://notes.sdkwork.com');
   });
 
   it('normalizes injected desktop env primitives into string values before building the sdk config', () => {

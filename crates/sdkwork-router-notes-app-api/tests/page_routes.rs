@@ -84,7 +84,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let workspace_list_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/workspaces?tenantId=tenant-001&organizationId=org-001&page=1&page_size=1",
@@ -176,7 +176,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let bootstrap_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/workspaces/workspace-001/bootstrap?tenantId=tenant-001&organizationId=org-001",
@@ -203,7 +203,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let page_list_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/workspaces/workspace-001/pages?tenantId=tenant-001&organizationId=org-001&page=1&page_size=20&q=release",
@@ -225,7 +225,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let oversized_page_query_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(oversized_page_query_uri)
                 .body(Body::empty())
@@ -312,7 +312,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let content_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/pages/page-001/content?tenantId=tenant-001&organizationId=org-001",
@@ -329,7 +329,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let versions_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/pages/page-001/versions?tenantId=tenant-001&organizationId=org-001&page=1&page_size=20",
@@ -381,7 +381,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let search_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/search?tenantId=tenant-001&organizationId=org-001&workspace_id=workspace-001&q=v2&page=1&page_size=20",
@@ -411,7 +411,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let oversized_search_query_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(oversized_search_query_uri)
                 .body(Body::empty())
@@ -427,7 +427,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let ai_job_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::POST)
                 .uri("/app/v3/api/notes/ai_jobs")
                 .header("content-type", "application/json")
@@ -465,7 +465,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     let ai_job_replay_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::POST)
                 .uri("/app/v3/api/notes/ai_jobs")
                 .header("content-type", "application/json")
@@ -494,7 +494,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
 
     let forbidden_route_response = app
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri("/app/v3/api/notes/notes")
                 .body(Body::empty())
@@ -503,6 +503,190 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("forbidden route request should be handled");
     assert_eq!(forbidden_route_response.status(), StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
+    sqlx::any::install_default_drivers();
+    let pool = AnyPoolOptions::new()
+        .max_connections(1)
+        .connect("sqlite::memory:")
+        .await
+        .expect("sqlite in-memory pool should be created");
+    install_sqlite_schema(&pool)
+        .await
+        .expect("notes sqlite schema should install");
+
+    let service = NotesService::new(
+        SqlNotesStore::new(pool),
+        FakeDrivePageContentPort::default(),
+    );
+    let app = build_router(service);
+
+    app.clone()
+        .oneshot(json_request(
+            Method::POST,
+            "/app/v3/api/notes/workspaces",
+            json!({
+                "id": "workspace-remote-apply",
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "ownerSubjectType": "user",
+                "ownerSubjectId": "user-001",
+                "name": "Remote Apply Lab",
+                "driveSpaceId": "drive-space-remote-apply"
+            }),
+        ))
+        .await
+        .expect("workspace request should be handled");
+
+    let create_page_response = app
+        .clone()
+        .oneshot(json_request(
+            Method::POST,
+            "/app/v3/api/notes/workspaces/workspace-remote-apply/pages",
+            json!({
+                "id": "page-remote-apply",
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "title": "Before remote apply",
+                "initialContent": { "blocks": [] },
+                "contentType": "application/vnd.sdkwork.notes.page+json"
+            }),
+        ))
+        .await
+        .expect("create page request should be handled");
+    assert_eq!(create_page_response.status(), StatusCode::CREATED);
+    let create_page_payload = read_json(create_page_response).await;
+    let remote_cursor = create_page_payload["currentDriveVersionId"]
+        .as_str()
+        .expect("currentDriveVersionId should be present")
+        .to_string();
+
+    let upsert_response = app
+        .clone()
+        .oneshot(json_request(
+            Method::POST,
+            "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
+            json!({
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "idempotencyKey": "remote-apply-upsert-001",
+                "taskId": "sync-task-upsert-001",
+                "entityType": "note",
+                "entityId": "page-remote-apply",
+                "operation": "upsert",
+                "baseRemoteCursor": remote_cursor,
+                "mutation": {
+                    "patch": {
+                        "title": "After remote apply"
+                    }
+                }
+            }),
+        ))
+        .await
+        .expect("remote apply upsert request should be handled");
+    assert_eq!(upsert_response.status(), StatusCode::OK);
+    let upsert_payload = read_json(upsert_response).await;
+    assert_eq!(upsert_payload["outcome"], "applied");
+    assert_eq!(upsert_payload["taskId"], "sync-task-upsert-001");
+    assert!(upsert_payload["remoteCursor"].is_string());
+
+    let page_response = app
+        .clone()
+        .oneshot(
+            auth_request_builder()
+                .method(Method::GET)
+                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=tenant-001&organizationId=org-001")
+                .body(Body::empty())
+                .expect("page request should be built"),
+        )
+        .await
+        .expect("page request should be handled");
+    assert_eq!(page_response.status(), StatusCode::OK);
+    let page_payload = read_json(page_response).await;
+    assert_eq!(page_payload["title"], "After remote apply");
+
+    let archive_response = app
+        .clone()
+        .oneshot(json_request(
+            Method::POST,
+            "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
+            json!({
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "idempotencyKey": "remote-apply-delete-001",
+                "taskId": "sync-task-delete-001",
+                "entityType": "note",
+                "entityId": "page-remote-apply",
+                "operation": "delete",
+                "mutation": {
+                    "intent": "move-to-trash"
+                }
+            }),
+        ))
+        .await
+        .expect("remote apply delete request should be handled");
+    assert_eq!(archive_response.status(), StatusCode::OK);
+    let archive_payload = read_json(archive_response).await;
+    assert_eq!(archive_payload["outcome"], "applied");
+
+    let archived_page_response = app
+        .clone()
+        .oneshot(
+            auth_request_builder()
+                .method(Method::GET)
+                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=tenant-001&organizationId=org-001")
+                .body(Body::empty())
+                .expect("archived page request should be built"),
+        )
+        .await
+        .expect("archived page request should be handled");
+    assert_eq!(archived_page_response.status(), StatusCode::OK);
+    let archived_page_payload = read_json(archived_page_response).await;
+    assert_eq!(archived_page_payload["archiveStatus"], "archived");
+
+    let permanent_delete_response = app
+        .clone()
+        .oneshot(json_request(
+            Method::POST,
+            "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
+            json!({
+                "tenantId": "tenant-001",
+                "organizationId": "org-001",
+                "operatorId": "user-001",
+                "idempotencyKey": "remote-apply-permanent-delete-001",
+                "taskId": "sync-task-permanent-delete-001",
+                "entityType": "note",
+                "entityId": "page-remote-apply",
+                "operation": "permanent-delete",
+                "mutation": {
+                    "intent": "permanent-delete"
+                }
+            }),
+        ))
+        .await
+        .expect("remote apply permanent delete request should be handled");
+    assert_eq!(permanent_delete_response.status(), StatusCode::OK);
+    let permanent_delete_payload = read_json(permanent_delete_response).await;
+    assert_eq!(permanent_delete_payload["outcome"], "applied");
+
+    let deleted_page_response = app
+        .clone()
+        .oneshot(
+            auth_request_builder()
+                .method(Method::GET)
+                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=tenant-001&organizationId=org-001")
+                .body(Body::empty())
+                .expect("deleted page request should be built"),
+        )
+        .await
+        .expect("deleted page request should be handled");
+    assert_eq!(deleted_page_response.status(), StatusCode::NOT_FOUND);
 }
 
 #[tokio::test]
@@ -597,7 +781,7 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
 
     let page_response = app
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/pages/page-canvas-001?tenantId=tenant-001&organizationId=org-001",
@@ -637,7 +821,7 @@ async fn app_api_routes_list_page_ai_suggestions() {
 
     let suggestions_response = app
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20",
@@ -690,7 +874,7 @@ async fn app_api_routes_create_ai_suggestion_feedback() {
     let suggestions_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20",
@@ -750,7 +934,7 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
     let suggestions_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20",
@@ -851,7 +1035,7 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
     let suggestions_response = app
         .clone()
         .oneshot(
-            Request::builder()
+            auth_request_builder()
                 .method(Method::GET)
                 .uri(
                     "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20",
@@ -1144,13 +1328,36 @@ async fn seed_two_completed_ai_suggestions(
         .expect("AI job should be completed");
 }
 
-fn json_request(method: Method, uri: &str, body: serde_json::Value) -> Request<Body> {
+fn auth_request_builder() -> http::request::Builder {
     Request::builder()
+        .header(
+            "authorization",
+            format!(
+                "Bearer {}",
+                sdkwork_router_notes_http_auth::test_support::default_test_auth_claim_token()
+            ),
+        )
+        .header(
+            "access-token",
+            sdkwork_router_notes_http_auth::test_support::default_test_access_claim_token(),
+        )
+}
+
+fn json_request(method: Method, uri: &str, body: serde_json::Value) -> Request<Body> {
+    auth_request_builder()
         .method(method)
         .uri(uri)
         .header("content-type", "application/json")
         .body(Body::from(body.to_string()))
         .expect("json request should be built")
+}
+
+fn query_request(method: Method, uri: &str) -> Request<Body> {
+    auth_request_builder()
+        .method(method)
+        .uri(uri)
+        .body(Body::empty())
+        .expect("query request should be built")
 }
 
 async fn read_json(response: axum::response::Response) -> serde_json::Value {

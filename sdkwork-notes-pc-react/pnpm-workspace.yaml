@@ -12,6 +12,7 @@ packages:
   - ../../sdkwork-search/packages/common/search/*
   - ../../sdkwork-search/packages/pc-react/foundation/*
   - ../../sdkwork-drive/sdks/sdkwork-drive-app-sdk/sdkwork-drive-app-sdk-typescript
+  - ../sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi
 
 catalog:
   '@tailwindcss/vite': ^4.2.2

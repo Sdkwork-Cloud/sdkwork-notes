@@ -4,6 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
+import { createEmptyNotesSyncQueueSnapshot } from '@sdkwork/notes-sync';
 import { NotesWorkspacePage } from './NotesWorkspacePage';
 
 const { mockAppStore, mockWorkspaceStore } = vi.hoisted(() => ({
@@ -97,6 +98,9 @@ function primeStores() {
     ],
     trashedNotes: [],
     folders: [],
+    syncQueueSnapshot: createEmptyNotesSyncQueueSnapshot(),
+    recoveredDrafts: [],
+    activeRecoveredDraft: null,
     activeNoteId: 'note-1',
     activeNote: {
       id: 'note-1',
@@ -118,18 +122,24 @@ function primeStores() {
     sidebarWidth: 320,
     expandedFolderIds: [],
     initialize,
+    captureActiveNoteExitRecovery: vi.fn(),
     createNote,
     createFolder: vi.fn(),
     renameFolder: vi.fn(),
+    moveFolder: vi.fn(),
     deleteFolder: vi.fn(),
     selectNote,
     updateActiveNoteDraft: vi.fn(),
+    restoreRecoveredDraft: vi.fn(async () => true),
+    dismissRecoveredDraft: vi.fn(async () => true),
     persistActiveNote: vi.fn(async () => true),
+    moveNote: vi.fn(async () => true),
     moveNoteToTrash: vi.fn(),
     restoreNoteFromTrash: vi.fn(),
     deleteNotePermanently: vi.fn(),
     clearTrash: vi.fn(),
     toggleFavorite: vi.fn(),
+    requestSyncDrain: vi.fn(async () => undefined),
     setActiveView,
     setSearchQuery,
     setSelectedFolderId,

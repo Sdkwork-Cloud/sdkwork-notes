@@ -37,7 +37,11 @@ const authStoreTestState = vi.hoisted(() => {
       session: null,
       status: 'anonymous',
       user: {
-        avatarUrl: 'https://example.com/old.png',
+        avatar: {
+          kind: 'image',
+          source: 'external_url',
+          url: 'https://example.com/old.png',
+        },
         displayName: 'Existing Person',
         email: 'existing@example.com',
         firstName: 'Existing',
@@ -108,7 +112,11 @@ describe('notes auth store', () => {
     authStoreTestState.controllerState.isAuthenticated = false;
     authStoreTestState.controllerState.isBootstrapped = false;
     authStoreTestState.controllerState.user = {
-      avatarUrl: 'https://example.com/old.png',
+      avatar: {
+        kind: 'image',
+        source: 'external_url',
+        url: 'https://example.com/old.png',
+      },
       displayName: 'Existing Person',
       email: 'existing@example.com',
       firstName: 'Existing',
@@ -154,7 +162,11 @@ describe('notes auth store', () => {
     });
 
     expect(authStoreTestState.controller.syncUserProfile).toHaveBeenCalledWith({
-      avatarUrl: 'https://example.com/old.png',
+      avatar: {
+        kind: 'image',
+        source: 'external_url',
+        url: 'https://example.com/old.png',
+      },
       displayName: 'Refined',
       email: 'refined@example.com',
       firstName: 'Refined',
