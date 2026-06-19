@@ -38,5 +38,5 @@ where
             get(handlers::list_ai_suggestion_feedback::<R, D>),
         )
         .with_state(NotesBackendState::new(service));
-    sdkwork_router_notes_http_auth::layer::with_notes_request_context(router)
+    router
 }

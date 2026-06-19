@@ -13,8 +13,6 @@ http.workspace = true
 sdkwork-notes-pages-service.workspace = true
 sdkwork-web-core.workspace = true
 sdkwork-web-axum.workspace = true
-sdkwork_iam_web_adapter.workspace = true
-sdkwork_router_iam_app_api.workspace = true
 
 [dev-dependencies]
 serde_json.workspace = true

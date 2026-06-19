@@ -27,7 +27,6 @@
     "grantMode": "current",
     "platform": "WEB",
     "appId": "10001",
-    "tenantId": "20001",
     "organizationId": null
   },
   "runtime": {
@@ -42,7 +41,12 @@
       "DIRECT_DOWNLOAD"
     ],
     "defaultPlatform": "WEB",
-    "defaultArchitecture": "x64"
+    "defaultArchitecture": "x64",
+    "supportedDeploymentProfiles": [
+      "cloud",
+      "standalone"
+    ],
+    "defaultDeploymentProfile": "cloud"
   },
   "media": {
     "icons": {
@@ -138,7 +142,7 @@
       "DESKTOP_MACOS",
       "DESKTOP_LINUX"
     ],
-    "defaultPackageId": "web-production",
+    "defaultPackageId": "web-universal-cloud-browser-zip",
     "storeUrl": "https://sdkwork.com/apps/sdkwork-notes-pc-react",
     "stores": [],
     "config": {
@@ -166,13 +170,13 @@
   },
   "artifacts": {
     "installConfig": {
-      "defaultPackageId": "web-production",
+      "defaultPackageId": "web-universal-cloud-browser-zip",
       "installCommand": "sdkwork install sdkwork-notes-pc-react",
       "launchCommand": "sdkwork open sdkwork-notes-pc-react",
       "uninstallCommand": "sdkwork uninstall sdkwork-notes-pc-react",
       "packages": [
         {
-          "id": "web-production",
+          "id": "web-universal-cloud-browser-zip",
           "name": "SDKWork Notes PC React Web Bundle",
           "sourceType": "WEB_URL",
           "packageFormat": "ZIP",
@@ -181,10 +185,13 @@
           "enabled": true,
           "metadata": {},
           "checksumAlgorithm": "SHA-256",
-          "checksum": "1b6124b91b6124b91b6124b91b6124b91b6124b91b6124b91b6124b91b6124b9"
+          "checksum": "1b6124b91b6124b91b6124b91b6124b91b6124b91b6124b91b6124b91b6124b9",
+          "architecture": "universal",
+          "deploymentProfile": "cloud",
+          "runtimeTarget": "browser"
         },
         {
-          "id": "desktop-windows",
+          "id": "windows-x64-standalone-desktop-zip",
           "name": "SDKWork Notes PC React Windows Bundle",
           "sourceType": "BINARY_URL",
           "packageFormat": "ZIP",
@@ -194,10 +201,12 @@
           "metadata": {},
           "architecture": "x64",
           "checksumAlgorithm": "SHA-256",
-          "checksum": "868106cb868106cb868106cb868106cb868106cb868106cb868106cb868106cb"
+          "checksum": "868106cb868106cb868106cb868106cb868106cb868106cb868106cb868106cb",
+          "deploymentProfile": "standalone",
+          "runtimeTarget": "desktop"
         },
         {
-          "id": "desktop-macos",
+          "id": "macos-universal-standalone-desktop-dmg",
           "name": "SDKWork Notes PC React macOS Bundle",
           "sourceType": "BINARY_URL",
           "packageFormat": "DMG",
@@ -207,10 +216,12 @@
           "metadata": {},
           "architecture": "universal",
           "checksumAlgorithm": "SHA-256",
-          "checksum": "105b71bb105b71bb105b71bb105b71bb105b71bb105b71bb105b71bb105b71bb"
+          "checksum": "105b71bb105b71bb105b71bb105b71bb105b71bb105b71bb105b71bb105b71bb",
+          "deploymentProfile": "standalone",
+          "runtimeTarget": "desktop"
         },
         {
-          "id": "desktop-linux",
+          "id": "linux-x64-standalone-desktop-appimage",
           "name": "SDKWork Notes PC React Linux Bundle",
           "sourceType": "BINARY_URL",
           "packageFormat": "APPIMAGE",
@@ -224,7 +235,9 @@
           },
           "architecture": "x64",
           "checksumAlgorithm": "SHA-256",
-          "checksum": "1051273c1051273c1051273c1051273c1051273c1051273c1051273c1051273c"
+          "checksum": "1051273c1051273c1051273c1051273c1051273c1051273c1051273c1051273c",
+          "deploymentProfile": "standalone",
+          "runtimeTarget": "desktop"
         }
       ],
       "metadata": {
@@ -254,10 +267,10 @@
           "Download package matrix normalized"
         ],
         "packageIds": [
-          "web-production",
-          "desktop-windows",
-          "desktop-macos",
-          "desktop-linux"
+          "web-universal-cloud-browser-zip",
+          "windows-x64-standalone-desktop-zip",
+          "macos-universal-standalone-desktop-dmg",
+          "linux-x64-standalone-desktop-appimage"
         ],
         "publishedAt": "2026-05-07T00:00:00Z",
         "current": true,

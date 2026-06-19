@@ -20,7 +20,7 @@ sdkwork-notes-pages-service.workspace = true
 sdkwork-notes-pages-repository-sqlx.workspace = true
 sdkwork-router-notes-app-api.workspace = true
 sdkwork-router-notes-backend-api.workspace = true
-sdkwork-router-notes-http-auth.workspace = true
+sdkwork-web-core.workspace = true
 sdkwork-web-axum.workspace = true
 sdkwork_iam_web_adapter.workspace = true
 sdkwork_router_iam_app_api = { workspace = true }

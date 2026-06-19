@@ -92,116 +92,188 @@
   },
   "targets": [
     {
-      "id": "windows-x64-desktop-msi",
+      "id": "windows-x64-standalone-desktop-msi",
       "profile": "desktop",
       "platform": "windows",
       "architecture": "x64",
-      "formats": ["msi"],
+      "formats": [
+        "msi"
+      ],
       "runner": "windows-2022",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "windows-x64-desktop-exe",
+      "id": "windows-x64-standalone-desktop-exe",
       "profile": "desktop",
       "platform": "windows",
       "architecture": "x64",
-      "formats": ["exe"],
+      "formats": [
+        "exe"
+      ],
       "runner": "windows-2022",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "windows-arm64-desktop-msi",
+      "id": "windows-arm64-standalone-desktop-msi",
       "profile": "desktop",
       "platform": "windows",
       "architecture": "arm64",
-      "formats": ["msi"],
+      "formats": [
+        "msi"
+      ],
       "runner": "windows-11-arm",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bundle/msi/*.msi"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bundle/msi/*.msi"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "windows-arm64-desktop-exe",
+      "id": "windows-arm64-standalone-desktop-exe",
       "profile": "desktop",
       "platform": "windows",
       "architecture": "arm64",
-      "formats": ["exe"],
+      "formats": [
+        "exe"
+      ],
       "runner": "windows-11-arm",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "linux-debian-x64-desktop-deb",
+      "id": "linux-debian-x64-standalone-desktop-deb",
       "profile": "desktop",
       "platform": "linux",
       "distribution": "debian",
       "architecture": "x64",
-      "formats": ["deb"],
+      "formats": [
+        "deb"
+      ],
       "runner": "ubuntu-24.04",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "linux-rhel-x64-desktop-rpm",
+      "id": "linux-rhel-x64-standalone-desktop-rpm",
       "profile": "desktop",
       "platform": "linux",
       "distribution": "rhel",
       "architecture": "x64",
-      "formats": ["rpm"],
+      "formats": [
+        "rpm"
+      ],
       "runner": "ubuntu-24.04",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "linux-x64-desktop-appimage",
+      "id": "linux-x64-standalone-desktop-appimage",
       "profile": "desktop",
       "platform": "linux",
       "architecture": "x64",
-      "formats": ["appimage"],
+      "formats": [
+        "appimage"
+      ],
       "runner": "ubuntu-24.04",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "linux-debian-arm64-desktop-deb",
+      "id": "linux-debian-arm64-standalone-desktop-deb",
       "profile": "desktop",
       "platform": "linux",
       "distribution": "debian",
       "architecture": "arm64",
-      "formats": ["deb"],
+      "formats": [
+        "deb"
+      ],
       "runner": "ubuntu-24.04-arm",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "linux-rhel-arm64-desktop-rpm",
+      "id": "linux-rhel-arm64-standalone-desktop-rpm",
       "profile": "desktop",
       "platform": "linux",
       "distribution": "rhel",
       "architecture": "arm64",
-      "formats": ["rpm"],
+      "formats": [
+        "rpm"
+      ],
       "runner": "ubuntu-24.04-arm",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "linux-arm64-desktop-appimage",
+      "id": "linux-arm64-standalone-desktop-appimage",
       "profile": "desktop",
       "platform": "linux",
       "architecture": "arm64",
-      "formats": ["appimage"],
+      "formats": [
+        "appimage"
+      ],
       "runner": "ubuntu-24.04-arm",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "macos-x64-desktop-tar-gz",
+      "id": "macos-x64-standalone-desktop-tar-gz",
       "profile": "desktop",
       "platform": "macos",
       "architecture": "x64",
-      "formats": ["tar.gz"],
+      "formats": [
+        "tar.gz"
+      ],
       "runner": "macos-15-intel",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos/*.app.tar.gz"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos/*.app.tar.gz"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     },
     {
-      "id": "macos-arm64-desktop-tar-gz",
+      "id": "macos-arm64-standalone-desktop-tar-gz",
       "profile": "desktop",
       "platform": "macos",
       "architecture": "arm64",
-      "formats": ["tar.gz"],
+      "formats": [
+        "tar.gz"
+      ],
       "runner": "macos-15",
-      "outputGlobs": ["sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.app.tar.gz"]
+      "outputGlobs": [
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.app.tar.gz"
+      ],
+      "deploymentProfile": "standalone",
+      "runtimeTarget": "desktop"
     }
   ],
   "security": {

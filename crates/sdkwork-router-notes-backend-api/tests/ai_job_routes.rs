@@ -15,6 +15,7 @@ use sdkwork_notes_pages_service::ports::{
 };
 use sdkwork_notes_pages_service::service::NotesService;
 use sdkwork_router_notes_backend_api::routes::build_router;
+use sdkwork_router_notes_backend_api::wrap_router_with_dev_web_framework;
 use serde_json::json;
 use sqlx::any::AnyPoolOptions;
 use std::collections::BTreeMap;
@@ -39,7 +40,7 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
         FakeDrivePageContentPort::default(),
     );
     seed_ai_job(&service).await;
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let list_response = app
         .clone()
@@ -119,7 +120,7 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
         FakeDrivePageContentPort::default(),
     );
     seed_ai_job(&service).await;
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let list_response = app
         .clone()
@@ -210,7 +211,7 @@ async fn backend_api_routes_accept_and_reject_ai_suggestions() {
         FakeDrivePageContentPort::default(),
     );
     let (summary_id, tag_id) = seed_ai_suggestions(&service).await;
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let accept_response = app
         .clone()
@@ -280,7 +281,7 @@ async fn backend_api_routes_apply_accepted_ai_suggestion() {
         FakeDrivePageContentPort::default(),
     );
     let summary_id = seed_applicable_ai_suggestion(&service).await;
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let accept_response = app
         .clone()
@@ -353,7 +354,7 @@ async fn backend_api_routes_list_ai_suggestion_feedback() {
         })
         .await
         .expect("AI feedback should be created");
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let feedback_response = app
         .oneshot(

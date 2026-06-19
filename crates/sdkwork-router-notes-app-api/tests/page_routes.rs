@@ -15,6 +15,7 @@ use sdkwork_notes_pages_service::ports::{
 };
 use sdkwork_notes_pages_service::service::NotesService;
 use sdkwork_router_notes_app_api::routes::build_router;
+use sdkwork_router_notes_app_api::wrap_router_with_dev_web_framework;
 use serde_json::json;
 use sqlx::any::AnyPoolOptions;
 use std::collections::BTreeMap;
@@ -38,7 +39,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         SqlNotesStore::new(pool),
         FakeDrivePageContentPort::default(),
     );
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let workspace_response = app
         .clone()
@@ -521,7 +522,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         SqlNotesStore::new(pool),
         FakeDrivePageContentPort::default(),
     );
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     app.clone()
         .oneshot(json_request(
@@ -705,7 +706,7 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
         SqlNotesStore::new(pool),
         FakeDrivePageContentPort::default(),
     );
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let workspace_response = app
         .clone()
@@ -817,7 +818,7 @@ async fn app_api_routes_list_page_ai_suggestions() {
         FakeDrivePageContentPort::default(),
     );
     seed_completed_ai_suggestion(&service).await;
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let suggestions_response = app
         .oneshot(
@@ -869,7 +870,7 @@ async fn app_api_routes_create_ai_suggestion_feedback() {
         FakeDrivePageContentPort::default(),
     );
     seed_completed_ai_suggestion(&service).await;
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let suggestions_response = app
         .clone()
@@ -929,7 +930,7 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
         FakeDrivePageContentPort::default(),
     );
     seed_two_completed_ai_suggestions(&service).await;
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let suggestions_response = app
         .clone()
@@ -1030,7 +1031,7 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
         FakeDrivePageContentPort::default(),
     );
     seed_applicable_ai_suggestion(&service).await;
-    let app = build_router(service);
+    let app = wrap_router_with_dev_web_framework(build_router(service));
 
     let suggestions_response = app
         .clone()

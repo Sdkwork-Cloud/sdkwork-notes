@@ -67,5 +67,5 @@ where
         .route(paths::SEARCH, get(handlers::query_search::<R, D>))
         .route(paths::AI_JOBS, post(handlers::create_ai_job::<R, D>))
         .with_state(NotesAppState::new(service));
-    sdkwork_router_notes_http_auth::layer::with_notes_request_context(router)
+    router
 }
