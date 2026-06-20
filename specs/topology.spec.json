@@ -1,163 +1,182 @@
-{
-  "schemaVersion": 2,
-  "kind": "sdkwork.app.topology",
-  "appId": "sdkwork-notes",
-  "archetype": "application-http-gateway",
-  "profileRoot": "configs/topology",
-  "profilePattern": "{hosting}.{serviceLayout}.{environment}.env",
-  "vocabulary": {
-    "hosting": { "allowed": ["self-hosted", "cloud-hosted"] },
-    "serviceLayout": { "allowed": ["unified-process", "split-services"] },
-    "environment": { "allowed": ["development", "production"] }
-  },
-  "defaults": {
-    "developmentProfileId": "self-hosted.split-services.development",
-    "productionProfileId": "cloud-hosted.split-services.production",
-    "desktopBuildProfileId": "cloud-hosted.split-services.production",
-    "gatewayBind": "127.0.0.1:3900"
-  },
-  "profileFiles": {
-    "self-hosted.split-services.development": "configs/topology/self-hosted.split-services.development.env",
-    "self-hosted.unified-process.production": "configs/topology/self-hosted.unified-process.production.env",
-    "cloud-hosted.split-services.development": "configs/topology/cloud-hosted.split-services.development.env",
-    "cloud-hosted.split-services.production": "configs/topology/cloud-hosted.split-services.production.env"
-  },
-  "envKeys": {
-    "hosting": "SDKWORK_NOTES_HOSTING",
-    "serviceLayout": "SDKWORK_NOTES_SERVICE_LAYOUT",
-    "environment": "SDKWORK_NOTES_ENVIRONMENT",
-    "profileId": "SDKWORK_NOTES_PROFILE_ID",
-    "clientHosting": "VITE_SDKWORK_NOTES_HOSTING",
-    "gatewayAutostart": "SDKWORK_NOTES_PLATFORM_API_GATEWAY_AUTOSTART",
-    "standaloneGatewayBind": "SDKWORK_NOTES_APPLICATION_PUBLIC_INGRESS_BIND",
-    "cloudGatewayBind": "SDKWORK_API_GATEWAY_BIND",
-    "cloudGatewayConfig": "SDKWORK_API_GATEWAY_CONFIG",
-    "clientApiGatewayBaseUrl": "VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL",
-    "apiGatewayBaseUrl": "SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL"
-  },
-  "surfaces": {
-    "application.public-ingress": {
-      "connectivityPlane": "application",
-      "protocols": ["http"],
-      "bindEnv": "SDKWORK_NOTES_APPLICATION_PUBLIC_INGRESS_BIND",
-      "httpUrlEnv": "SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL",
-      "clientHttpEnv": "VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL"
-    },
-    "platform.api-gateway": {
-      "connectivityPlane": "platform",
-      "protocols": ["http"],
-      "owner": "sdkwork-api-gateway",
-      "bindEnv": "SDKWORK_API_GATEWAY_BIND",
-      "httpUrlEnv": "SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL",
-      "clientHttpEnv": "VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL",
-      "autostartEnv": "SDKWORK_NOTES_PLATFORM_API_GATEWAY_AUTOSTART"
-    }
-  },
-  "cloudPublicHosts": {
-    "application.public-ingress": { "httpHost": "notes.sdkwork.com" },
-    "platform.api-gateway": { "httpHost": "api.sdkwork.com" }
-  },
-  "database": {
-    "appPrefix": "SDKWORK_NOTES"
-  },
-  "iamDevDefaults": {
-    "SDKWORK_IAM_LOCAL_APP_ID": "sdkwork-notes-pc-react",
-    "SDKWORK_IAM_LOCAL_TENANT_ID": "tenant_notes_dev",
-    "SDKWORK_IAM_LOCAL_ORGANIZATION_ID": "org_notes_dev",
-    "SDKWORK_IAM_LOCAL_ORGANIZATION_NAME": "Notes Dev Organization",
-    "SDKWORK_IAM_LOCAL_DEPARTMENT_ID": "dept_notes_dev",
-    "SDKWORK_IAM_LOCAL_DEPARTMENT_NAME": "Notes Dev Department",
-    "SDKWORK_IAM_LOCAL_POSITION_ID": "pos_notes_dev",
-    "SDKWORK_IAM_LOCAL_POSITION_NAME": "Notes Dev Position",
-    "SDKWORK_IAM_LOCAL_BOOTSTRAP_EMAIL": "admin@sdkwork.test",
-    "SDKWORK_IAM_LOCAL_BOOTSTRAP_PASSWORD": "AdminPass#2026",
-    "SDKWORK_IAM_TENANT_SIGNING_MASTER_SECRET": "sdkwork-notes-dev-signing-secret"
-  },
-  "components": {
-    "applicationServer": {
-      "crate": "sdkwork-notes-api-server",
-      "binary": "sdkwork-notes-api-server"
-    },
-    "cloudGateway": {
-      "crate": "sdkwork-api-gateway-api-server",
-      "binary": "sdkwork-api-gateway",
-      "repository": "sdkwork-api-gateway",
-      "configGlob": "configs/sdkwork-api-gateway.notes.{profile}.toml"
-    }
-  },
-  "orchestration": {
-    "profiles": {
-      "self-hosted.split-services.development": {
-        "processes": [
-          {
-            "id": "application.public-ingress",
-            "crate": "sdkwork-notes-api-server",
-            "binary": "sdkwork-notes-api-server",
-            "required": true
-          },
-          {
-            "id": "pc-renderer",
-            "package": "sdkwork-notes-pc-react",
-            "script": "dev",
-            "required": true
-          }
-        ],
-        "healthSurfaces": ["application.public-ingress"]
-      },
-      "cloud-hosted.split-services.development": {
-        "processes": [
-          {
-            "id": "platform.api-gateway",
-            "crate": "sdkwork-api-gateway-api-server",
-            "binary": "sdkwork-api-gateway",
-            "repository": "sdkwork-api-gateway",
-            "required": true
-          },
-          {
-            "id": "application.public-ingress",
-            "crate": "sdkwork-notes-api-server",
-            "binary": "sdkwork-notes-api-server",
-            "required": true
-          },
-          {
-            "id": "pc-renderer",
-            "package": "sdkwork-notes-pc-react",
-            "script": "dev",
-            "required": true
-          }
-        ],
-        "healthSurfaces": ["platform.api-gateway", "application.public-ingress"]
-      }
-    }
-  },
-  "packaging": {
-    "cloudConfigFiles": [
-      "sdkwork-api-gateway.notes.development.toml",
-      "sdkwork-api-gateway.notes.production.toml"
-    ],
-    "targets": [
-      {
-        "id": "platform-config-bundle-tar-gz",
-        "profile": "platform-config-bundle",
-        "platform": "all",
-        "architecture": "all",
-        "formats": ["tar.gz"],
-        "runner": "ubuntu-24.04",
-        "outputGlob": "dist/cloud-config/sdkwork-notes-api-gateway-config-*.tar.gz"
-      }
-    ]
-  },
-  "scripts": {
-    "notesDev": "scripts/notes-dev.mjs"
-  },
-  "retired": {
-    "envKeys": [
-      "SDKWORK_NOTES_BIND_ADDRESS",
-      "SDKWORK_NOTES_TOPOLOGY",
-      "VITE_NOTES_TOPOLOGY",
-      "VITE_APP_API_BASE_URL",
-      "VITE_API_BASE_URL"
-    ],
-    "cliFlags": ["--topology"]
-  }
+﻿{
+    "schemaVersion":  2,
+    "kind":  "sdkwork.app.topology",
+    "appId":  "sdkwork-notes",
+    "archetype":  "application-http-gateway",
+    "profileRoot":  "configs/topology",
+    "profilePattern":  "{hosting}.{serviceLayout}.{environment}.env",
+    "vocabulary":  {
+                       "hosting":  {
+                                       "allowed":  [
+                                                       "self-hosted",
+                                                       "cloud-hosted"
+                                                   ]
+                                   },
+                       "serviceLayout":  {
+                                             "allowed":  [
+                                                             "unified-process",
+                                                             "split-services"
+                                                         ]
+                                         },
+                       "environment":  {
+                                           "allowed":  [
+                                                           "development",
+                                                           "production"
+                                                       ]
+                                       }
+                   },
+    "defaults":  {
+                     "developmentProfileId":  "self-hosted.split-services.development",
+                     "productionProfileId":  "cloud-hosted.split-services.production",
+                     "desktopBuildProfileId":  "cloud-hosted.split-services.production",
+                     "gatewayBind":  "127.0.0.1:3900"
+                 },
+    "profileFiles":  {
+                         "self-hosted.split-services.development":  "configs/topology/self-hosted.split-services.development.env",
+                         "self-hosted.unified-process.production":  "configs/topology/self-hosted.unified-process.production.env",
+                         "cloud-hosted.split-services.development":  "configs/topology/cloud-hosted.split-services.development.env",
+                         "cloud-hosted.split-services.production":  "configs/topology/cloud-hosted.split-services.production.env"
+                     },
+    "envKeys":  {
+                    "hosting":  "SDKWORK_NOTES_HOSTING",
+                    "serviceLayout":  "SDKWORK_NOTES_SERVICE_LAYOUT",
+                    "environment":  "SDKWORK_NOTES_ENVIRONMENT",
+                    "profileId":  "SDKWORK_NOTES_PROFILE_ID",
+                    "clientHosting":  "VITE_SDKWORK_NOTES_HOSTING",
+                    "gatewayAutostart":  "SDKWORK_NOTES_PLATFORM_API_GATEWAY_AUTOSTART",
+                    "standaloneGatewayBind":  "SDKWORK_NOTES_APPLICATION_PUBLIC_INGRESS_BIND",
+                    "cloudGatewayBind":  "SDKWORK_API_GATEWAY_BIND",
+                    "cloudGatewayConfig":  "SDKWORK_API_GATEWAY_CONFIG",
+                    "clientApiGatewayBaseUrl":  "VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL",
+                    "apiGatewayBaseUrl":  "SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL"
+                },
+    "surfaces":  {
+                     "application.public-ingress":  {
+                                                        "connectivityPlane":  "application",
+                                                        "protocols":  [
+                                                                          "http"
+                                                                      ],
+                                                        "bindEnv":  "SDKWORK_NOTES_APPLICATION_PUBLIC_INGRESS_BIND",
+                                                        "httpUrlEnv":  "SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL",
+                                                        "clientHttpEnv":  "VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL"
+                                                    },
+                     "platform.api-gateway":  {
+                                                  "connectivityPlane":  "platform",
+                                                  "protocols":  [
+                                                                    "http"
+                                                                ],
+                                                  "owner":  "sdkwork-api-gateway",
+                                                  "bindEnv":  "SDKWORK_API_GATEWAY_BIND",
+                                                  "httpUrlEnv":  "SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL",
+                                                  "clientHttpEnv":  "VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL",
+                                                  "autostartEnv":  "SDKWORK_NOTES_PLATFORM_API_GATEWAY_AUTOSTART"
+                                              }
+                 },
+    "cloudPublicHosts":  {
+                             "application.public-ingress":  {
+                                                                "httpHost":  "notes.sdkwork.com"
+                                                            },
+                             "platform.api-gateway":  {
+                                                          "httpHost":  "api.sdkwork.com"
+                                                      }
+                         },
+    "database":  {
+                     "appPrefix":  "SDKWORK_NOTES"
+                 },
+    "components":  {
+                       "applicationServer":  {
+                                                 "crate":  "sdkwork-notes-api-server",
+                                                 "binary":  "sdkwork-notes-api-server"
+                                             },
+                       "cloudGateway":  {
+                                            "crate":  "sdkwork-api-gateway-api-server",
+                                            "binary":  "sdkwork-api-gateway",
+                                            "repository":  "sdkwork-api-gateway",
+                                            "configGlob":  "configs/sdkwork-api-gateway.notes.{profile}.toml"
+                                        }
+                   },
+    "orchestration":  {
+                          "profiles":  {
+                                           "self-hosted.split-services.development":  {
+                                                                                          "processes":  [
+                                                                                                            {
+                                                                                                                "id":  "application.public-ingress",
+                                                                                                                "crate":  "sdkwork-notes-api-server",
+                                                                                                                "binary":  "sdkwork-notes-api-server",
+                                                                                                                "required":  true
+                                                                                                            },
+                                                                                                            {
+                                                                                                                "id":  "pc-renderer",
+                                                                                                                "package":  "sdkwork-notes-pc-react",
+                                                                                                                "script":  "dev",
+                                                                                                                "required":  true
+                                                                                                            }
+                                                                                                        ],
+                                                                                          "healthSurfaces":  [
+                                                                                                                 "application.public-ingress"
+                                                                                                             ]
+                                                                                      },
+                                           "cloud-hosted.split-services.development":  {
+                                                                                           "processes":  [
+                                                                                                             {
+                                                                                                                 "id":  "platform.api-gateway",
+                                                                                                                 "crate":  "sdkwork-api-gateway-api-server",
+                                                                                                                 "binary":  "sdkwork-api-gateway",
+                                                                                                                 "repository":  "sdkwork-api-gateway",
+                                                                                                                 "required":  true
+                                                                                                             },
+                                                                                                             {
+                                                                                                                 "id":  "application.public-ingress",
+                                                                                                                 "crate":  "sdkwork-notes-api-server",
+                                                                                                                 "binary":  "sdkwork-notes-api-server",
+                                                                                                                 "required":  true
+                                                                                                             },
+                                                                                                             {
+                                                                                                                 "id":  "pc-renderer",
+                                                                                                                 "package":  "sdkwork-notes-pc-react",
+                                                                                                                 "script":  "dev",
+                                                                                                                 "required":  true
+                                                                                                             }
+                                                                                                         ],
+                                                                                           "healthSurfaces":  [
+                                                                                                                  "platform.api-gateway",
+                                                                                                                  "application.public-ingress"
+                                                                                                              ]
+                                                                                       }
+                                       }
+                      },
+    "packaging":  {
+                      "cloudConfigFiles":  [
+                                               "sdkwork-api-gateway.notes.development.toml",
+                                               "sdkwork-api-gateway.notes.production.toml"
+                                           ],
+                      "targets":  [
+                                      {
+                                          "id":  "platform-config-bundle-tar-gz",
+                                          "profile":  "platform-config-bundle",
+                                          "platform":  "all",
+                                          "architecture":  "all",
+                                          "formats":  [
+                                                          "tar.gz"
+                                                      ],
+                                          "runner":  "ubuntu-24.04",
+                                          "outputGlob":  "dist/cloud-config/sdkwork-notes-api-gateway-config-*.tar.gz"
+                                      }
+                                  ]
+                  },
+    "scripts":  {
+                    "notesDev":  "scripts/notes-dev.mjs"
+                },
+    "retired":  {
+                    "envKeys":  [
+                                    "SDKWORK_NOTES_BIND_ADDRESS",
+                                    "SDKWORK_NOTES_TOPOLOGY",
+                                    "VITE_NOTES_TOPOLOGY",
+                                    "VITE_APP_API_BASE_URL",
+                                    "VITE_API_BASE_URL"
+                                ],
+                    "cliFlags":  [
+                                     "--topology"
+                                 ]
+                }
 }

@@ -61,15 +61,23 @@ afterEach(() => {
   globalThis.__SDKWORK_NOTES_ENV__ = undefined;
 });
 
+function createTestAccessToken(claims: Record<string, unknown>): string {
+  const body = btoa(JSON.stringify(claims)).replace(/=+$/g, '');
+  return `header.${body}.signature`;
+}
+
 describe('createAppSdkClientConfig', () => {
   it('prefers injected desktop env values when tauri forwards an app mode outside vite runtime mode', () => {
+    const accessToken = createTestAccessToken({
+      tenant_id: 'tenant-test',
+      organization_id: 'org-test',
+      user_id: 'user-test',
+    });
     globalThis.__SDKWORK_NOTES_ENV__ = {
       VITE_APP_ENV: 'test',
       VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL: 'https://api-test.sdkwork.com',
       VITE_APP_PLATFORM: 'desktop',
-      VITE_ACCESS_TOKEN: '',
-      VITE_TENANT_ID: 'tenant-test',
-      VITE_ORGANIZATION_ID: 'org-test',
+      VITE_ACCESS_TOKEN: accessToken,
     };
 
     const config = createAppSdkClientConfig();
@@ -77,7 +85,7 @@ describe('createAppSdkClientConfig', () => {
     expect(config.env).toBe('test');
     expect(config.baseUrl).toBe('https://api-test.sdkwork.com');
     expect(config.platform).toBe('desktop');
-    expect(config.accessToken).toBeUndefined();
+    expect(config.accessToken).toBe(accessToken);
     expect(config.tenantId).toBe('tenant-test');
     expect(config.organizationId).toBe('org-test');
   });
@@ -139,7 +147,6 @@ describe('createAppSdkClientConfig', () => {
       VITE_APP_ENV: 'development',
       VITE_APP_PLATFORM: 'desktop',
       VITE_ACCESS_TOKEN: true,
-      VITE_TENANT_ID: 42,
     };
 
     const config = createAppSdkClientConfig();
@@ -147,7 +154,7 @@ describe('createAppSdkClientConfig', () => {
     expect(config.env).toBe('development');
     expect(config.platform).toBe('desktop');
     expect(config.accessToken).toBe('true');
-    expect(config.tenantId).toBe('42');
+    expect(config.tenantId).toBeUndefined();
   });
 
   it('freezes runtime governance with explicit owner mode and source precedence metadata', () => {
@@ -155,7 +162,6 @@ describe('createAppSdkClientConfig', () => {
       VITE_APP_ENV: 'test',
       VITE_APP_OWNER_MODE: 'tenant',
       VITE_APP_PLATFORM: 'desktop',
-      VITE_TENANT_ID: 'tenant-test',
     };
 
     const runtimeContext = resolveAppSdkRuntimeContext();

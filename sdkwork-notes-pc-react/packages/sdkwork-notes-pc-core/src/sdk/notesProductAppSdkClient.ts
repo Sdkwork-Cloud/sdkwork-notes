@@ -24,6 +24,7 @@ import type {
   UserSettingsVO,
 } from './appSdkPort';
 import type { AppSdkClientConfig } from './useAppSdkClient';
+import { resolveSessionIdentityClaims } from './sessionIdentityClaims';
 
 interface NotesActorContext {
   tenantId: string;
@@ -51,16 +52,18 @@ function readTopologyApplicationHttpUrl(): string | undefined {
 }
 
 function resolveNotesActorContext(config: AppSdkClientConfig): NotesActorContext {
-  const tenantId = (config.tenantId || readEnvString('VITE_TENANT_ID', 'VITE_APP_TENANT_ID') || '').trim();
-  const organizationId = (
-    config.organizationId
-    || readEnvString('VITE_ORGANIZATION_ID', 'VITE_APP_ORGANIZATION_ID')
-    || ''
-  ).trim();
-  const operatorId = readEnvString('VITE_OPERATOR_ID', 'VITE_APP_OPERATOR_ID', 'VITE_USER_ID') || 'user-001';
+  const identityClaims = resolveSessionIdentityClaims({
+    accessToken: config.accessToken,
+    authToken: config.authToken,
+  });
+  const tenantId = (config.tenantId || identityClaims.tenantId || '').trim();
+  const organizationId = (config.organizationId || identityClaims.organizationId || '').trim();
+  const operatorId = (identityClaims.userId || '').trim();
 
-  if (!tenantId || !organizationId) {
-    throw new Error('Notes app SDK requires tenantId and organizationId in runtime config.');
+  if (!tenantId || !organizationId || !operatorId) {
+    throw new Error(
+      'Notes app SDK requires tenantId, organizationId, and userId from dual-token JWT claims. Log in through the SaaS IAM session flow instead of configuring fixed identity env variables.',
+    );
   }
 
   return { tenantId, organizationId, operatorId };

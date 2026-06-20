@@ -79,11 +79,10 @@ test.beforeEach(() => {
 });
 
 test('runtime context freezes tenant owner mode and source priority', () => {
-  globalThis.__SDKWORK_NOTES_ENV__ = {
+    globalThis.__SDKWORK_NOTES_ENV__ = {
     VITE_APP_ENV: 'test',
     VITE_APP_OWNER_MODE: 'tenant',
     VITE_APP_PLATFORM: 'desktop',
-    VITE_TENANT_ID: 'tenant-test',
   };
 
   const runtimeContext = useAppSdkClientModule.resolveAppSdkRuntimeContext();

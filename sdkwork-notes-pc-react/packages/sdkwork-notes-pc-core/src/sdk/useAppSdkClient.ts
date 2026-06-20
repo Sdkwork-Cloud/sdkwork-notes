@@ -4,6 +4,7 @@ import type {
   NotesRemoteAppClientFactory,
   SdkworkAppConfig,
 } from './appSdkPort';
+import { resolveSessionIdentityClaims } from './sessionIdentityClaims';
 
 export type AppRuntimeEnv = 'development' | 'staging' | 'production' | 'test';
 
@@ -240,9 +241,6 @@ function resolveOwnerMode(envSource: Record<string, string | undefined>): OwnerM
 
   const hasTenantSignals = Boolean(
     firstNonEmptyValue(
-      envSource.VITE_TENANT_ID,
-      envSource.VITE_APP_TENANT_ID,
-      envSource.SDKWORK_TENANT_ID,
       envSource.VITE_TENANT_ACCESS_TOKEN,
       envSource.VITE_APP_TENANT_ACCESS_TOKEN,
       envSource.VITE_TENANT_API_BASE_URL,
@@ -255,9 +253,6 @@ function resolveOwnerMode(envSource: Record<string, string | undefined>): OwnerM
 
   const hasOrganizationSignals = Boolean(
     firstNonEmptyValue(
-      envSource.VITE_ORGANIZATION_ID,
-      envSource.VITE_APP_ORGANIZATION_ID,
-      envSource.SDKWORK_ORGANIZATION_ID,
       envSource.VITE_ORGANIZATION_ACCESS_TOKEN,
       envSource.VITE_APP_ORGANIZATION_ACCESS_TOKEN,
       envSource.VITE_ORGANIZATION_API_BASE_URL,
@@ -639,6 +634,12 @@ export function createAppSdkClientConfig(
     overrides.authMode
     || (resolvedApiKey && !resolvedAccessToken && !authToken ? 'apikey' : 'dual-token');
 
+  const persistedSession = readPersistedSession();
+  const identityClaims = resolveSessionIdentityClaims({
+    accessToken: resolvedAccessToken || persistedSession.accessToken,
+    authToken: authToken || persistedSession.authToken,
+  });
+
   return {
     env,
     baseUrl: normalizeUrl(overrides.baseUrl) || baseUrl,
@@ -646,10 +647,10 @@ export function createAppSdkClientConfig(
     apiKey: resolvedApiKey,
     authToken: authToken || undefined,
     accessToken: resolvedAccessToken,
-    tenantId: normalizeString(overrides.tenantId) || firstNonEmptyValue(envSource.VITE_TENANT_ID, envSource.VITE_APP_TENANT_ID, envSource.SDKWORK_TENANT_ID) || undefined,
+    tenantId: normalizeString(overrides.tenantId) || identityClaims.tenantId || undefined,
     organizationId:
       normalizeString(overrides.organizationId)
-      || firstNonEmptyValue(envSource.VITE_ORGANIZATION_ID, envSource.VITE_APP_ORGANIZATION_ID, envSource.SDKWORK_ORGANIZATION_ID)
+      || identityClaims.organizationId
       || undefined,
     platform: runtimeContext.platform,
     tokenManager: overrides.tokenManager,
