@@ -22,6 +22,17 @@
     "test:topology-baggage": "node --test scripts/dev/sdkwork-notes-topology-baggage.test.mjs",
     "test:contracts": "node --test --experimental-test-isolation=none scripts/verify-notes-contract-foundation.test.mjs && node --test --experimental-test-isolation=none scripts/verify-notes-rust-service-skeleton.test.mjs && node --test --experimental-test-isolation=none scripts/verify-notes-standard-architecture.test.mjs",
     "test": "pnpm topology:validate && pnpm test:topology && pnpm test:topology-baggage && pnpm test:contracts",
-    "verify": "cargo test --workspace && pnpm test"
+    "verify": "cargo test --workspace && pnpm test",
+    "db:materialize:contract": "node tools/materialize_notes_database_contract.mjs",
+    "db:validate": "node ../sdkwork-specs/tools/check-database-framework-standard.mjs --root .",
+    "db:plan": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . plan",
+    "db:init": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . init",
+    "db:migrate": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . migrate",
+    "db:seed": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . seed",
+    "db:status": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . status",
+    "db:drift": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . drift",
+    "db:drift:check": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . drift-check",
+    "db:bootstrap": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . bootstrap",
+    "test:contract:database": "node ../sdkwork-specs/tools/check-database-framework-standard.mjs --root ."
   }
 }

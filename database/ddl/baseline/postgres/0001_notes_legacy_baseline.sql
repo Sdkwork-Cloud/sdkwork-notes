@@ -1,0 +1,331 @@
+-- Consolidated legacy baseline for sdkwork-notes database module.
+-- source: crates/sdkwork-notes-pages-repository-sqlx/src/sqlite_core.sql
+
+CREATE TABLE IF NOT EXISTS notes_workspace (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    organization_id TEXT NOT NULL DEFAULT '0',
+    owner_subject_type TEXT NOT NULL,
+    owner_subject_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    drive_space_id TEXT NOT NULL,
+    default_page_content_type TEXT NOT NULL DEFAULT 'application/vnd.sdkwork.notes.page+json',
+    default_page_schema_version TEXT NOT NULL DEFAULT '1',
+    ai_index_policy_code TEXT NOT NULL DEFAULT 'default',
+    lifecycle_status TEXT NOT NULL DEFAULT 'active',
+    version INTEGER NOT NULL DEFAULT 1,
+    created_by TEXT NOT NULL,
+    updated_by TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK (owner_subject_type IN ('user', 'group', 'organization', 'app')),
+    CHECK (length(trim(name)) BETWEEN 1 AND 255),
+    CHECK (lifecycle_status IN ('active', 'archived', 'deleted')),
+    CHECK (version >= 1)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_notes_workspace_drive_space
+    ON notes_workspace (tenant_id, drive_space_id);
+
+CREATE INDEX IF NOT EXISTS ix_notes_workspace_owner
+    ON notes_workspace (
+        tenant_id,
+        organization_id,
+        owner_subject_type,
+        owner_subject_id,
+        lifecycle_status
+    );
+
+CREATE INDEX IF NOT EXISTS ix_notes_workspace_recent
+    ON notes_workspace (
+        tenant_id,
+        organization_id,
+        lifecycle_status,
+        updated_at,
+        id
+    );
+
+CREATE TABLE IF NOT EXISTS notes_page (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    organization_id TEXT NOT NULL DEFAULT '0',
+    workspace_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    page_kind TEXT NOT NULL DEFAULT 'doc',
+    parent_page_id TEXT,
+    folder_drive_node_id TEXT,
+    drive_space_id TEXT NOT NULL,
+    drive_node_id TEXT NOT NULL,
+    drive_uri TEXT NOT NULL,
+    current_drive_version_id TEXT NOT NULL,
+    current_drive_version_no INTEGER NOT NULL,
+    content_type TEXT NOT NULL,
+    content_schema_version TEXT NOT NULL DEFAULT '1',
+    content_hash TEXT,
+    snippet TEXT,
+    icon TEXT,
+    cover_asset_id TEXT,
+    favorite INTEGER NOT NULL DEFAULT 0,
+    archive_status TEXT NOT NULL DEFAULT 'active',
+    publish_status TEXT NOT NULL DEFAULT 'private',
+    word_count INTEGER NOT NULL DEFAULT 0,
+    task_count INTEGER NOT NULL DEFAULT 0,
+    drive_lifecycle_status_snapshot TEXT,
+    lifecycle_status TEXT NOT NULL DEFAULT 'active',
+    version INTEGER NOT NULL DEFAULT 1,
+    created_by TEXT NOT NULL,
+    updated_by TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TEXT,
+    FOREIGN KEY (workspace_id) REFERENCES notes_workspace(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_page_id) REFERENCES notes_page(id) ON DELETE SET NULL,
+    CHECK (length(trim(title)) BETWEEN 1 AND 512),
+    CHECK (page_kind IN ('doc', 'article', 'code', 'log', 'database', 'canvas', 'folder')),
+    CHECK (drive_uri = 'drive://spaces/' || drive_space_id || '/nodes/' || drive_node_id),
+    CHECK (current_drive_version_no >= 1),
+    CHECK (favorite IN (0, 1)),
+    CHECK (archive_status IN ('active', 'archived')),
+    CHECK (publish_status IN ('private', 'published', 'unlisted')),
+    CHECK (word_count >= 0),
+    CHECK (task_count >= 0),
+    CHECK (lifecycle_status IN ('active', 'deleted')),
+    CHECK (version >= 1)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_notes_page_drive_node
+    ON notes_page (tenant_id, drive_node_id);
+
+CREATE INDEX IF NOT EXISTS ix_notes_page_workspace_recent
+    ON notes_page (
+        tenant_id,
+        organization_id,
+        workspace_id,
+        lifecycle_status,
+        updated_at,
+        id
+    );
+
+CREATE INDEX IF NOT EXISTS ix_notes_page_folder
+    ON notes_page (
+        tenant_id,
+        organization_id,
+        workspace_id,
+        folder_drive_node_id,
+        lifecycle_status,
+        updated_at,
+        id
+    );
+
+CREATE INDEX IF NOT EXISTS ix_notes_page_parent
+    ON notes_page (
+        tenant_id,
+        organization_id,
+        workspace_id,
+        parent_page_id,
+        lifecycle_status,
+        updated_at,
+        id
+    );
+
+CREATE TABLE IF NOT EXISTS notes_page_search_projection (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    organization_id TEXT NOT NULL DEFAULT '0',
+    workspace_id TEXT NOT NULL,
+    page_id TEXT NOT NULL,
+    drive_node_id TEXT NOT NULL,
+    source_drive_version_id TEXT NOT NULL,
+    source_drive_version_no INTEGER NOT NULL,
+    title_snapshot TEXT NOT NULL,
+    plain_text TEXT NOT NULL,
+    snippet TEXT,
+    tags_snapshot TEXT,
+    object_types_snapshot TEXT,
+    property_values_snapshot TEXT,
+    language TEXT,
+    index_status TEXT NOT NULL DEFAULT 'pending',
+    indexed_at TEXT,
+    rebuild_version INTEGER NOT NULL DEFAULT 1,
+    FOREIGN KEY (page_id) REFERENCES notes_page(id) ON DELETE CASCADE,
+    CHECK (source_drive_version_no >= 1),
+    CHECK (index_status IN ('pending', 'indexed', 'failed')),
+    CHECK (rebuild_version >= 1)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_notes_page_search_projection_page_version
+    ON notes_page_search_projection (
+        tenant_id,
+        organization_id,
+        page_id,
+        source_drive_version_id
+    );
+
+CREATE INDEX IF NOT EXISTS ix_notes_page_search_projection_status
+    ON notes_page_search_projection (
+        tenant_id,
+        organization_id,
+        workspace_id,
+        index_status,
+        indexed_at
+    );
+
+CREATE TABLE IF NOT EXISTS notes_ai_job (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    organization_id TEXT NOT NULL DEFAULT '0',
+    workspace_id TEXT NOT NULL,
+    job_type TEXT NOT NULL,
+    target_type TEXT NOT NULL,
+    target_id TEXT,
+    prompt_snapshot TEXT,
+    context_policy_snapshot TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'queued',
+    result_json TEXT,
+    error_code TEXT,
+    error_message TEXT,
+    idempotency_key TEXT NOT NULL,
+    request_payload_hash TEXT NOT NULL,
+    lifecycle_status TEXT NOT NULL DEFAULT 'active',
+    version INTEGER NOT NULL DEFAULT 1,
+    created_by TEXT NOT NULL,
+    updated_by TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (workspace_id) REFERENCES notes_workspace(id) ON DELETE CASCADE,
+    CHECK (job_type IN ('summarize', 'rewrite', 'extract_tasks', 'answer', 'organize', 'generate')),
+    CHECK (target_type IN ('page', 'collection', 'workspace', 'selection')),
+    CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'canceled')),
+    CHECK (lifecycle_status IN ('active', 'deleted')),
+    CHECK (version >= 1),
+    CHECK (length(trim(idempotency_key)) BETWEEN 1 AND 255)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_notes_ai_job_idempotency
+    ON notes_ai_job (
+        tenant_id,
+        organization_id,
+        created_by,
+        idempotency_key
+    );
+
+CREATE INDEX IF NOT EXISTS ix_notes_ai_job_status
+    ON notes_ai_job (
+        tenant_id,
+        organization_id,
+        workspace_id,
+        status,
+        created_at,
+        id
+    );
+
+CREATE TABLE IF NOT EXISTS notes_ai_job_source (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    organization_id TEXT NOT NULL DEFAULT '0',
+    workspace_id TEXT NOT NULL,
+    job_id TEXT NOT NULL,
+    source_type TEXT NOT NULL,
+    source_id TEXT,
+    drive_node_id TEXT,
+    drive_version_id TEXT,
+    drive_version_no INTEGER,
+    excerpt_hash TEXT,
+    permission_snapshot_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (job_id) REFERENCES notes_ai_job(id) ON DELETE CASCADE,
+    CHECK (source_type IN ('page', 'collection', 'workspace', 'uploaded_context')),
+    CHECK (drive_version_no IS NULL OR drive_version_no >= 1)
+);
+
+CREATE INDEX IF NOT EXISTS ix_notes_ai_job_source_job
+    ON notes_ai_job_source (
+        tenant_id,
+        organization_id,
+        job_id,
+        source_type
+    );
+
+CREATE TABLE IF NOT EXISTS notes_ai_suggestion (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    organization_id TEXT NOT NULL DEFAULT '0',
+    workspace_id TEXT NOT NULL,
+    page_id TEXT NOT NULL,
+    ai_job_id TEXT NOT NULL,
+    suggestion_type TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'proposed',
+    source_drive_node_id TEXT,
+    source_drive_version_id TEXT,
+    source_drive_version_no INTEGER,
+    payload_json TEXT NOT NULL,
+    lifecycle_status TEXT NOT NULL DEFAULT 'active',
+    version INTEGER NOT NULL DEFAULT 1,
+    created_by TEXT NOT NULL,
+    updated_by TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (workspace_id) REFERENCES notes_workspace(id) ON DELETE CASCADE,
+    FOREIGN KEY (page_id) REFERENCES notes_page(id) ON DELETE CASCADE,
+    FOREIGN KEY (ai_job_id) REFERENCES notes_ai_job(id) ON DELETE CASCADE,
+    CHECK (suggestion_type IN ('summary', 'rewrite', 'tag', 'property_update', 'link_create', 'task_create')),
+    CHECK (status IN ('proposed', 'accepted', 'applied', 'rejected', 'dismissed')),
+    CHECK (source_drive_version_no IS NULL OR source_drive_version_no >= 1),
+    CHECK (lifecycle_status IN ('active', 'deleted')),
+    CHECK (version >= 1)
+);
+
+CREATE INDEX IF NOT EXISTS ix_notes_ai_suggestion_page_status
+    ON notes_ai_suggestion (
+        tenant_id,
+        organization_id,
+        page_id,
+        status,
+        created_at,
+        id
+    );
+
+CREATE INDEX IF NOT EXISTS ix_notes_ai_suggestion_job
+    ON notes_ai_suggestion (
+        tenant_id,
+        organization_id,
+        ai_job_id,
+        created_at,
+        id
+    );
+
+CREATE TABLE IF NOT EXISTS notes_ai_feedback (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    organization_id TEXT NOT NULL DEFAULT '0',
+    workspace_id TEXT NOT NULL,
+    job_id TEXT NOT NULL,
+    suggestion_id TEXT,
+    feedback_type TEXT NOT NULL,
+    feedback_text TEXT,
+    created_by TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (workspace_id) REFERENCES notes_workspace(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES notes_ai_job(id) ON DELETE CASCADE,
+    FOREIGN KEY (suggestion_id) REFERENCES notes_ai_suggestion(id) ON DELETE CASCADE,
+    CHECK (feedback_type IN ('accepted', 'rejected', 'edited', 'helpful', 'not_helpful'))
+);
+
+CREATE INDEX IF NOT EXISTS ix_notes_ai_feedback_suggestion
+    ON notes_ai_feedback (
+        tenant_id,
+        organization_id,
+        suggestion_id,
+        created_at,
+        id
+    );
+
+CREATE INDEX IF NOT EXISTS ix_notes_ai_feedback_job
+    ON notes_ai_feedback (
+        tenant_id,
+        organization_id,
+        job_id,
+        created_at,
+        id
+    );

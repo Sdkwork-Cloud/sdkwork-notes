@@ -1,0 +1,31 @@
+schema_version: 1
+kind: sdkwork.database.schema
+module_id: notes
+contract_version: 1.0.0
+owner_team: notes-platform
+compliance_level: L2
+engines:
+  - postgres
+table_prefix: notes_
+tables:
+  - name: notes_workspace
+    lifecycle_status: active
+    owner: notes-platform
+  - name: notes_page
+    lifecycle_status: active
+    owner: notes-platform
+  - name: notes_page_search_projection
+    lifecycle_status: active
+    owner: notes-platform
+  - name: notes_ai_job
+    lifecycle_status: active
+    owner: notes-platform
+  - name: notes_ai_job_source
+    lifecycle_status: active
+    owner: notes-platform
+  - name: notes_ai_suggestion
+    lifecycle_status: active
+    owner: notes-platform
+  - name: notes_ai_feedback
+    lifecycle_status: active
+    owner: notes-platform
