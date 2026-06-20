@@ -36,7 +36,7 @@ test('workspace env defaults align topology surface urls with sdkwork-notes prof
   }
 
   assert.match(envExample, /VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL=https:\/\/api-dev\.sdkwork\.com/);
-  assert.match(envExample, /VITE_ACCESS_TOKEN=$/m);
+  assert.match(envExample, /SDKWORK_ACCESS_TOKEN=$/m);
   assert.match(envExample, /VITE_APP_OWNER_MODE=tenant/);
 
   assert.match(envDevelopment, /VITE_APP_ENV=development/);

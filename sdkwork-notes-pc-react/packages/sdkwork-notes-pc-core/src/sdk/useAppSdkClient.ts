@@ -5,6 +5,10 @@ import type {
   SdkworkAppConfig,
 } from './appSdkPort';
 import { resolveSessionIdentityClaims } from './sessionIdentityClaims';
+import {
+  assertNoForbiddenCredentialEnv,
+  resolveSdkworkAccessTokenFromEnv,
+} from '@sdkwork/core-pc-react/env';
 
 export type AppRuntimeEnv = 'development' | 'staging' | 'production' | 'test';
 
@@ -241,8 +245,6 @@ function resolveOwnerMode(envSource: Record<string, string | undefined>): OwnerM
 
   const hasTenantSignals = Boolean(
     firstNonEmptyValue(
-      envSource.VITE_TENANT_ACCESS_TOKEN,
-      envSource.VITE_APP_TENANT_ACCESS_TOKEN,
       envSource.VITE_TENANT_API_BASE_URL,
       envSource.VITE_APP_TENANT_API_BASE_URL,
     ),
@@ -253,8 +255,6 @@ function resolveOwnerMode(envSource: Record<string, string | undefined>): OwnerM
 
   const hasOrganizationSignals = Boolean(
     firstNonEmptyValue(
-      envSource.VITE_ORGANIZATION_ACCESS_TOKEN,
-      envSource.VITE_APP_ORGANIZATION_ACCESS_TOKEN,
       envSource.VITE_ORGANIZATION_API_BASE_URL,
       envSource.VITE_APP_ORGANIZATION_API_BASE_URL,
     ),
@@ -591,6 +591,7 @@ export function createAppSdkClientConfig(
   overrides: AppSdkClientOverrides = {},
 ): AppSdkClientConfig {
   const envSource = createNotesEnvSource();
+  assertNoForbiddenCredentialEnv(envSource);
   const runtimeContext = resolveAppSdkRuntimeContext(overrides);
   const env = runtimeContext.env;
   const ownerMode = runtimeContext.ownerMode;
@@ -615,20 +616,11 @@ export function createAppSdkClientConfig(
     }) || resolveDefaultBaseUrl(env),
   );
   const accessToken = normalizeBearerToken(
-    pickOwnerScopedValue(ownerMode, {
-      default: firstNonEmptyValue(envSource.VITE_ACCESS_TOKEN, envSource.VITE_APP_ACCESS_TOKEN, envSource.SDKWORK_ACCESS_TOKEN),
-      root: firstNonEmptyValue(envSource.VITE_ROOT_ACCESS_TOKEN, envSource.VITE_APP_ROOT_ACCESS_TOKEN),
-      tenant: firstNonEmptyValue(envSource.VITE_TENANT_ACCESS_TOKEN, envSource.VITE_APP_TENANT_ACCESS_TOKEN),
-      organization: firstNonEmptyValue(
-        envSource.VITE_ORGANIZATION_ACCESS_TOKEN,
-        envSource.VITE_APP_ORGANIZATION_ACCESS_TOKEN,
-      ),
-    }),
+    resolveSdkworkAccessTokenFromEnv(envSource) || undefined,
   );
-  const apiKey = normalizeString(firstNonEmptyValue(envSource.VITE_API_KEY, envSource.SDKWORK_API_KEY));
   const authToken = normalizeBearerToken(overrides.authToken);
   const overrideApiKey = normalizeString(overrides.apiKey);
-  const resolvedApiKey = overrideApiKey || apiKey || undefined;
+  const resolvedApiKey = overrideApiKey || undefined;
   const resolvedAccessToken = normalizeBearerToken(overrides.accessToken) || accessToken || undefined;
   const resolvedAuthMode =
     overrides.authMode

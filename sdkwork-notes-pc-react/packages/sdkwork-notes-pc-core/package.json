@@ -23,6 +23,7 @@
     "@sdkwork/notes-pc-sync": "workspace:*",
     "@sdkwork/notes-pc-types": "workspace:*",
     "@sdkwork/sdk-common": "workspace:*",
+    "@sdkwork/core-pc-react": "workspace:*",
     "react": "catalog:",
     "zustand": "catalog:"
   },

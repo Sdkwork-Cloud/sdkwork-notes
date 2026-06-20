@@ -419,6 +419,19 @@ importers:
         specifier: ^6.0.2
         version: 6.0.3
 
+  ../../sdkwork-appbase/packages/pc-react/iam/sdkwork-iam-account-binding-pc-react:
+    dependencies:
+      '@sdkwork/iam-service':
+        specifier: workspace:*
+        version: link:../../../common/iam/sdkwork-iam-service
+      '@sdkwork/ui-pc-react':
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-ui/sdkwork-ui-pc-react
+    devDependencies:
+      typescript:
+        specifier: ^6.0.2
+        version: 6.0.3
+
   ../../sdkwork-appbase/packages/pc-react/iam/sdkwork-iam-core-pc-react:
     dependencies:
       '@sdkwork/iam-contracts':
@@ -813,10 +826,10 @@ importers:
         version: link:../../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-runtime-pc-react
       '@sdkwork/notes-pc-core':
         specifier: workspace:*
-        version: link:../sdkwork-notes-core
+        version: link:../sdkwork-notes-pc-core
       '@sdkwork/notes-pc-i18n':
         specifier: workspace:*
-        version: link:../sdkwork-notes-i18n
+        version: link:../sdkwork-notes-pc-i18n
       '@sdkwork/ui-pc-react':
         specifier: workspace:*
         version: link:../../../../sdkwork-ui/sdkwork-ui-pc-react
@@ -847,7 +860,7 @@ importers:
     dependencies:
       '@sdkwork/notes-pc-types':
         specifier: workspace:*
-        version: link:../sdkwork-notes-types
+        version: link:../sdkwork-notes-pc-types
       react:
         specifier: 'catalog:'
         version: 19.2.4
@@ -873,12 +886,15 @@ importers:
       '@sdkwork-internal/notes-app-sdk-generated':
         specifier: workspace:*
         version: link:../../../sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi
+      '@sdkwork/core-pc-react':
+        specifier: workspace:*
+        version: link:../../../../sdkwork-core/sdkwork-core-pc-react
       '@sdkwork/notes-pc-sync':
         specifier: workspace:*
-        version: link:../sdkwork-notes-sync
+        version: link:../sdkwork-notes-pc-sync
       '@sdkwork/notes-pc-types':
         specifier: workspace:*
-        version: link:../sdkwork-notes-types
+        version: link:../sdkwork-notes-pc-types
       '@sdkwork/sdk-common':
         specifier: workspace:*
         version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
@@ -909,13 +925,13 @@ importers:
     dependencies:
       '@sdkwork/notes-pc-core':
         specifier: workspace:*
-        version: link:../sdkwork-notes-core
+        version: link:../sdkwork-notes-pc-core
       '@sdkwork/notes-pc-i18n':
         specifier: workspace:*
-        version: link:../sdkwork-notes-i18n
+        version: link:../sdkwork-notes-pc-i18n
       '@sdkwork/notes-pc-shell':
         specifier: workspace:*
-        version: link:../sdkwork-notes-shell
+        version: link:../sdkwork-notes-pc-shell
       '@tauri-apps/api':
         specifier: 'catalog:'
         version: 2.10.1
@@ -964,7 +980,7 @@ importers:
     dependencies:
       '@sdkwork/notes-pc-types':
         specifier: workspace:*
-        version: link:../sdkwork-notes-types
+        version: link:../sdkwork-notes-pc-types
       i18next:
         specifier: 'catalog:'
         version: 26.0.3(typescript@6.0.2)
@@ -1004,28 +1020,28 @@ importers:
     dependencies:
       '@sdkwork/notes-pc-commons':
         specifier: workspace:*
-        version: link:../sdkwork-notes-commons
+        version: link:../sdkwork-notes-pc-commons
       '@sdkwork/notes-pc-core':
         specifier: workspace:*
-        version: link:../sdkwork-notes-core
+        version: link:../sdkwork-notes-pc-core
       '@sdkwork/notes-pc-i18n':
         specifier: workspace:*
-        version: link:../sdkwork-notes-i18n
+        version: link:../sdkwork-notes-pc-i18n
       '@sdkwork/notes-pc-local':
         specifier: workspace:*
-        version: link:../sdkwork-notes-local
+        version: link:../sdkwork-notes-pc-local
       '@sdkwork/notes-pc-observability':
         specifier: workspace:*
-        version: link:../sdkwork-notes-observability
+        version: link:../sdkwork-notes-pc-observability
       '@sdkwork/notes-pc-search':
         specifier: workspace:*
-        version: link:../sdkwork-notes-search
+        version: link:../sdkwork-notes-pc-search
       '@sdkwork/notes-pc-sync':
         specifier: workspace:*
-        version: link:../sdkwork-notes-sync
+        version: link:../sdkwork-notes-pc-sync
       '@sdkwork/notes-pc-types':
         specifier: workspace:*
-        version: link:../sdkwork-notes-types
+        version: link:../sdkwork-notes-pc-types
       '@tiptap/core':
         specifier: 'catalog:'
         version: 3.22.1(@tiptap/pm@3.22.1)
@@ -1122,19 +1138,19 @@ importers:
     dependencies:
       '@sdkwork/notes-pc-auth':
         specifier: workspace:*
-        version: link:../sdkwork-notes-auth
+        version: link:../sdkwork-notes-pc-auth
       '@sdkwork/notes-pc-core':
         specifier: workspace:*
-        version: link:../sdkwork-notes-core
+        version: link:../sdkwork-notes-pc-core
       '@sdkwork/notes-pc-i18n':
         specifier: workspace:*
-        version: link:../sdkwork-notes-i18n
+        version: link:../sdkwork-notes-pc-i18n
       '@sdkwork/notes-pc-notes':
         specifier: workspace:*
-        version: link:../sdkwork-notes-notes
+        version: link:../sdkwork-notes-pc-notes
       '@sdkwork/notes-pc-user':
         specifier: workspace:*
-        version: link:../sdkwork-notes-user
+        version: link:../sdkwork-notes-pc-user
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.96.2(react@19.2.4)
@@ -1207,19 +1223,19 @@ importers:
     dependencies:
       '@sdkwork/notes-pc-auth':
         specifier: workspace:*
-        version: link:../sdkwork-notes-auth
+        version: link:../sdkwork-notes-pc-auth
       '@sdkwork/notes-pc-commons':
         specifier: workspace:*
-        version: link:../sdkwork-notes-commons
+        version: link:../sdkwork-notes-pc-commons
       '@sdkwork/notes-pc-core':
         specifier: workspace:*
-        version: link:../sdkwork-notes-core
+        version: link:../sdkwork-notes-pc-core
       '@sdkwork/notes-pc-i18n':
         specifier: workspace:*
-        version: link:../sdkwork-notes-i18n
+        version: link:../sdkwork-notes-pc-i18n
       '@sdkwork/notes-pc-types':
         specifier: workspace:*
-        version: link:../sdkwork-notes-types
+        version: link:../sdkwork-notes-pc-types
       lucide-react:
         specifier: 'catalog:'
         version: 1.7.0(react@19.2.4)

@@ -35,9 +35,7 @@ impl SdkDriveAppFacadePageContentPort {
     pub fn from_env(facade_url: String) -> Result<Self, String> {
         let client = SdkworkAppClient::new_with_base_url(facade_url.trim())
             .map_err(|error| format!("initialize Drive SDK client failed: {error}"))?;
-        if let Ok(token) = std::env::var("SDKWORK_DRIVE_FACADE_ACCESS_TOKEN")
-            .or_else(|_| std::env::var("SDKWORK_DRIVE_FACADE_AUTH_TOKEN"))
-        {
+        if let Ok(token) = std::env::var("SDKWORK_ACCESS_TOKEN") {
             let trimmed = token.trim();
             if !trimmed.is_empty() {
                 client.set_access_token(trimmed);

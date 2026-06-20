@@ -77,7 +77,7 @@ describe('createAppSdkClientConfig', () => {
       VITE_APP_ENV: 'test',
       VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL: 'https://api-test.sdkwork.com',
       VITE_APP_PLATFORM: 'desktop',
-      VITE_ACCESS_TOKEN: accessToken,
+      SDKWORK_ACCESS_TOKEN: accessToken,
     };
 
     const config = createAppSdkClientConfig();
@@ -90,14 +90,17 @@ describe('createAppSdkClientConfig', () => {
     expect(config.organizationId).toBe('org-test');
   });
 
-  it('supports owner-scoped organization base urls and access tokens from injected desktop env', () => {
+  it('supports owner-scoped organization base urls with unified deployment access token', () => {
+    const organizationAccessToken = createTestAccessToken({
+      tenant_id: 'tenant-org',
+      organization_id: 'org-1',
+    });
     globalThis.__SDKWORK_NOTES_ENV__ = {
       VITE_APP_ENV: 'development',
       VITE_OWNER_MODE: 'organization',
       VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL: 'https://api-root.sdkwork.com',
       VITE_ORGANIZATION_API_BASE_URL: 'https://api-org.sdkwork.com/',
-      VITE_ACCESS_TOKEN: 'root-access-token',
-      VITE_ORGANIZATION_ACCESS_TOKEN: 'organization-access-token',
+      SDKWORK_ACCESS_TOKEN: organizationAccessToken,
       VITE_PLATFORM: 'desktop',
     };
 
@@ -105,7 +108,7 @@ describe('createAppSdkClientConfig', () => {
 
     expect(config.env).toBe('development');
     expect(config.baseUrl).toBe('https://api-org.sdkwork.com');
-    expect(config.accessToken).toBe('organization-access-token');
+    expect(config.accessToken).toBe(organizationAccessToken);
     expect(config.platform).toBe('desktop');
   });
 
@@ -142,19 +145,14 @@ describe('createAppSdkClientConfig', () => {
     expect(productionConfig.baseUrl).toBe('https://notes.sdkwork.com');
   });
 
-  it('normalizes injected desktop env primitives into string values before building the sdk config', () => {
+  it('rejects forbidden browser credential env keys from injected desktop env', () => {
     globalThis.__SDKWORK_NOTES_ENV__ = {
       VITE_APP_ENV: 'development',
       VITE_APP_PLATFORM: 'desktop',
-      VITE_ACCESS_TOKEN: true,
+      VITE_ACCESS_TOKEN: 'browser-access-token',
     };
 
-    const config = createAppSdkClientConfig();
-
-    expect(config.env).toBe('development');
-    expect(config.platform).toBe('desktop');
-    expect(config.accessToken).toBe('true');
-    expect(config.tenantId).toBeUndefined();
+    expect(() => createAppSdkClientConfig()).toThrow(/Forbidden credential environment variables/);
   });
 
   it('freezes runtime governance with explicit owner mode and source precedence metadata', () => {
