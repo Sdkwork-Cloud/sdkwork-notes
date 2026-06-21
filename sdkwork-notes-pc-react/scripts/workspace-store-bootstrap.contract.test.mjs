@@ -4,6 +4,7 @@ import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 function createDataModuleUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
@@ -45,9 +46,11 @@ async function loadWorkspaceStoreModule() {
     ).outputText,
   );
   const notesSyncModuleUrl = createDataModuleUrl(
-    (
-      await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
-    ).outputText,
+    applyContractModuleStubs(
+      (
+        await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
+      ).outputText,
+    ),
   );
 
   const zustandVanillaStubUrl = createDataModuleUrl(`
@@ -400,7 +403,7 @@ export function restoreNotesWorkspaceRecoveredDraft(note, draft, restoredAt) {
     typesModuleUrl,
   );
 
-  return import(createDataModuleUrl(patchedWorkspaceStoreSource));
+  return import(createDataModuleUrl(applyContractModuleStubs(patchedWorkspaceStoreSource)));
 }
 
 async function loadWorkspaceStoreBootstrapModule() {
@@ -468,7 +471,7 @@ export function createNotesWorkspaceSyncRuntime(options) {
   );
 
   return {
-    module: await import(createDataModuleUrl(patchedSource)),
+    module: await import(createDataModuleUrl(applyContractModuleStubs(patchedSource))),
     notesSyncStub: await import(notesSyncStubUrl),
     servicesStub: await import(servicesStubUrl),
     storeStub: await import(storeStubUrl),
@@ -691,7 +694,7 @@ test('AppProviders owns the notes workspace store bootstrap boundary at the auth
 
   assert.match(
     appProvidersSource,
-    /import\s*\{\s*bootstrapNotesWorkspaceStore,\s*resetNotesWorkspaceStoreBootstrap\s*\}\s*from\s*'@sdkwork\/notes-notes'/,
+    /import\s*\{\s*bootstrapNotesWorkspaceStore,\s*resetNotesWorkspaceStoreBootstrap\s*\}\s*from\s*'@sdkwork\/notes-pc-notes'/,
   );
   assert.match(appProvidersSource, /function ensureNotesWorkspaceStoreBootstrapped/);
   assert.match(
@@ -729,7 +732,7 @@ test('AppProviders, AppRoot, and desktop bootstrap expose a single top-level inj
   assert.match(appRootSource, /<AppProviders \{\.\.\.props\}>/);
   assert.match(shellIndexSource, /export \{ AppRoot, type AppRootProps \} from '\.\/application\/AppRoot';/);
 
-  assert.match(desktopBootstrapAppSource, /import \{ AppRoot, type AppRootProps \} from '@sdkwork\/notes-shell';/);
+  assert.match(desktopBootstrapAppSource, /import \{ AppRoot, type AppRootProps \} from '@sdkwork\/notes-pc-shell';/);
   assert.match(desktopBootstrapAppSource, /appRootProps\?: AppRootProps;/);
   assert.match(desktopBootstrapAppSource, /<AppRoot \{\.\.\.appRootProps\} \/>/);
 

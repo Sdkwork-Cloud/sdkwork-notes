@@ -9,7 +9,7 @@ const workspaceRoot = process.cwd();
 const shellStylesheetPath = path.resolve(
   workspaceRoot,
   'packages',
-  'sdkwork-notes-shell',
+  'sdkwork-notes-pc-shell',
   'src',
   'styles',
   'index.css',
@@ -57,17 +57,17 @@ test('shared auth Tailwind sources compile into the classes required by the note
     compiled.sources,
     [
       {
-        base: path.resolve(workspaceRoot, 'packages', 'sdkwork-notes-shell', 'src', 'styles'),
+        base: path.resolve(workspaceRoot, 'packages', 'sdkwork-notes-pc-shell', 'src', 'styles'),
         pattern: '../../../../',
         negated: false,
       },
       {
-        base: path.resolve(workspaceRoot, 'packages', 'sdkwork-notes-shell', 'src', 'styles'),
+        base: path.resolve(workspaceRoot, 'packages', 'sdkwork-notes-pc-shell', 'src', 'styles'),
         pattern: '../../../../../../sdkwork-ui/sdkwork-ui-pc-react/src',
         negated: false,
       },
       {
-        base: path.resolve(workspaceRoot, 'packages', 'sdkwork-notes-shell', 'src', 'styles'),
+        base: path.resolve(workspaceRoot, 'packages', 'sdkwork-notes-pc-shell', 'src', 'styles'),
         pattern: '../../../../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-pc-react/src',
         negated: false,
       },

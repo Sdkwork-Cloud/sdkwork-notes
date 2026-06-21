@@ -1,3 +1,5 @@
+import { normalizeString, normalizeStringArray } from '@sdkwork/notes-pc-commons';
+
 export const NOTES_LOCAL_PACKAGE = '@sdkwork/notes-pc-local';
 export const NOTES_LOCAL_WORKSPACE_STORAGE_KEY = 'sdkwork-notes-local-workspace';
 export const NOTES_LOCAL_WORKSPACE_SCHEMA_VERSION = 1;
@@ -65,26 +67,6 @@ export interface NotesLocalStore {
 export interface CreateBrowserNotesLocalStoreOptions {
   storage?: NotesLocalStorageAdapter;
   storageKey?: string;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
-}
-
-function normalizeStringArray(value: unknown) {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .map((item) => normalizeString(item))
-    .filter((item) => item.length > 0);
 }
 
 function normalizeRecordRef(value: unknown): NotesLocalRecordRef | null {

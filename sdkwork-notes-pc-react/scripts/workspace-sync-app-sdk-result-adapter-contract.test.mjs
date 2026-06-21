@@ -85,7 +85,7 @@ test('future notes remote apply result adapter contract freezes the shared wrapp
 test('future notes remote apply result adapter contract stays aligned with the target contract and local sync worker semantics', () => {
   const spec = readResultAdapterContractSpec();
   const targetSpec = readTargetContractSpec();
-  const syncSource = readFromWorkspace('packages', 'sdkwork-notes-sync', 'src', 'index.ts');
+  const syncSource = readFromWorkspace('packages', 'sdkwork-notes-pc-sync', 'src', 'index.ts');
 
   assert.equal(spec.owner.sdkMethod, `${targetSpec.sdk.module}.${targetSpec.sdk.method}`);
   assert.equal(spec.input.requestType, targetSpec.sdk.requestType);

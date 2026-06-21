@@ -4,6 +4,7 @@ import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 const workspaceRoot = process.cwd();
 
@@ -29,7 +30,7 @@ async function loadWorkspaceAutosaveRuntimeModule() {
     fileName: entryPoint,
   });
 
-  return import(createDataModuleUrl(transpiled.outputText));
+  return import(createDataModuleUrl(applyContractModuleStubs(transpiled.outputText)));
 }
 
 const workspaceAutosaveRuntimeModule = await loadWorkspaceAutosaveRuntimeModule();

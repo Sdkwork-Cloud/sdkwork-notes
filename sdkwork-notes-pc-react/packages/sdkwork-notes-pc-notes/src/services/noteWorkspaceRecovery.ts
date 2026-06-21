@@ -1,19 +1,10 @@
 import type { LocalDraftSnapshot } from '@sdkwork/notes-pc-local';
 import type { Note, NoteSummary } from '@sdkwork/notes-pc-types';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 
 export interface NotesWorkspaceRecoveredDraft extends LocalDraftSnapshot {
   remoteTitle: string;
   remoteUpdatedAt: string;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
 }
 
 function toTimestamp(value: unknown) {

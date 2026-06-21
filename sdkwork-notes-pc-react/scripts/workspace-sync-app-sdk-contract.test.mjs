@@ -12,14 +12,14 @@ function readFromWorkspace(...segments) {
 test('notes remote app capability is declared through the local typed product app client port', () => {
   const portSource = readFromWorkspace(
     'packages',
-    'sdkwork-notes-core',
+    'sdkwork-notes-pc-core',
     'src',
     'sdk',
     'appSdkPort.ts',
   );
   const sdkSource = readFromWorkspace(
     'packages',
-    'sdkwork-notes-core',
+    'sdkwork-notes-pc-core',
     'src',
     'sdk',
     'useAppSdkClient.ts',
@@ -69,12 +69,12 @@ test('notes app sdk runtime no longer imports or aliases the retired generic pac
     readFromWorkspace('pnpm-workspace.yaml'),
     readFromWorkspace('tsconfig.base.json'),
     readFromWorkspace('vite.config.ts'),
-    readFromWorkspace('packages', 'sdkwork-notes-desktop', 'vite.config.ts'),
-    readFromWorkspace('packages', 'sdkwork-notes-core', 'package.json'),
-    readFromWorkspace('packages', 'sdkwork-notes-core', 'src', 'sdk', 'useAppSdkClient.ts'),
-    readFromWorkspace('packages', 'sdkwork-notes-core', 'src', 'services', 'appUserService.ts'),
-    readFromWorkspace('packages', 'sdkwork-notes-notes', 'package.json'),
-    readFromWorkspace('packages', 'sdkwork-notes-notes', 'src', 'repository', 'noteRepository.ts'),
+    readFromWorkspace('packages', 'sdkwork-notes-pc-desktop', 'vite.config.ts'),
+    readFromWorkspace('packages', 'sdkwork-notes-pc-core', 'package.json'),
+    readFromWorkspace('packages', 'sdkwork-notes-pc-core', 'src', 'sdk', 'useAppSdkClient.ts'),
+    readFromWorkspace('packages', 'sdkwork-notes-pc-core', 'src', 'services', 'appUserService.ts'),
+    readFromWorkspace('packages', 'sdkwork-notes-pc-notes', 'package.json'),
+    readFromWorkspace('packages', 'sdkwork-notes-pc-notes', 'src', 'repository', 'noteRepository.ts'),
   ].join('\n');
 
   const retiredTokens = [

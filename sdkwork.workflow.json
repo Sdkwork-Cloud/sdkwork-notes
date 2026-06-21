@@ -52,7 +52,7 @@
           "SDKWORK_SHARED_SDK_GIT_REF": "main",
           "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/Sdkwork-Cloud/sdkwork-sdk-commons.git"
         },
-        "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\npnpm install:shared-sdk\npnpm test:desktop:contracts\npnpm --filter @sdkwork/notes-shell test\npnpm --filter @sdkwork/notes-desktop test\npnpm test:desktop:rust\npnpm typecheck\npnpm build"
+        "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\npnpm install:shared-sdk\npnpm test:desktop:contracts\npnpm --filter @sdkwork/notes-pc-shell test\npnpm --filter @sdkwork/notes-pc-desktop test\npnpm test:desktop:rust\npnpm typecheck\npnpm build"
       }
     ],
     "package": [
@@ -65,7 +65,7 @@
           "SDKWORK_SHARED_SDK_GIT_REF": "main",
           "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/Sdkwork-Cloud/sdkwork-sdk-commons.git"
         },
-        "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\n$targetKey = \"$env:SDKWORK_PACKAGE_PLATFORM/$env:SDKWORK_PACKAGE_ARCHITECTURE\"\n$rustTarget = switch ($targetKey) {\n  \"windows/x64\" { \"x86_64-pc-windows-msvc\" }\n  \"windows/arm64\" { \"aarch64-pc-windows-msvc\" }\n  \"linux/x64\" { \"x86_64-unknown-linux-gnu\" }\n  \"linux/arm64\" { \"aarch64-unknown-linux-gnu\" }\n  \"macos/x64\" { \"x86_64-apple-darwin\" }\n  \"macos/arm64\" { \"aarch64-apple-darwin\" }\n  default { throw \"Unsupported SDKWork Notes desktop target $targetKey\" }\n}\npnpm release:desktop -- --target $rustTarget\nif ($env:SDKWORK_PACKAGE_PLATFORM -eq \"macos\") {\n  $bundleDir = \"packages/sdkwork-notes-desktop/src-tauri/target/$rustTarget/release/bundle/macos\"\n  $appBundle = Get-ChildItem -Path $bundleDir -Directory -Filter \"*.app\" -ErrorAction SilentlyContinue | Select-Object -First 1\n  if (-not $appBundle) {\n    throw \"Missing macOS .app bundle in $bundleDir\"\n  }\n  Get-ChildItem -Path $bundleDir -File -Filter \"*.app.tar.gz\" -ErrorAction SilentlyContinue | Remove-Item -Force\n  $archivePath = Join-Path $bundleDir \"sdkwork-notes-$env:SDKWORK_PACKAGE_VERSION-$env:SDKWORK_PACKAGE_ARCHITECTURE.app.tar.gz\"\n  tar -C $bundleDir -czf $archivePath $appBundle.Name\n  if (-not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {\n    throw \"Missing macOS app archive: $archivePath\"\n  }\n}"
+        "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\n$targetKey = \"$env:SDKWORK_PACKAGE_PLATFORM/$env:SDKWORK_PACKAGE_ARCHITECTURE\"\n$rustTarget = switch ($targetKey) {\n  \"windows/x64\" { \"x86_64-pc-windows-msvc\" }\n  \"windows/arm64\" { \"aarch64-pc-windows-msvc\" }\n  \"linux/x64\" { \"x86_64-unknown-linux-gnu\" }\n  \"linux/arm64\" { \"aarch64-unknown-linux-gnu\" }\n  \"macos/x64\" { \"x86_64-apple-darwin\" }\n  \"macos/arm64\" { \"aarch64-apple-darwin\" }\n  default { throw \"Unsupported SDKWork Notes desktop target $targetKey\" }\n}\npnpm release:desktop -- --target $rustTarget\nif ($env:SDKWORK_PACKAGE_PLATFORM -eq \"macos\") {\n  $bundleDir = \"packages/sdkwork-notes-pc-desktop/src-tauri/target/$rustTarget/release/bundle/macos\"\n  $appBundle = Get-ChildItem -Path $bundleDir -Directory -Filter \"*.app\" -ErrorAction SilentlyContinue | Select-Object -First 1\n  if (-not $appBundle) {\n    throw \"Missing macOS .app bundle in $bundleDir\"\n  }\n  Get-ChildItem -Path $bundleDir -File -Filter \"*.app.tar.gz\" -ErrorAction SilentlyContinue | Remove-Item -Force\n  $archivePath = Join-Path $bundleDir \"sdkwork-notes-$env:SDKWORK_PACKAGE_VERSION-$env:SDKWORK_PACKAGE_ARCHITECTURE.app.tar.gz\"\n  tar -C $bundleDir -czf $archivePath $appBundle.Name\n  if (-not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {\n    throw \"Missing macOS app archive: $archivePath\"\n  }\n}"
       }
     ],
     "sign": [
@@ -86,7 +86,7 @@
       {
         "name": "Validate selected desktop package",
         "shell": "pwsh",
-        "run": "$ErrorActionPreference = \"Stop\"\n$targetKey = \"$env:SDKWORK_PACKAGE_PLATFORM/$env:SDKWORK_PACKAGE_ARCHITECTURE\"\n$rustTarget = switch ($targetKey) {\n  \"windows/x64\" { \"x86_64-pc-windows-msvc\" }\n  \"windows/arm64\" { \"aarch64-pc-windows-msvc\" }\n  \"linux/x64\" { \"x86_64-unknown-linux-gnu\" }\n  \"linux/arm64\" { \"aarch64-unknown-linux-gnu\" }\n  \"macos/x64\" { \"x86_64-apple-darwin\" }\n  \"macos/arm64\" { \"aarch64-apple-darwin\" }\n  default { throw \"Unsupported SDKWork Notes desktop target $targetKey\" }\n}\n$bundleRoot = \"packages/sdkwork-notes-desktop/src-tauri/target/$rustTarget/release/bundle\"\n$artifactGlob = switch ($env:SDKWORK_PACKAGE_FORMAT) {\n  \"msi\" { Join-Path $bundleRoot \"msi/*.msi\" }\n  \"exe\" { Join-Path $bundleRoot \"nsis/*.exe\" }\n  \"deb\" { Join-Path $bundleRoot \"deb/*.deb\" }\n  \"rpm\" { Join-Path $bundleRoot \"rpm/*.rpm\" }\n  \"appimage\" { Join-Path $bundleRoot \"appimage/*.AppImage\" }\n  \"tar.gz\" { Join-Path $bundleRoot \"macos/*.app.tar.gz\" }\n  default { throw \"Unsupported SDKWork Notes package format $env:SDKWORK_PACKAGE_FORMAT\" }\n}\n$artifacts = Get-ChildItem -Path $artifactGlob -File -ErrorAction SilentlyContinue\nif (-not $artifacts) {\n  throw \"Missing built artifact for $env:SDKWORK_PACKAGE_ID matching $artifactGlob\"\n}\nforeach ($artifact in $artifacts) {\n  if ($artifact.Length -le 0) {\n    throw \"Built artifact is empty: $($artifact.FullName)\"\n  }\n  Write-Host \"Validated $($artifact.FullName)\"\n}"
+        "run": "$ErrorActionPreference = \"Stop\"\n$targetKey = \"$env:SDKWORK_PACKAGE_PLATFORM/$env:SDKWORK_PACKAGE_ARCHITECTURE\"\n$rustTarget = switch ($targetKey) {\n  \"windows/x64\" { \"x86_64-pc-windows-msvc\" }\n  \"windows/arm64\" { \"aarch64-pc-windows-msvc\" }\n  \"linux/x64\" { \"x86_64-unknown-linux-gnu\" }\n  \"linux/arm64\" { \"aarch64-unknown-linux-gnu\" }\n  \"macos/x64\" { \"x86_64-apple-darwin\" }\n  \"macos/arm64\" { \"aarch64-apple-darwin\" }\n  default { throw \"Unsupported SDKWork Notes desktop target $targetKey\" }\n}\n$bundleRoot = \"packages/sdkwork-notes-pc-desktop/src-tauri/target/$rustTarget/release/bundle\"\n$artifactGlob = switch ($env:SDKWORK_PACKAGE_FORMAT) {\n  \"msi\" { Join-Path $bundleRoot \"msi/*.msi\" }\n  \"exe\" { Join-Path $bundleRoot \"nsis/*.exe\" }\n  \"deb\" { Join-Path $bundleRoot \"deb/*.deb\" }\n  \"rpm\" { Join-Path $bundleRoot \"rpm/*.rpm\" }\n  \"appimage\" { Join-Path $bundleRoot \"appimage/*.AppImage\" }\n  \"tar.gz\" { Join-Path $bundleRoot \"macos/*.app.tar.gz\" }\n  default { throw \"Unsupported SDKWork Notes package format $env:SDKWORK_PACKAGE_FORMAT\" }\n}\n$artifacts = Get-ChildItem -Path $artifactGlob -File -ErrorAction SilentlyContinue\nif (-not $artifacts) {\n  throw \"Missing built artifact for $env:SDKWORK_PACKAGE_ID matching $artifactGlob\"\n}\nforeach ($artifact in $artifacts) {\n  if ($artifact.Length -le 0) {\n    throw \"Built artifact is empty: $($artifact.FullName)\"\n  }\n  Write-Host \"Validated $($artifact.FullName)\"\n}"
       }
     ]
   },
@@ -101,7 +101,7 @@
       ],
       "runner": "windows-2022",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -116,7 +116,7 @@
       ],
       "runner": "windows-2022",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -131,7 +131,7 @@
       ],
       "runner": "windows-11-arm",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bundle/msi/*.msi"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bundle/msi/*.msi"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -146,7 +146,7 @@
       ],
       "runner": "windows-11-arm",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -162,7 +162,7 @@
       ],
       "runner": "ubuntu-24.04",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -178,7 +178,7 @@
       ],
       "runner": "ubuntu-24.04",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -193,7 +193,7 @@
       ],
       "runner": "ubuntu-24.04",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -209,7 +209,7 @@
       ],
       "runner": "ubuntu-24.04-arm",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -225,7 +225,7 @@
       ],
       "runner": "ubuntu-24.04-arm",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -240,7 +240,7 @@
       ],
       "runner": "ubuntu-24.04-arm",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -255,7 +255,7 @@
       ],
       "runner": "macos-15-intel",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos/*.app.tar.gz"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/x86_64-apple-darwin/release/bundle/macos/*.app.tar.gz"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"
@@ -270,7 +270,7 @@
       ],
       "runner": "macos-15",
       "outputGlobs": [
-        "sdkwork-notes-pc-react/packages/sdkwork-notes-desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.app.tar.gz"
+        "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.app.tar.gz"
       ],
       "deploymentProfile": "standalone",
       "runtimeTarget": "desktop"

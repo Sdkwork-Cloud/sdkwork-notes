@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 function createDataModuleUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
@@ -22,7 +23,7 @@ async function loadWorkspaceFolderMutationModule() {
     fileName: entryPoint,
   });
 
-  return import(createDataModuleUrl(transpiled.outputText));
+  return import(createDataModuleUrl(applyContractModuleStubs(transpiled.outputText)));
 }
 
 const workspaceFolderMutationModule = await loadWorkspaceFolderMutationModule();

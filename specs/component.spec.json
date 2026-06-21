@@ -105,8 +105,8 @@
   },
   "integration": {
     "webFramework": "Rust HTTP runtimes integrate sdkwork-web-framework through sdkwork-web-axum and sdkwork-iam-web-adapter.",
-    "database": "Notes API server resolves SDKWORK_NOTES database config through sdkwork-database-config; lifecycle assets live under database/.",
-    "utils": "Rust HTTP route crates use sdkwork-utils-rust for shared string validation helpers.",
+    "database": "Notes API server resolves SDKWORK_NOTES database config through sdkwork-database-config; repository crate declares sdkwork-database-repository entities aligned with database/contract/table-registry.json.",
+    "utils": "Rust HTTP route crates and pages-service use sdkwork-utils-rust; PC commons re-exports @sdkwork/utils text helpers.",
     "discovery": "Not required until RPC services are introduced."
   },
   "verification": {

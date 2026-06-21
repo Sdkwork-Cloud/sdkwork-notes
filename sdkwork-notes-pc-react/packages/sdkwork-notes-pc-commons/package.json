@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sdkwork/utils": "workspace:*",
     "@sdkwork/notes-pc-types": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"

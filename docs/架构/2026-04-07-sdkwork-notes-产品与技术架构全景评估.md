@@ -1012,7 +1012,7 @@ SDKWork Notes 当前已经具备较完整的现代桌面应用基础能力：
 | `backend.grantMode` | `current` |
 | `backend.platform` | `WEB` |
 | `backend.appId` | `10001` |
-| `backend.tenantId` | `20001` |
+| `backend.tenantId` | `100001` |
 | 发布平台 | `WEB / DESKTOP / DESKTOP_WINDOWS / DESKTOP_MACOS / DESKTOP_LINUX` |
 | 默认包 | `web-production` |
 

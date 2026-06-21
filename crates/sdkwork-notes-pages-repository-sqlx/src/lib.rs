@@ -1,4 +1,5 @@
 mod bootstrap;
+pub mod entities;
 pub mod notes_store;
 pub mod schema;
 

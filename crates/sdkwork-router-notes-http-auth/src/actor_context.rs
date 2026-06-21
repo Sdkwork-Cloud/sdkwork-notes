@@ -1,5 +1,6 @@
 use http::StatusCode;
 use sdkwork_notes_pages_service::domain::NotesActorContext;
+use sdkwork_utils_rust::string::trim;
 use sdkwork_web_core::WebRequestContext;
 
 #[derive(Debug, Clone)]
@@ -52,21 +53,21 @@ pub fn ensure_actor_matches_claims(
     organization_id: &str,
     operator_id: &str,
 ) -> Result<(), ApiProblem> {
-    if actor.tenant_id != tenant_id.trim() {
+    if actor.tenant_id != trim(tenant_id) {
         return Err(ApiProblem::new(
             StatusCode::FORBIDDEN,
             "notes.auth.tenant_mismatch",
             "request tenantId must match authenticated tenant context",
         ));
     }
-    if actor.organization_id != organization_id.trim() {
+    if actor.organization_id != trim(organization_id) {
         return Err(ApiProblem::new(
             StatusCode::FORBIDDEN,
             "notes.auth.organization_mismatch",
             "request organizationId must match authenticated organization context",
         ));
     }
-    if actor.operator_id != operator_id.trim() {
+    if actor.operator_id != trim(operator_id) {
         return Err(ApiProblem::new(
             StatusCode::FORBIDDEN,
             "notes.auth.operator_mismatch",
@@ -84,7 +85,7 @@ pub fn ensure_optional_operator_matches(
 ) -> Result<(), ApiProblem> {
     ensure_actor_matches_claims(actor, tenant_id, organization_id, actor.operator_id.as_str())?;
     if let Some(operator_id) = operator_id {
-        if actor.operator_id != operator_id.trim() {
+        if actor.operator_id != trim(operator_id) {
             return Err(ApiProblem::new(
                 StatusCode::FORBIDDEN,
                 "notes.auth.operator_mismatch",

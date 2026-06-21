@@ -38,7 +38,7 @@ export function createDesktopReleaseBuildPlan({
     return {
       phase,
       workspaceRoot: cwd,
-      cwd: path.join(cwd, 'packages', 'sdkwork-notes-desktop'),
+      cwd: path.join(cwd, 'packages', 'sdkwork-notes-pc-desktop'),
       command: 'pnpm',
       args,
       env: mergedEnv,
@@ -50,7 +50,7 @@ export function createDesktopReleaseBuildPlan({
     return {
       phase,
       workspaceRoot: cwd,
-      cwd: path.join(cwd, 'packages', 'sdkwork-notes-desktop'),
+      cwd: path.join(cwd, 'packages', 'sdkwork-notes-pc-desktop'),
       command: 'pnpm',
       args: ['exec', 'tauri', 'info'],
       env: mergedEnv,

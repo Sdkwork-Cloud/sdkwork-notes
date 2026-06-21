@@ -3,6 +3,7 @@ import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 function createDataModuleUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
@@ -33,9 +34,11 @@ async function transpileTypeScriptModule(relativePath) {
 
 async function loadNotesWorkspaceSyncRuntimeModule() {
   const notesSyncModuleUrl = createDataModuleUrl(
-    (
-      await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
-    ).outputText,
+    applyContractModuleStubs(
+      (
+        await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
+      ).outputText,
+    ),
   );
   const runtimeSource = (
     await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceSyncRuntime.ts')
@@ -48,7 +51,7 @@ async function loadNotesWorkspaceSyncRuntimeModule() {
 
   return {
     notesSyncModule: await import(notesSyncModuleUrl),
-    runtimeModule: await import(createDataModuleUrl(patchedRuntimeSource)),
+    runtimeModule: await import(createDataModuleUrl(applyContractModuleStubs(patchedRuntimeSource))),
   };
 }
 
@@ -59,9 +62,11 @@ async function loadWorkspaceStoreModule() {
     ).outputText,
   );
   const notesSyncModuleUrl = createDataModuleUrl(
-    (
-      await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
-    ).outputText,
+    applyContractModuleStubs(
+      (
+        await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
+      ).outputText,
+    ),
   );
 
   const zustandVanillaStubUrl = createDataModuleUrl(`
@@ -437,7 +442,7 @@ export function restoreNotesWorkspaceRecoveredDraft(note, draft, restoredAt) {
 
   return {
     servicesModule: await import(servicesStubUrl),
-    storeModule: await import(createDataModuleUrl(patchedWorkspaceStoreSource)),
+    storeModule: await import(createDataModuleUrl(applyContractModuleStubs(patchedWorkspaceStoreSource))),
     typesModule: await import(typesModuleUrl),
   };
 }

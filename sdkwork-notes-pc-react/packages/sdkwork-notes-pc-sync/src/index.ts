@@ -1,3 +1,10 @@
+import {
+  normalizeString,
+  normalizeNullableString,
+  normalizeStringArray,
+  toErrorMessage,
+} from '@sdkwork/notes-pc-commons';
+
 export const NOTES_SYNC_PACKAGE = '@sdkwork/notes-pc-sync';
 export const NOTES_SYNC_QUEUE_STORAGE_KEY = 'sdkwork-notes-sync-queue';
 export const NOTES_SYNC_QUEUE_SCHEMA_VERSION = 2;
@@ -315,21 +322,6 @@ const RETRYABLE_FAILURE_CODES = new Set<NotesSyncFailureCode>([
   'throttled',
   'unknown',
 ]);
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
-}
-
-function normalizeNullableString(value: unknown) {
-  const normalized = normalizeString(value);
-  return normalized.length > 0 ? normalized : null;
-}
 
 function normalizeNullableTimestamp(value: unknown, fieldName: string) {
   if (value === undefined || value === null || normalizeString(value).length === 0) {

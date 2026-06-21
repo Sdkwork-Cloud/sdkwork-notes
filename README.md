@@ -303,24 +303,24 @@ Reserved for future work:
 
 ```text
 sdkwork-notes/
-?? .github/
-?? ?? workflows/
-??    ?? sdkwork-notes-desktop-release.yml
-?? sdkwork-notes-pc-react/
-?? ?? packages/
-?? ?? ?? sdkwork-notes-auth/
-?? ?? ?? sdkwork-notes-commons/
-?? ?? ?? sdkwork-notes-core/
-?? ?? ?? sdkwork-notes-desktop/
-?? ?? ?? sdkwork-notes-i18n/
-?? ?? ?? sdkwork-notes-notes/
-?? ?? ?? sdkwork-notes-shell/
-?? ?? ?? sdkwork-notes-types/
-?? ?? ?? sdkwork-notes-user/
-?? ?? scripts/
-?? ?? src/
-?? sdkwork-notes-mobile-react/
-?? sdkwork-notes-mobile-flutter/
+├── .github/
+│   └── workflows/
+│       └── package.yml
+├── sdkwork-notes-pc-react/
+│   ├── packages/
+│   │   ├── sdkwork-notes-pc-auth/
+│   │   ├── sdkwork-notes-pc-commons/
+│   │   ├── sdkwork-notes-pc-core/
+│   │   ├── sdkwork-notes-pc-desktop/
+│   │   ├── sdkwork-notes-pc-i18n/
+│   │   ├── sdkwork-notes-pc-notes/
+│   │   ├── sdkwork-notes-pc-shell/
+│   │   ├── sdkwork-notes-pc-types/
+│   │   └── sdkwork-notes-pc-user/
+│   ├── scripts/
+│   └── src/
+├── sdkwork-notes-mobile-react/
+└── sdkwork-notes-mobile-flutter/
 ```
 
 ### Tech Stack
@@ -396,7 +396,7 @@ pnpm release:desktop -- --target x86_64-pc-windows-msvc
 
 GitHub Actions workflow:
 
-- `.github/workflows/sdkwork-notes-desktop-release.yml`
+- `.github/workflows/package.yml`
 
 Trigger modes:
 
@@ -521,7 +521,7 @@ pnpm release:desktop -- --target x86_64-pc-windows-msvc
 
 ### Release ????
 ???????? release workflow??
-- `.github/workflows/sdkwork-notes-desktop-release.yml`
+- `.github/workflows/package.yml`
 
 ??????
 - ?????`sdkwork-notes-release-*` ????tag

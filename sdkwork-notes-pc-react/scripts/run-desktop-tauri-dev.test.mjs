@@ -20,7 +20,7 @@ test('createDesktopTauriDevPlan prepares notes desktop tauri dev with source SDK
   assert.equal(plan.workspaceRoot, workspaceRoot);
   assert.equal(
     plan.desktopDir,
-    path.join(workspaceRoot, 'packages', 'sdkwork-notes-desktop'),
+    path.join(workspaceRoot, 'packages', 'sdkwork-notes-pc-desktop'),
   );
   assert.equal(plan.host, '127.0.0.1');
   assert.equal(plan.port, 1430);

@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "generator": "@sdkwork/sdk-generator",
+  "sdk": {
+    "name": "sdkwork-notes-backend-sdk",
+    "version": "0.1.0",
+    "language": "rust",
+    "sdkType": "backend",
+    "protocol": "http",
+    "packageName": "sdkwork-notes-backend-sdk-generated"
+  },
+  "generatedFiles": [
+    {
+      "path": "bin/publish-core.mjs",
+      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+    },
+    {
+      "path": "bin/publish.ps1",
+      "sha256": "eb779f44a5ba8879a9d79c708d0ba4bd412221f102e4430b953f0449327827bf"
+    },
+    {
+      "path": "bin/publish.sh",
+      "sha256": "ae8a89ddb314afce79fe910de28017951c3c31f24a67d72915c4153711173b23"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "36c922df8c6eef7f6f8ebbfc83848917f5abd34a4334e299fa3448379fa60f13"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "fb941a0806986a54fc192f98a98f6d9c282b8d350b2b19a3e71dda404e92d545"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "7840cc7d2b36ff364ac16c2fc5ec15b861bfe96854eecf81fb59b00edb8b1447"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4ef4ac0b895bd7a31f26ae4e9babac02fad4e512c1f6d5b31af7a7133ef2cab0"
+    },
+    {
+      "path": "sdkwork-sdk.json",
+      "sha256": "ca7d8a57c3d28e0742e9e420d84f9c2bd8ac6b990550cd5ea8f67fa053877219"
+    },
+    {
+      "path": "src/api/base.rs",
+      "sha256": "8d7551c061a94f601158698553f816cb490bb9d6619a0f422b25e4e2effe3b6d"
+    },
+    {
+      "path": "src/api/mod.rs",
+      "sha256": "855341c03c819429673dcd75624de655966ccb071441098174b1a2d48573755a"
+    },
+    {
+      "path": "src/api/notes.rs",
+      "sha256": "64cf00d139177df68aec372cb22dd5746967279c2a244d764cf7ac66cdca290e"
+    },
+    {
+      "path": "src/api/paths.rs",
+      "sha256": "571bc21d9e8c1458979a5bb00adb6ba50a7645837196a4b82a2bcfb87f1ef046"
+    },
+    {
+      "path": "src/client.rs",
+      "sha256": "0ca0298be9fd5f46977678a9612c022fae3fdfca3762319482f6e164c45249ba"
+    },
+    {
+      "path": "src/http/client.rs",
+      "sha256": "ffd88587750661cd174b1d0bae02a876d24f8537acdccaa67e297a549d0a927e"
+    },
+    {
+      "path": "src/http/mod.rs",
+      "sha256": "fdf16d487ebd9180fb423d5630d4401ff18180721b86636dec085ad83940bb3d"
+    },
+    {
+      "path": "src/lib.rs",
+      "sha256": "c67abc7a6cddaf423548f19a294220412e073b3595fcdb4052f57afc1bc12e8f"
+    },
+    {
+      "path": "src/models/admin_update_workspace_request.rs",
+      "sha256": "f29b95a3d2d7ea07babf7d555d97bf85359ab890d011f15ec641d8d932c2b269"
+    },
+    {
+      "path": "src/models/ai_feedback_page.rs",
+      "sha256": "24409a3f56a13a3a135c9cd3afc82d25c2c7518210fb475de98fb7e7dd137099"
+    },
+    {
+      "path": "src/models/ai_feedback.rs",
+      "sha256": "777e10e9234aabb662a950e0e9831b2f71a5b2f7b1f8f69c85854bf2eb537619"
+    },
+    {
+      "path": "src/models/ai_job_page.rs",
+      "sha256": "f18adcec2105f230932e209d1fd34cbde9abf081de4bc4eb8ca04447ca62dd29"
+    },
+    {
+      "path": "src/models/ai_job.rs",
+      "sha256": "4a15cdeb7dab521ef4003a13c64e272fcb91117cd167ff2cce514f236119a4d6"
+    },
+    {
+      "path": "src/models/ai_suggestion_apply_request.rs",
+      "sha256": "d6134537b3727d44de9c3ab0def5805bcee4f3030486f2161c4c7d6adfeeed69"
+    },
+    {
+      "path": "src/models/ai_suggestion_decision_request.rs",
+      "sha256": "2db00053e95d8dd3e465516ba538ca3175b4321310c4fd9a24814aeb5c514541"
+    },
+    {
+      "path": "src/models/ai_suggestion.rs",
+      "sha256": "1552b4cc49e2b0ae17752abf7d6155f1cc0d02f006194d9243204fec0038e0f1"
+    },
+    {
+      "path": "src/models/common.rs",
+      "sha256": "fce0239d85066b1c42435ab8c96676ea2d5300e5dcb87c52fd3e33d29a603a5e"
+    },
+    {
+      "path": "src/models/complete_ai_job_request.rs",
+      "sha256": "1414bc635e4850af303faf3483831072a0c3ed39e6cbf642168dff1abe3a9350"
+    },
+    {
+      "path": "src/models/complete_ai_suggestion_input.rs",
+      "sha256": "5315b9723bfb6280b64bd9b92a549c632d25751fea1be21a53b35784220f2300"
+    },
+    {
+      "path": "src/models/create_index_job_request.rs",
+      "sha256": "2fee1beabbeb44f107d4b3d13d3de8d3cacbb488710cff9ca590bc7965169d70"
+    },
+    {
+      "path": "src/models/drive_orphan_diagnostic_page.rs",
+      "sha256": "c9dcc9d8ab85fc4bb25bd3355507807b820576005656d50eb3b5f71d2b170c25"
+    },
+    {
+      "path": "src/models/drive_orphan_diagnostic.rs",
+      "sha256": "4051ae986ad7909eeb7ecd511ca72d6de60390fa7db036bd084fc90fc9dee81b"
+    },
+    {
+      "path": "src/models/field_error.rs",
+      "sha256": "d0d978b8676ae328c88e426d1cf3664b8393d40a810ed2770a38faa2e30c2f63"
+    },
+    {
+      "path": "src/models/index_job_page.rs",
+      "sha256": "02c7945f4ac7757211ce6a8561b8eef6d2a7082f4187addd36e2ba259df68b17"
+    },
+    {
+      "path": "src/models/index_job.rs",
+      "sha256": "ffe1b7e13a5d3a0b6fbe7ca811d98915e5908543d5c09be42ec67f2169ffdda3"
+    },
+    {
+      "path": "src/models/mod.rs",
+      "sha256": "05b0e382638a90aeab5b0602bd6a932a98067d02ad71765fd6f1ee1f8596beaa"
+    },
+    {
+      "path": "src/models/page_content.rs",
+      "sha256": "b9a6a501db4249179754ef6f9694b8515ff1413ad3dda5ceb6bc237219fdf57f"
+    },
+    {
+      "path": "src/models/page_info.rs",
+      "sha256": "f7860628f2d2b2215f2e4566fb70c9c064f2235c1df7d08de916b88f19873ef5"
+    },
+    {
+      "path": "src/models/problem_detail.rs",
+      "sha256": "f591993aaacfa349333035fe90bab712ac02119a3d4fcc49457ce600fcc9277e"
+    },
+    {
+      "path": "src/models/rebuild_projection_request.rs",
+      "sha256": "2bb96ba823310e924113ff80dfc39f947045341f1d9353957561b4fd4e865d32"
+    },
+    {
+      "path": "src/models/repair_drive_orphans_request.rs",
+      "sha256": "9742b16c1aa4708055df56ee3ca4537ae1be42c18d338f9b738ec37917d45f52"
+    },
+    {
+      "path": "src/models/workspace_admin_page.rs",
+      "sha256": "66fe13ac1c5f578b16ba24c42c31d87b5132848837d165f6d68547c2f3f07a88"
+    },
+    {
+      "path": "src/models/workspace_admin.rs",
+      "sha256": "300100a2cd0b3166faf35802830350af01be9165f7a1e935bcdd566ec5c86ff2"
+    }
+  ],
+  "scaffoldFiles": [
+    "custom/README.md"
+  ],
+  "customRoots": [
+    "custom/"
+  ]
+}

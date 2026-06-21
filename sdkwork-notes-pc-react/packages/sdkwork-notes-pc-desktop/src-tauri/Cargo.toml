@@ -1,12 +1,12 @@
 [workspace]
 
 [package]
-name = "sdkwork-notes-desktop"
+name = "sdkwork-notes-pc-desktop"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "sdkwork_notes_desktop_lib"
+name = "sdkwork_notes_pc_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

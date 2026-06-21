@@ -11,7 +11,7 @@ test('isManagedNotesDesktopDevPortBlocker matches stale notes desktop vite serve
     'sdkwork-notes',
     'sdkwork-notes-pc-react',
   );
-  const commandLine = `node "${path.join(workspaceRoot, 'packages', 'sdkwork-notes-desktop', 'node_modules', '.bin', '..', 'vite', 'bin', 'vite.js')}" --host 127.0.0.1 --port 1430 --strictPort`;
+  const commandLine = `node "${path.join(workspaceRoot, 'packages', 'sdkwork-notes-pc-desktop', 'node_modules', '.bin', '..', 'vite', 'bin', 'vite.js')}" --host 127.0.0.1 --port 1430 --strictPort`;
 
   assert.equal(
     isManagedNotesDesktopDevPortBlocker({

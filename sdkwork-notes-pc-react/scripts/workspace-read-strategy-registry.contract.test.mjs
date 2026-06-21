@@ -4,9 +4,11 @@ import path from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
 
-function createDataModuleUrl(source) {
-  return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
-}
+import {
+  applyContractModuleStubs,
+  createDataModuleUrl,
+  createNotesPcCommonsTextStubUrl,
+} from './contract-transpile-helpers.mjs';
 
 async function transpileTypeScriptModule(relativePath) {
   const entryPoint = path.resolve(process.cwd(), relativePath);
@@ -24,11 +26,12 @@ async function loadWorkspaceReadStrategyRegistryModule() {
   const workspaceTypesModuleUrl = createDataModuleUrl(
     (await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts')).outputText,
   );
-  const readStrategySource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/repository/noteWorkspaceReadStrategy.ts')
-  ).outputText.replace(
-    "../types/notesWorkspace",
-    workspaceTypesModuleUrl,
+  const readStrategySource = applyContractModuleStubs(
+    (await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/repository/noteWorkspaceReadStrategy.ts'))
+      .outputText.replace(
+        "../types/notesWorkspace",
+        workspaceTypesModuleUrl,
+      ),
   );
   const workspaceReadStrategyModuleUrl = createDataModuleUrl(readStrategySource);
   const registrySource = (
@@ -44,11 +47,12 @@ async function loadNoteRepositoryModule() {
   const workspaceTypesModuleUrl = createDataModuleUrl(
     (await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts')).outputText,
   );
-  const readStrategySource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/repository/noteWorkspaceReadStrategy.ts')
-  ).outputText.replace(
-    "../types/notesWorkspace",
-    workspaceTypesModuleUrl,
+  const readStrategySource = applyContractModuleStubs(
+    (await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/repository/noteWorkspaceReadStrategy.ts'))
+      .outputText.replace(
+        "../types/notesWorkspace",
+        workspaceTypesModuleUrl,
+      ),
   );
   const workspaceReadStrategyModuleUrl = createDataModuleUrl(readStrategySource);
   const readStrategyRegistrySource = (
@@ -57,7 +61,22 @@ async function loadNoteRepositoryModule() {
     .replace("../types/notesWorkspace", workspaceTypesModuleUrl)
     .replace("./noteWorkspaceReadStrategy", workspaceReadStrategyModuleUrl);
   const readStrategyRegistryModuleUrl = createDataModuleUrl(readStrategyRegistrySource);
-  const notesCommonsModuleUrl = createDataModuleUrl(`
+  const notesCommonsModuleUrl = createNotesPcCommonsTextStubUrl();
+  const notesCommonsServiceModuleUrl = createDataModuleUrl(`
+    import {
+      normalizeString,
+      normalizeNullableString,
+      normalizeStringArray,
+      toErrorMessage,
+    } from ${JSON.stringify(notesCommonsModuleUrl)};
+
+    export {
+      normalizeString,
+      normalizeNullableString,
+      normalizeStringArray,
+      toErrorMessage,
+    };
+
     const createProxy = (getAdapter) => new Proxy({}, {
       get(_target, property) {
         return getAdapter()[property];
@@ -113,7 +132,7 @@ async function loadNoteRepositoryModule() {
   const noteRepositorySource = (
     await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/repository/noteRepository.ts')
   ).outputText
-    .replace("@sdkwork/notes-pc-commons", notesCommonsModuleUrl)
+    .replace("@sdkwork/notes-pc-commons", notesCommonsServiceModuleUrl)
     .replace("@sdkwork/notes-pc-core", notesCoreModuleUrl)
     .replace("../types/notesWorkspace", workspaceTypesModuleUrl)
     .replace("./noteWorkspaceReadStrategyRegistry", readStrategyRegistryModuleUrl)

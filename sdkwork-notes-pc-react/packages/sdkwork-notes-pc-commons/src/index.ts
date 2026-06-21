@@ -6,3 +6,4 @@ export * from './services/createServiceAdapterController';
 export * from './services/result';
 export * from './utils/cn';
 export * from './utils/markdown';
+export * from './utils/text';

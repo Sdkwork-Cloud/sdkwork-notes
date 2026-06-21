@@ -38,7 +38,7 @@ export function isManagedNotesDesktopDevPortBlocker({
 
   return (
     normalizedCommandLine.includes(normalizedWorkspaceRoot) &&
-    normalizedCommandLine.includes('sdkwork-notes-desktop') &&
+    normalizedCommandLine.includes('sdkwork-notes-pc-desktop') &&
     normalizedCommandLine.includes('vite') &&
     normalizedCommandLine.includes(`--port ${String(port)}`) &&
     normalizedCommandLine.includes('--strictport')

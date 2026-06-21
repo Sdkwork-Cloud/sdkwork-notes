@@ -1,3 +1,5 @@
+import { normalizeString } from '@sdkwork/notes-pc-commons';
+
 export interface CommandPaletteSearchItem {
   id: string;
   title: string;
@@ -6,16 +8,6 @@ export interface CommandPaletteSearchItem {
   priority?: number;
   section: string;
   updatedAt?: string | number;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
 }
 
 function toTimestamp(value: unknown) {

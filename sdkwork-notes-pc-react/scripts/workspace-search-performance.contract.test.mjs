@@ -4,6 +4,7 @@ import { performance } from 'node:perf_hooks';
 import path from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 const workspaceRoot = process.cwd();
 
@@ -24,7 +25,9 @@ async function transpileTsModule(relativePath) {
 }
 
 async function loadSearchPerformanceModules() {
-  const notesSearchModuleSource = await transpileTsModule('packages/sdkwork-notes-pc-search/src/index.ts');
+  const notesSearchModuleSource = applyContractModuleStubs(
+    await transpileTsModule('packages/sdkwork-notes-pc-search/src/index.ts'),
+  );
   const notesSearchModuleUrl = createDataModuleUrl(notesSearchModuleSource);
   const selectorsSource = (await transpileTsModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceSelectors.ts'))
     .replaceAll("'@sdkwork/notes-pc-search'", `'${notesSearchModuleUrl}'`)
@@ -36,9 +39,9 @@ async function loadSearchPerformanceModules() {
 
   return {
     notesSearchModule: await import(notesSearchModuleUrl),
-    selectorsModule: await import(createDataModuleUrl(selectorsSource)),
-    commandPaletteModelModule: await import(createDataModuleUrl(commandPaletteModelSource)),
-    commandPaletteModule: await import(createDataModuleUrl(commandPaletteSource)),
+    selectorsModule: await import(createDataModuleUrl(applyContractModuleStubs(selectorsSource))),
+    commandPaletteModelModule: await import(createDataModuleUrl(applyContractModuleStubs(commandPaletteModelSource))),
+    commandPaletteModule: await import(createDataModuleUrl(applyContractModuleStubs(commandPaletteSource))),
   };
 }
 

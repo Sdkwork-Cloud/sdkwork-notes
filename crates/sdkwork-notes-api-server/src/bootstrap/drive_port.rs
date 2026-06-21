@@ -1,5 +1,6 @@
 use sdkwork_notes_pages_service::infrastructure::drive::MemoryDrivePageContentPort;
 use sdkwork_notes_pages_service::ports::DrivePageContentPort;
+use sdkwork_utils_rust::string::{is_blank, trim};
 
 use super::drive_app_sdk_facade::SdkDriveAppFacadePageContentPort;
 
@@ -21,8 +22,8 @@ pub(crate) fn select_drive_port(input: DrivePortSelectionInput) -> DrivePortSele
         if let Some(facade_url) = input
             .facade_url
             .as_ref()
-            .map(|value| value.trim().to_string())
-            .filter(|value| !value.is_empty())
+            .map(|value| trim(value))
+            .filter(|value| !is_blank(Some(value.as_str())))
         {
             return DrivePortSelection::Facade { facade_url };
         }
@@ -63,7 +64,7 @@ impl NotesApiDrivePort {
 
 fn parse_truthy(value: &str) -> bool {
     matches!(
-        value.trim().to_ascii_lowercase().as_str(),
+        trim(value).to_ascii_lowercase().as_str(),
         "1" | "true" | "yes" | "on"
     )
 }

@@ -19,7 +19,7 @@ test('bundle plan resolves notes desktop cwd and target environment metadata', (
   assert.deepEqual(plan.args, ['exec', 'tauri', 'build', '--target', 'aarch64-pc-windows-msvc']);
   assert.equal(
     plan.cwd,
-    path.join('D:', 'workspace', 'sdkwork-notes-pc-react', 'packages', 'sdkwork-notes-desktop'),
+    path.join('D:', 'workspace', 'sdkwork-notes-pc-react', 'packages', 'sdkwork-notes-pc-desktop'),
   );
   assert.equal(plan.env.SDKWORK_DESKTOP_TARGET, 'aarch64-pc-windows-msvc');
   assert.equal(plan.env.SDKWORK_DESKTOP_TARGET_PLATFORM, 'windows');

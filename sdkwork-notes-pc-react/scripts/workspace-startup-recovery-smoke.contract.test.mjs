@@ -3,6 +3,7 @@ import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 function createDataModuleUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
@@ -33,7 +34,7 @@ async function transpileTypeScriptModule(relativePath) {
 
 async function loadTsModule(relativePath) {
   const transpiled = await transpileTypeScriptModule(relativePath);
-  return import(createDataModuleUrl(transpiled.outputText));
+  return import(createDataModuleUrl(applyContractModuleStubs(transpiled.outputText)));
 }
 
 async function loadWorkspaceModules() {
@@ -48,16 +49,16 @@ async function loadWorkspaceModules() {
     "../types/notesWorkspace",
     typesModuleUrl,
   );
-  const orchestratorModuleUrl = createDataModuleUrl(orchestratorModuleSource);
+  const orchestratorModuleUrl = createDataModuleUrl(applyContractModuleStubs(orchestratorModuleSource));
 
   const recoveryModuleSource = (
     await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceRecovery.ts')
   ).outputText;
-  const recoveryModuleUrl = createDataModuleUrl(recoveryModuleSource);
+  const recoveryModuleUrl = createDataModuleUrl(applyContractModuleStubs(recoveryModuleSource));
   const notesSyncModuleSource = (
     await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
   ).outputText;
-  const notesSyncModuleUrl = createDataModuleUrl(notesSyncModuleSource);
+  const notesSyncModuleUrl = createDataModuleUrl(applyContractModuleStubs(notesSyncModuleSource));
 
   const zustandVanillaStubUrl = createDataModuleUrl(`
 export function createStore() {
@@ -321,7 +322,7 @@ export function resolveNotesWorkspaceSaveSuccessState(currentSaveState) {
     typesModuleUrl,
   );
 
-  const storeModule = await import(createDataModuleUrl(patchedWorkspaceStoreSource));
+  const storeModule = await import(createDataModuleUrl(applyContractModuleStubs(patchedWorkspaceStoreSource)));
   const notesLocalModule = await loadTsModule('packages/sdkwork-notes-pc-local/src/index.ts');
   const typesModule = await import(typesModuleUrl);
   const orchestratorModule = await import(orchestratorModuleUrl);

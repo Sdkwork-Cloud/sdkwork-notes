@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { isBlank, trim } from '@sdkwork/utils';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 import type {
   NotesRemoteAppClient,
   NotesRemoteAppClientFactory,
@@ -8,7 +10,7 @@ import { resolveSessionIdentityClaims } from './sessionIdentityClaims';
 import {
   assertNoForbiddenCredentialEnv,
   resolveSdkworkAccessTokenFromEnv,
-} from '@sdkwork/core-pc-react/env';
+} from './appSdkCredentialEnv';
 
 export type AppRuntimeEnv = 'development' | 'staging' | 'production' | 'test';
 
@@ -84,17 +86,13 @@ function normalizeEnvValue(value: unknown): string | undefined {
   return undefined;
 }
 
-function normalizeString(value?: unknown): string {
-  return typeof value === 'string' ? value.trim() : '';
-}
-
 function normalizeBearerToken(value?: unknown): string {
   const normalized = normalizeString(value);
-  if (!normalized) {
+  if (isBlank(normalized)) {
     return '';
   }
 
-  return normalized.replace(/^Bearer\s+/i, '').trim();
+  return trim(normalized.replace(/^Bearer\s+/i, ''));
 }
 
 function normalizeUrl(value?: unknown): string {
@@ -104,7 +102,7 @@ function normalizeUrl(value?: unknown): string {
 function firstNonEmptyValue(...values: Array<string | undefined>): string | undefined {
   for (const value of values) {
     const normalized = normalizeString(value);
-    if (normalized) {
+    if (!isBlank(normalized)) {
       return normalized;
     }
   }

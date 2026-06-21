@@ -1,10 +1,12 @@
+import { isBlank, trim } from '@sdkwork/utils';
+
 function normalizeBearerToken(value?: string): string {
-  const normalized = (value ?? '').trim();
-  if (!normalized) {
+  const normalized = trim(value ?? '');
+  if (isBlank(normalized)) {
     return '';
   }
 
-  return normalized.replace(/^Bearer\s+/i, '').trim();
+  return trim(normalized.replace(/^Bearer\s+/i, ''));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -37,8 +39,8 @@ function readJwtClaimString(
   ...keys: string[]
 ): string | undefined {
   for (const key of keys) {
-    const value = String(claims[key] ?? '').trim();
-    if (value) {
+    const value = trim(String(claims[key] ?? ''));
+    if (!isBlank(value)) {
       return value;
     }
   }

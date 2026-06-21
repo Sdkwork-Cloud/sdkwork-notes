@@ -34,29 +34,87 @@ function createDataModuleUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
 }
 
-async function loadUseAppSdkClientModule() {
-  const entryPoint = path.resolve(
-    process.cwd(),
-    'packages/sdkwork-notes-pc-core/src/sdk/useAppSdkClient.ts',
-  );
-  const source = await readFile(entryPoint, 'utf8');
-  const transpiled = ts.transpileModule(source, {
+function transpileTypeScriptSource(source, fileName) {
+  return ts.transpileModule(source, {
     compilerOptions: {
       module: ts.ModuleKind.ESNext,
       target: ts.ScriptTarget.ES2022,
     },
-    fileName: entryPoint,
-  });
+    fileName,
+  }).outputText;
+}
 
+async function loadUseAppSdkClientModule() {
+  const packageRoot = path.resolve(process.cwd(), 'packages/sdkwork-notes-pc-core/src/sdk');
   const reactStubUrl = createDataModuleUrl(`
     export function useMemo(factory) {
       return factory();
     }
   `);
+  const utilsStubUrl = createDataModuleUrl(`
+    export function trim(value) {
+      return typeof value === 'string' ? value.trim() : '';
+    }
+    export function isBlank(value) {
+      return trim(value).length === 0;
+    }
+  `);
+  const commonsStubUrl = createDataModuleUrl(`
+    export function normalizeString(value) {
+      if (typeof value === 'string') {
+        return value.trim();
+      }
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return String(value);
+      }
+      return '';
+    }
+  `);
 
-  const moduleSource = transpiled.outputText
+  const localModuleUrls = new Map();
+  async function loadLocalModule(relativeFileName) {
+    if (localModuleUrls.has(relativeFileName)) {
+      return localModuleUrls.get(relativeFileName);
+    }
+
+    const filePath = path.join(packageRoot, relativeFileName);
+    const source = await readFile(filePath, 'utf8');
+    const transpiled = transpileTypeScriptSource(source, filePath)
+      .replaceAll("'@sdkwork/utils'", `'${utilsStubUrl}'`)
+      .replaceAll('"@sdkwork/utils"', `"${utilsStubUrl}"`)
+      .replaceAll("'@sdkwork/notes-pc-commons'", `'${commonsStubUrl}'`)
+      .replaceAll('"@sdkwork/notes-pc-commons"', `"${commonsStubUrl}"`);
+
+    const moduleUrl = createDataModuleUrl(transpiled);
+    localModuleUrls.set(relativeFileName, moduleUrl);
+    return moduleUrl;
+  }
+
+  const entryPoint = path.join(packageRoot, 'useAppSdkClient.ts');
+  const source = await readFile(entryPoint, 'utf8');
+  let moduleSource = transpileTypeScriptSource(source, entryPoint);
+  const credentialEnvUrl = await loadLocalModule('appSdkCredentialEnv.ts');
+  const sessionIdentityClaimsUrl = await loadLocalModule('sessionIdentityClaims.ts');
+
+  moduleSource = moduleSource
     .replaceAll("'react'", `'${reactStubUrl}'`)
-    .replaceAll('"react"', `"${reactStubUrl}"`);
+    .replaceAll('"react"', `"${reactStubUrl}"`)
+    .replaceAll("'@sdkwork/utils'", `'${utilsStubUrl}'`)
+    .replaceAll('"@sdkwork/utils"', `"${utilsStubUrl}"`)
+    .replaceAll("'@sdkwork/notes-pc-commons'", `'${commonsStubUrl}'`)
+    .replaceAll('"@sdkwork/notes-pc-commons"', `"${commonsStubUrl}"`)
+    .replaceAll("'./appSdkCredentialEnv.js'", `'${credentialEnvUrl}'`)
+    .replaceAll('"./appSdkCredentialEnv.js"', `"${credentialEnvUrl}"`)
+    .replaceAll("'./appSdkCredentialEnv'", `'${credentialEnvUrl}'`)
+    .replaceAll('"./appSdkCredentialEnv"', `"${credentialEnvUrl}"`)
+    .replaceAll("'./sessionIdentityClaims.js'", `'${sessionIdentityClaimsUrl}'`)
+    .replaceAll('"./sessionIdentityClaims.js"', `"${sessionIdentityClaimsUrl}"`)
+    .replaceAll("'./sessionIdentityClaims'", `'${sessionIdentityClaimsUrl}'`)
+    .replaceAll('"./sessionIdentityClaims"', `"${sessionIdentityClaimsUrl}"`);
+
+  if (!moduleSource.includes(`from '${commonsStubUrl}'`) && !moduleSource.includes(`from "${commonsStubUrl}"`)) {
+    moduleSource = `import { normalizeString } from '${commonsStubUrl}';\n${moduleSource}`;
+  }
 
   return import(createDataModuleUrl(moduleSource));
 }

@@ -3,10 +3,10 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
-
-function createDataModuleUrl(source) {
-  return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
-}
+import {
+  applyContractModuleStubs,
+  createDataModuleUrl,
+} from './contract-transpile-helpers.mjs';
 
 async function transpileTypeScriptModule(relativePath) {
   const entryPoint = path.resolve(
@@ -27,11 +27,12 @@ async function loadWorkspaceOrchestratorModule() {
   const workspaceTypesModuleUrl = createDataModuleUrl(
     (await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/types/notesWorkspace.ts')).outputText,
   );
-  const orchestratorSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceOrchestrator.ts')
-  ).outputText.replace(
-    "../types/notesWorkspace",
-    workspaceTypesModuleUrl,
+  const orchestratorSource = applyContractModuleStubs(
+    (await transpileTypeScriptModule('packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceOrchestrator.ts'))
+      .outputText.replace(
+        "../types/notesWorkspace",
+        workspaceTypesModuleUrl,
+      ),
   );
 
   return import(createDataModuleUrl(orchestratorSource));

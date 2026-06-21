@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "generator": "@sdkwork/sdk-generator",
+  "sdk": {
+    "name": "sdkwork-notes-sdk",
+    "version": "0.1.0",
+    "language": "typescript",
+    "sdkType": "custom",
+    "protocol": "http",
+    "packageName": "@sdkwork-internal/notes-sdk-generated"
+  },
+  "generatedFiles": [
+    {
+      "path": "bin/publish-core.mjs",
+      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+    },
+    {
+      "path": "bin/publish.ps1",
+      "sha256": "78c6419400b988409d9393c2ecd85aa02dd6760f73edb3cc84cb28fefc51b41e"
+    },
+    {
+      "path": "bin/publish.sh",
+      "sha256": "899087c23e670b6951a12a13490fd557f761c96d78fabfb7e58a37e367db889f"
+    },
+    {
+      "path": "bin/sdk-gen.bat",
+      "sha256": "22d4c9b71d0d722b795098598c01ceb4ca7aec230eb189a517c714c472849777"
+    },
+    {
+      "path": "bin/sdk-gen.sh",
+      "sha256": "b24c21c7b42fa17fffb3c7c563a7329722624441696b1d6a841e2a7520da7260"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "sha256": "fb941a0806986a54fc192f98a98f6d9c282b8d350b2b19a3e71dda404e92d545"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "7840cc7d2b36ff364ac16c2fc5ec15b861bfe96854eecf81fb59b00edb8b1447"
+    },
+    {
+      "path": "package.json",
+      "sha256": "130f7b418d14331b9eafccc4c126082b145c8f51d8065227f6c443b3628099a5"
+    },
+    {
+      "path": "README.md",
+      "sha256": "0cd24780d9e1fa65d74cb7f83cd5f1e98252a9d65273feb1bf729d9460355879"
+    },
+    {
+      "path": "sdkwork-sdk.json",
+      "sha256": "825292e308b1c90049fbd7bafab04ce07332e597e4eb824f8f85edd303f71abd"
+    },
+    {
+      "path": "src/api/base.ts",
+      "sha256": "02ad25e6bf331ff241ba387c2947ddf1900dd849038e08c2757416a3aa788a04"
+    },
+    {
+      "path": "src/api/index.ts",
+      "sha256": "da9827c16ff2d88626f40049e9139f39fbc37bdbe65e40a25a2ea47fa0560a95"
+    },
+    {
+      "path": "src/api/notes.ts",
+      "sha256": "89a86fe372ce9771b89996d37e9db390dd25f04886473a42f829cb32bd049194"
+    },
+    {
+      "path": "src/api/paths.ts",
+      "sha256": "cc519983e70d03509b1f006b925f6030bc2f54721dd387ef677b698837f0c5a1"
+    },
+    {
+      "path": "src/auth/index.ts",
+      "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+    },
+    {
+      "path": "src/http/client.ts",
+      "sha256": "3f9e497f2e58dd3815d0e330180e0d3e46c4dfda4fad2fccabf2682d4e32244e"
+    },
+    {
+      "path": "src/http/index.ts",
+      "sha256": "fc204fbe89750b9d25ecaffe41003e6ac243a1a895b65e65856202ab825d2dbe"
+    },
+    {
+      "path": "src/index.ts",
+      "sha256": "be1ba971d7c153f90af599aff97d71c8047fbb6b97a0adb57c2fceaaca4a4749"
+    },
+    {
+      "path": "src/sdk.ts",
+      "sha256": "9ee289fbb2b4442bb62a51c51e88d87ca0166ca4ac20ead3725018f4093eef75"
+    },
+    {
+      "path": "src/types/common.ts",
+      "sha256": "2d75166aa61cdbf2c56569b4fd1dcb10c0a070fe8bf8123bd519af10844bee29"
+    },
+    {
+      "path": "src/types/create-export-request.ts",
+      "sha256": "03d9faf824d66bd54598e523fce1d810880b6eed438fe4a2e2981ded335fb3d5"
+    },
+    {
+      "path": "src/types/create-page-request.ts",
+      "sha256": "3aa8eaf021e56689b4afc5b48b9b5b8220b4c1437fde7d0a8751ba7975d7bab4"
+    },
+    {
+      "path": "src/types/drive-version-page.ts",
+      "sha256": "a5d0a8b5da6b76d4af57dd04956bc9227a89835cb1dd46a0ce2df00f9a500517"
+    },
+    {
+      "path": "src/types/drive-version-summary.ts",
+      "sha256": "93157d13b56351897fe59e62d067d1c6f5756c42781c9550a5a8c9ee466756a9"
+    },
+    {
+      "path": "src/types/export-job.ts",
+      "sha256": "5a01aebb294308210180e180b8e8dff2c127552a88a5abd1fccdd6fa7a59fe99"
+    },
+    {
+      "path": "src/types/field-error.ts",
+      "sha256": "e2f31b94dc305857ae417ec3a475a999b1a54e4ee61a766e619b8cf0ba46c004"
+    },
+    {
+      "path": "src/types/index.ts",
+      "sha256": "394a09754248e851583f911999131715baf0d240820acaaf1f9ab3d643e0064c"
+    },
+    {
+      "path": "src/types/page-content.ts",
+      "sha256": "bc471145dc3938a80b317c34a378bec5a30fbbedfdd02669cd4d65dcdc704bc5"
+    },
+    {
+      "path": "src/types/page-info.ts",
+      "sha256": "53ada8d995f2707e08ef0dfe629ca17f7700e68080fe633b1a7e7726a8241f0d"
+    },
+    {
+      "path": "src/types/page-summary-page.ts",
+      "sha256": "7b386130fa380e304115a1a098a0b9716a107769c0faa618b72abf23ec9e8ca1"
+    },
+    {
+      "path": "src/types/page-summary.ts",
+      "sha256": "5f4dcdadea08570a3449b0893e8bf00d79142e690743250dbc94ab20dbedc0ce"
+    },
+    {
+      "path": "src/types/page.ts",
+      "sha256": "a061bba0cd95ff4359be83a3dd4f2539bcaf881a352b592a85591b2c8085c5c3"
+    },
+    {
+      "path": "src/types/problem-detail.ts",
+      "sha256": "36a0793167bcd176cb48900f37c2f557f38c9c00070002203c10e90b6e27beef"
+    },
+    {
+      "path": "src/types/restore-page-version-request.ts",
+      "sha256": "7a52fcfde1f27991f8c16a0c0d673addd7f5f5385c8632f5dd29d9a0d6108fc6"
+    },
+    {
+      "path": "src/types/search-result-page.ts",
+      "sha256": "42283dbbbc185f7731d08643e7faeca7e91a3b80e1b602b9060b217e20bb772e"
+    },
+    {
+      "path": "src/types/search-result.ts",
+      "sha256": "a5f3722dd85b70b1c188ee1e66b3a5ec70c7fbd6cedb0a61d3524c2c08a7c558"
+    },
+    {
+      "path": "src/types/update-page-content-request.ts",
+      "sha256": "47ffd5e3bc4475b8b603fe297f4a8ad56611d562b905ffa3c75f3dabc48d26e9"
+    },
+    {
+      "path": "src/types/update-page-request.ts",
+      "sha256": "407abee9b19acbc484869ef22741e0df04a4b5032a8412b24cee3040f8db56df"
+    },
+    {
+      "path": "src/types/workspace-page.ts",
+      "sha256": "70bcd50bd09414ecec40e29f0a6e79b829758d73cad6a230e2a6ee87f20dd586"
+    },
+    {
+      "path": "src/types/workspace.ts",
+      "sha256": "d69d6c083bdadeac75c24a3ed32836c4744e79268881fb57bf4496d9e85c9d92"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "7c8a6c2b00fb208ec28e1e6045194487d1b3e563d6c44cef4783fd4fe0e8ffad"
+    }
+  ],
+  "scaffoldFiles": [
+    "custom/build-runtime.mjs",
+    "custom/README.md"
+  ],
+  "customRoots": [
+    "custom/"
+  ]
+}

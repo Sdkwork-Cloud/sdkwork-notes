@@ -1,4 +1,5 @@
 import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-pc-types';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 import { buildNotesSearchDocuments, searchNotesSearchDocuments } from '@sdkwork/notes-pc-search';
 import type { NotesCollectionView } from '../types/notesWorkspace';
 import type { CommandPaletteSearchItem } from './noteCommandPalette';
@@ -36,16 +37,6 @@ export interface NoteWorkspaceCommandPaletteItem extends CommandPaletteSearchIte
 }
 
 type Translate = (key: string, values?: Record<string, unknown>) => string;
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
-}
 
 function normalizeSearchTokens(value: string) {
   return normalizeString(value)

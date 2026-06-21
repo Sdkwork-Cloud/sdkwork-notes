@@ -1,3 +1,4 @@
+use sdkwork_utils_rust::string::{is_blank, trim};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use async_trait::async_trait;
@@ -33,12 +34,12 @@ pub struct SdkDriveAppFacadePageContentPort {
 
 impl SdkDriveAppFacadePageContentPort {
     pub fn from_env(facade_url: String) -> Result<Self, String> {
-        let client = SdkworkAppClient::new_with_base_url(facade_url.trim())
+        let client = SdkworkAppClient::new_with_base_url(trim(&facade_url))
             .map_err(|error| format!("initialize Drive SDK client failed: {error}"))?;
         if let Ok(token) = std::env::var("SDKWORK_ACCESS_TOKEN") {
-            let trimmed = token.trim();
-            if !trimmed.is_empty() {
-                client.set_access_token(trimmed);
+            let trimmed = trim(&token);
+            if !is_blank(Some(trimmed.as_str())) {
+                client.set_access_token(trimmed.as_str());
             }
         }
         let http = Client::builder()
@@ -458,7 +459,9 @@ impl SdkDriveAppFacadePageContentPort {
                 .await
                 .map_err(map_drive_error("list Drive file versions"))?;
             items.extend(response.items);
-            page_token = response.next_page_token.filter(|token| !token.trim().is_empty());
+            page_token = response
+                .next_page_token
+                .filter(|token| !is_blank(Some(token.as_str())));
             if page_token.is_none() {
                 break;
             }

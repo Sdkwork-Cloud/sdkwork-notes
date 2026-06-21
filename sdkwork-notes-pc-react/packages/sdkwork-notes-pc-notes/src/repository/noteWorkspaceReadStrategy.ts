@@ -4,6 +4,7 @@ import type {
   PageRequest,
   ServiceResult,
 } from '@sdkwork/notes-pc-types';
+import { normalizeString, toErrorMessage } from '@sdkwork/notes-pc-commons';
 import type {
   NoteWorkspaceDataSource,
   NoteWorkspaceSnapshot,
@@ -19,26 +20,6 @@ export interface NoteWorkspaceReadStrategyDependencies {
 export interface NoteWorkspaceReadStrategy {
   key: NoteWorkspaceDataSource['readStrategy'];
   loadWorkspaceSnapshot(pageRequest?: PageRequest): Promise<ServiceResult<NoteWorkspaceSnapshot>>;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
-}
-
-function toErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  if (typeof error === 'string' && error.trim()) {
-    return error;
-  }
-  return fallback;
 }
 
 function resultSuccess<T>(data: T): ServiceResult<T> {

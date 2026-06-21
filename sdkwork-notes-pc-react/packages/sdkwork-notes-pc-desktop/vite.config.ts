@@ -6,7 +6,7 @@ import { defineConfig, loadEnv } from 'vite';
 import {
   buildSdkworkVitePrivateEnvDefine,
   stripForbiddenCredentialEnvEntries,
-} from '@sdkwork/core-pc-react/vite';
+} from '../../scripts/vite-private-env';
 import {
   isSharedSdkSourceMode,
   resolvePnpmPackageDistEntry,

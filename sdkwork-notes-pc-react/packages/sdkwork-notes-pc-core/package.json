@@ -19,11 +19,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@sdkwork/utils": "workspace:*",
+    "@sdkwork/notes-pc-commons": "workspace:*",
     "@sdkwork-internal/notes-app-sdk-generated": "workspace:*",
     "@sdkwork/notes-pc-sync": "workspace:*",
     "@sdkwork/notes-pc-types": "workspace:*",
     "@sdkwork/sdk-common": "workspace:*",
-    "@sdkwork/core-pc-react": "workspace:*",
     "react": "catalog:",
     "zustand": "catalog:"
   },

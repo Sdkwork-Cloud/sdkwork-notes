@@ -8,19 +8,19 @@ const workspaceConfigPath = path.resolve(workspaceRoot, 'pnpm-workspace.yaml');
 const notesCorePackageJsonPath = path.resolve(
   workspaceRoot,
   'packages',
-  'sdkwork-notes-core',
+  'sdkwork-notes-pc-core',
   'package.json',
 );
 const notesAuthPackageJsonPath = path.resolve(
   workspaceRoot,
   'packages',
-  'sdkwork-notes-auth',
+  'sdkwork-notes-pc-auth',
   'package.json',
 );
 const notesAuthBridgePath = path.resolve(
   workspaceRoot,
   'packages',
-  'sdkwork-notes-auth',
+  'sdkwork-notes-pc-auth',
   'src',
   'services',
   'sdkworkAuthBridge.ts',
@@ -79,6 +79,45 @@ test('notes workspace does not retain retired embedded core or IM sdk workspace 
   assert.doesNotMatch(workspaceConfig, /openchat\/sdkwork-im-sdk\/sdkwork-im-sdk-typescript\/generated\/server-openapi/);
 });
 
+test('notes vite configs do not import core-pc-react build helpers', () => {
+  const viteConfigPaths = [
+    path.resolve(workspaceRoot, 'vite.config.ts'),
+    path.resolve(workspaceRoot, 'packages', 'sdkwork-notes-pc-desktop', 'vite.config.ts'),
+  ];
+
+  for (const viteConfigPath of viteConfigPaths) {
+    const source = fs.readFileSync(viteConfigPath, 'utf8');
+    assert.doesNotMatch(
+      source,
+      /@sdkwork\/core-pc-react/,
+      `Expected ${path.relative(workspaceRoot, viteConfigPath)} to use notes-owned vite env helpers.`,
+    );
+  }
+});
+
+test('notes-owned PC packages do not depend on core-pc-react', () => {
+  const packageDirs = fs
+    .readdirSync(packagesRootPath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith('sdkwork-notes-pc-'))
+    .map((entry) => entry.name);
+
+  for (const directory of packageDirs) {
+    const packageJsonPath = path.join(packagesRootPath, directory, 'package.json');
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const dependencies = {
+      ...(packageJson.dependencies ?? {}),
+      ...(packageJson.devDependencies ?? {}),
+      ...(packageJson.peerDependencies ?? {}),
+    };
+
+    assert.equal(
+      dependencies['@sdkwork/core-pc-react'],
+      undefined,
+      `Expected ${directory} to avoid a direct core-pc-react dependency.`,
+    );
+  }
+});
+
 test('notes-core app sdk runtime does not depend on core-pc-react', () => {
   const packageJson = JSON.parse(fs.readFileSync(notesCorePackageJsonPath, 'utf8'));
   const dependencies = packageJson.dependencies ?? {};
@@ -95,7 +134,7 @@ test('notes-auth owns the shared auth runtime boundary and the rest of the works
 
   const bridgeSource = fs.readFileSync(notesAuthBridgePath, 'utf8');
 
-  assert.match(bridgeSource, /from '@sdkwork\/notes-core'/);
+  assert.match(bridgeSource, /from '@sdkwork\/notes-pc-core'/);
   assert.match(bridgeSource, /clearSession: options\.clearSession \?\? \(\(\) => clearAppSdkSessionTokens\(\)\)/);
   assert.match(bridgeSource, /getClient: \(\) => resolveBoundAuthClient\(options\.getClient\)/);
   assert.match(bridgeSource, /commitSession: options\.commitSession \?\? \(\(session\) => \{/);

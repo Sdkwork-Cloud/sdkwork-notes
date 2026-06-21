@@ -99,7 +99,7 @@ export function createDesktopTauriDevPlan({
   windowsCargoBinDir = '',
 } = {}) {
   const workspaceRoot = resolveWorkspaceRootDir(currentWorkingDir) || defaultWorkspaceRoot;
-  const desktopDir = path.join(workspaceRoot, 'packages', 'sdkwork-notes-desktop');
+  const desktopDir = path.join(workspaceRoot, 'packages', 'sdkwork-notes-pc-desktop');
   const resolvedMode = normalizeAppMode(mode ?? env.SDKWORK_NOTES_APP_MODE, 'development');
   const sharedEnv = applyDesktopToolchainEnv({
     env: {

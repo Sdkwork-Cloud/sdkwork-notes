@@ -22,7 +22,7 @@
     {
       "language": "typescript",
       "workspace": "sdkwork-notes-app-sdk-typescript",
-      "generationState": "declared",
+      "generationState": "generated",
       "releaseState": "not_published",
       "generatedPath": "sdkwork-notes-app-sdk-typescript/generated/server-openapi",
       "manifestPath": "sdkwork-notes-app-sdk-typescript/generated/server-openapi/package.json",
@@ -37,7 +37,7 @@
     {
       "language": "rust",
       "workspace": "sdkwork-notes-app-sdk-rust",
-      "generationState": "declared",
+      "generationState": "generated",
       "releaseState": "not_published",
       "generatedPath": "sdkwork-notes-app-sdk-rust/generated/server-openapi",
       "manifestPath": "sdkwork-notes-app-sdk-rust/generated/server-openapi/Cargo.toml",

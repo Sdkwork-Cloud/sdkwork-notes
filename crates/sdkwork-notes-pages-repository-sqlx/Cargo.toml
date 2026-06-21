@@ -14,4 +14,6 @@ sdkwork-notes-database-host.workspace = true
 sdkwork-notes-pages-service.workspace = true
 sdkwork-database-config.workspace = true
 sdkwork-database-sqlx.workspace = true
+sdkwork-database-repository.workspace = true
+serde.workspace = true
 sqlx.workspace = true

@@ -53,8 +53,8 @@ test('future notes remote apply upstream closure targets the local typed product
 test('future notes remote apply closure stays aligned with target contract and local port files', () => {
   const spec = readClosureContractSpec();
   const targetSpec = readTargetContractSpec();
-  const portSource = readFromWorkspace('packages', 'sdkwork-notes-core', 'src', 'sdk', 'appSdkPort.ts');
-  const sdkSource = readFromWorkspace('packages', 'sdkwork-notes-core', 'src', 'sdk', 'useAppSdkClient.ts');
+  const portSource = readFromWorkspace('packages', 'sdkwork-notes-pc-core', 'src', 'sdk', 'appSdkPort.ts');
+  const sdkSource = readFromWorkspace('packages', 'sdkwork-notes-pc-core', 'src', 'sdk', 'useAppSdkClient.ts');
 
   assert.equal(spec.target.module, targetSpec.sdk.module);
   assert.equal(spec.target.method, targetSpec.sdk.method);

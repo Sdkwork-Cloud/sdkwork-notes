@@ -35,17 +35,17 @@ test('release workflow delegates desktop packaging to the SDKWork reusable workf
   assert.equal(workflowConfig.app.sourcePath, 'sdkwork-notes-pc-react');
   assert.equal(workflowConfig.release.changelog.source, 'auto');
   assert.deepEqual(targetIds, [
-    'windows-x64-desktop-msi',
-    'windows-x64-desktop-exe',
-    'windows-arm64-desktop-msi',
-    'windows-arm64-desktop-exe',
-    'linux-debian-x64-desktop-deb',
-    'linux-rhel-x64-desktop-rpm',
-    'linux-x64-desktop-appimage',
-    'linux-debian-arm64-desktop-deb',
-    'linux-rhel-arm64-desktop-rpm',
-    'linux-arm64-desktop-appimage',
-    'macos-x64-desktop-tar-gz',
-    'macos-arm64-desktop-tar-gz',
+    'windows-x64-standalone-desktop-msi',
+    'windows-x64-standalone-desktop-exe',
+    'windows-arm64-standalone-desktop-msi',
+    'windows-arm64-standalone-desktop-exe',
+    'linux-debian-x64-standalone-desktop-deb',
+    'linux-rhel-x64-standalone-desktop-rpm',
+    'linux-x64-standalone-desktop-appimage',
+    'linux-debian-arm64-standalone-desktop-deb',
+    'linux-rhel-arm64-standalone-desktop-rpm',
+    'linux-arm64-standalone-desktop-appimage',
+    'macos-x64-standalone-desktop-tar-gz',
+    'macos-arm64-standalone-desktop-tar-gz',
   ]);
 });

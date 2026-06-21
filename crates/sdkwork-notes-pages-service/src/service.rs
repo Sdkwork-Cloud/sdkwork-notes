@@ -16,6 +16,7 @@ use crate::ports::{
     NotesRepository, ReadDrivePageContentCommand, RestoreDrivePageContentVersionCommand,
     UpdateDrivePageContentCommand,
 };
+use sdkwork_utils_rust::string::{is_blank, trim};
 
 #[derive(Clone)]
 pub struct NotesService<R, D>
@@ -852,11 +853,11 @@ where
         let target_type = normalize_ai_target_type(&command.target_type)?;
         let target_id = command
             .target_id
-            .map(|value| value.trim().to_string())
+            .as_ref().map(|value| trim(value))
             .filter(|value| !value.is_empty());
         let prompt_snapshot = command
             .prompt
-            .map(|value| value.trim().to_string())
+            .as_ref().map(|value| trim(value))
             .filter(|value| !value.is_empty());
         if prompt_snapshot
             .as_ref()
@@ -1025,7 +1026,7 @@ where
             }
             let page_id = suggestion
                 .page_id
-                .map(|value| value.trim().to_string())
+                .as_ref().map(|value| trim(value))
                 .filter(|value| !value.is_empty())
                 .or_else(|| page_id_from_ai_job(&job, &sources))
                 .ok_or_else(|| {
@@ -1300,7 +1301,7 @@ where
         let feedback_type = normalize_ai_feedback_type(&command.feedback_type)?;
         let feedback_text = command
             .feedback_text
-            .map(|value| value.trim().to_string())
+            .as_ref().map(|value| trim(value))
             .filter(|value| !value.is_empty());
         if feedback_text
             .as_ref()
@@ -1472,7 +1473,7 @@ where
 }
 
 fn require_non_empty(field: &str, value: &str) -> Result<(), NotesProductError> {
-    if value.trim().is_empty() {
+    if is_blank(Some(value)) {
         return Err(NotesProductError::Validation(format!(
             "{field} is required"
         )));
@@ -1509,7 +1510,7 @@ fn chrono_like_timestamp() -> String {
 
 fn normalize_required_string(field: &str, value: &str) -> Result<String, NotesProductError> {
     require_non_empty(field, value)?;
-    Ok(value.trim().to_string())
+    Ok(trim(value))
 }
 
 fn normalize_actor_context(
@@ -1524,15 +1525,15 @@ fn normalize_actor_context(
 
 fn normalize_optional_string(value: Option<String>) -> Option<String> {
     value
-        .map(|value| value.trim().to_string())
-        .filter(|value| !value.is_empty())
+        .map(|value| trim(&value))
+        .filter(|value| !is_blank(Some(value.as_str())))
 }
 
 fn normalize_optional_query<'a>(
     field: &str,
     value: Option<&'a str>,
 ) -> Result<Option<&'a str>, NotesProductError> {
-    let value = value.map(str::trim).filter(|value| !value.is_empty());
+    let value = value.map(str::trim).filter(|value| !is_blank(Some(value)));
     if let Some(value) = value {
         validate_max_chars(field, value, 200)?;
     }
@@ -1631,11 +1632,11 @@ fn optional_payload_string(
             "suggestion payload {field} must be a string"
         )));
     };
-    let value = value.trim();
-    if value.is_empty() {
+    let value = trim(value);
+    if is_blank(Some(value.as_str())) {
         return Ok(None);
     }
-    Ok(Some(value.to_string()))
+    Ok(Some(value))
 }
 
 fn validate_ai_target(target_type: &str, target_id: Option<&str>) -> Result<(), NotesProductError> {
@@ -1662,7 +1663,7 @@ fn validate_drive_snapshot(
             snapshot.content_schema_version.as_str(),
         ),
     ] {
-        if value.trim().is_empty() {
+        if is_blank(Some(value)) {
             return Err(NotesProductError::Internal(format!(
                 "Drive snapshot from {context} returned blank {field}"
             )));
@@ -1813,14 +1814,14 @@ fn validate_drive_version_page(
         .page_info
         .next_cursor
         .as_ref()
-        .is_some_and(|cursor| cursor.trim().is_empty())
+        .is_some_and(|cursor| is_blank(Some(cursor.as_str())))
     {
         return Err(NotesProductError::Internal(format!(
             "Drive version page from {context} returned blank nextCursor"
         )));
     }
     for version in &page.items {
-        if version.drive_version_id.trim().is_empty() {
+        if is_blank(Some(version.drive_version_id.as_str())) {
             return Err(NotesProductError::Internal(format!(
                 "Drive version page from {context} returned blank driveVersionId"
             )));
@@ -1830,12 +1831,12 @@ fn validate_drive_version_page(
                 "Drive version page from {context} returned invalid driveVersionNo"
             )));
         }
-        if version.version_kind.trim().is_empty() {
+        if is_blank(Some(version.version_kind.as_str())) {
             return Err(NotesProductError::Internal(format!(
                 "Drive version page from {context} returned blank versionKind"
             )));
         }
-        if version.created_at.trim().is_empty() {
+        if is_blank(Some(version.created_at.as_str())) {
             return Err(NotesProductError::Internal(format!(
                 "Drive version page from {context} returned blank createdAt"
             )));

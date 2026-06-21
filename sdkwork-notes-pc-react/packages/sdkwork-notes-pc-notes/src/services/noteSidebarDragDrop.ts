@@ -1,20 +1,11 @@
 import type { NoteFolder } from '@sdkwork/notes-pc-types';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 
 export const SIDEBAR_DRAG_MIME_TYPE = 'application/x-sdkwork-notes-sidebar-item';
 
 export interface SidebarDragItem {
   kind: 'note' | 'folder';
   id: string;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
 }
 
 function collectFolderDescendantIds(folders: NoteFolder[], rootId: string) {

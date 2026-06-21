@@ -11,6 +11,8 @@ import type {
 import {
   Result,
   createServiceAdapterController,
+  normalizeString,
+  toErrorMessage,
 } from '@sdkwork/notes-pc-commons';
 import {
   getAppSdkClientWithSession,
@@ -66,26 +68,6 @@ export interface AppSdkNoteRepositoryOptions {
   workspaceReadStrategy?: NoteWorkspaceReadStrategy;
   workspaceReadStrategies?: NoteWorkspaceReadStrategy[];
   workspaceReadStrategyKey?: NoteWorkspaceReadStrategyKey;
-}
-
-function normalizeString(value: unknown): string {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
-}
-
-function toErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-  if (typeof error === 'string' && error.trim()) {
-    return error;
-  }
-  return fallback;
 }
 
 function unwrapRequiredData<T>(payload: unknown, fallback: string) {

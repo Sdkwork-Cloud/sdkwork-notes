@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 const workspaceRoot = process.cwd();
 
@@ -21,7 +22,7 @@ async function loadTsModule(relativePath) {
     fileName: entryPoint,
   });
 
-  return import(createDataModuleUrl(transpiled.outputText));
+  return import(createDataModuleUrl(applyContractModuleStubs(transpiled.outputText)));
 }
 
 function createMemoryStorage() {

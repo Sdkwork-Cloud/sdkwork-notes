@@ -41,7 +41,7 @@ test('future notes remote apply generated output contract resolves to applicatio
 test('future generated output contract stays aligned with target method and local typed port', () => {
   const spec = readGeneratedOutputContractSpec();
   const targetSpec = readTargetContractSpec();
-  const portSource = readFromWorkspace('packages', 'sdkwork-notes-core', 'src', 'sdk', 'appSdkPort.ts');
+  const portSource = readFromWorkspace('packages', 'sdkwork-notes-pc-core', 'src', 'sdk', 'appSdkPort.ts');
 
   assert.equal(spec.typedPort.clientInterface, 'NotesRemoteAppClient');
   assert.equal(spec.typedPort.noteModule, 'NotesAppNoteClient');

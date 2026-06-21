@@ -36,7 +36,7 @@
 截至 `2026-04-13`，当前工作区冻结结论如下：
 
 - 当前主交付物为 `sdkwork-notes-pc-react`，产品形态是“桌面优先”的专业笔记工作台，而不是纯 Web 文档页或轻量便签。
-- 当前不是“纯桌面单入口”应用：`src/main.tsx` 提供 Web 入口，`packages/sdkwork-notes-desktop/src/main.tsx` 提供 Desktop 入口，两者共享 `AppRoot` 业务壳。
+- 当前不是“纯桌面单入口”应用：`src/main.tsx` 提供 Web 入口，`packages/sdkwork-notes-pc-desktop/src/main.tsx` 提供 Desktop 入口，两者共享 `AppRoot` 业务壳。
 - 当前主路由为 `/auth/login`、`/auth/register`、`/auth/forgot-password`、`/auth/oauth/callback/:provider`、`/notes`、`/account`。
 - 当前认证入口不是单一密码登录，而是 `password / phoneCode / emailCode + OAuth + QR login` 的多方式身份入口；OAuth Provider 已配置 `wechat / douyin / github / google`。
 - 当前笔记主数据并非本地优先，仍主要通过 `@sdkwork/app-sdk` 对接远端 `note / filesystem / user / auth` 能力。
@@ -88,14 +88,14 @@
 
 | 主题 | 关键文件 |
 | --- | --- |
-| Web / Desktop 双入口 | `src/main.tsx`、`src/App.tsx`、`packages/sdkwork-notes-desktop/src/main.tsx` |
-| 共享业务壳 | `packages/sdkwork-notes-shell/src/application/AppRoot.tsx`、`MainLayout.tsx`、`AppRoutes.tsx` |
-| 应用 Provider 与远端设置水合 | `packages/sdkwork-notes-shell/src/application/providers/AppProviders.tsx`、`ThemeManager.tsx`、`LanguageManager.tsx` |
-| 认证与会话持久化 | `packages/sdkwork-notes-auth/src/store/authStore.tsx`、`packages/sdkwork-notes-auth/src/services/sdkworkAuthBridge.ts`、`packages/sdkwork-notes-core/src/sdk/useAppSdkClient.ts`、`packages/sdkwork-notes-desktop/src/desktop/sessionBridge.ts`、`packages/sdkwork-notes-desktop/src-tauri/src/commands/session_state.rs` |
-| 笔记工作区 | `packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`、`useNotesWorkspaceStore.ts`、`noteWorkspaceOrchestrator.ts`、`noteWorkspaceSelectors.ts`、`noteWorkspaceCommandPaletteModel.ts`、`noteWorkspaceSaveFeedback.ts`、`noteWorkspaceSaveQueue.ts`、`noteRepository.ts` |
-| 桌面桥与能力边界 | `packages/sdkwork-notes-desktop/src/desktop/runtime.ts`、`tauriBridge.ts`、`bootstrap/DesktopBootstrapApp.tsx`、`src-tauri/capabilities/default.json` |
+| Web / Desktop 双入口 | `src/main.tsx`、`src/App.tsx`、`packages/sdkwork-notes-pc-desktop/src/main.tsx` |
+| 共享业务壳 | `packages/sdkwork-notes-pc-shell/src/application/AppRoot.tsx`、`MainLayout.tsx`、`AppRoutes.tsx` |
+| 应用 Provider 与远端设置水合 | `packages/sdkwork-notes-pc-shell/src/application/providers/AppProviders.tsx`、`ThemeManager.tsx`、`LanguageManager.tsx` |
+| 认证与会话持久化 | `packages/sdkwork-notes-pc-auth/src/store/authStore.tsx`、`packages/sdkwork-notes-pc-auth/src/services/sdkworkAuthBridge.ts`、`packages/sdkwork-notes-pc-core/src/sdk/useAppSdkClient.ts`、`packages/sdkwork-notes-pc-desktop/src/desktop/sessionBridge.ts`、`packages/sdkwork-notes-pc-desktop/src-tauri/src/commands/session_state.rs` |
+| 笔记工作区 | `packages/sdkwork-notes-pc-notes/src/pages/NotesWorkspacePage.tsx`、`useNotesWorkspaceStore.ts`、`noteWorkspaceOrchestrator.ts`、`noteWorkspaceSelectors.ts`、`noteWorkspaceCommandPaletteModel.ts`、`noteWorkspaceSaveFeedback.ts`、`noteWorkspaceSaveQueue.ts`、`noteRepository.ts` |
+| 桌面桥与能力边界 | `packages/sdkwork-notes-pc-desktop/src/desktop/runtime.ts`、`tauriBridge.ts`、`bootstrap/DesktopBootstrapApp.tsx`、`src-tauri/capabilities/default.json` |
 | 应用元数据与发布拓扑 | `sdkwork.app.config.json` |
-| CI/CD 与桌面发布链 | `.github/workflows/sdkwork-notes-desktop-release.yml`、`package.json` |
+| CI/CD 与桌面发布链 | `.github/workflows/package.yml`、`sdkwork.workflow.json`、`package.json` |
 
 ## 六、实施原则
 

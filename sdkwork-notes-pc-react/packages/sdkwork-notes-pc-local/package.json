@@ -17,6 +17,9 @@
     "build": "vite build",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@sdkwork/notes-pc-commons": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "catalog:",
     "vite": "catalog:",

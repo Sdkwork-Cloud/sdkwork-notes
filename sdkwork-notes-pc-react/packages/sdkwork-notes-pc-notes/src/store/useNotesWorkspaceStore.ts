@@ -1,4 +1,5 @@
 import { useStore, type StateCreator } from 'zustand';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 import { createStore } from 'zustand/vanilla';
 import { notesLocalStore, type NotesLocalStore } from '@sdkwork/notes-pc-local';
 import {
@@ -124,16 +125,6 @@ export interface NotesWorkspaceStoreState {
   setSidebarWidth: (width: number) => void;
   toggleFolderExpanded: (folderId: string) => void;
   clearError: () => void;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
 }
 
 function toTimestamp(value: unknown) {

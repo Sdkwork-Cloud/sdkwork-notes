@@ -91,16 +91,40 @@ function validateOpenApiContract(surface, inputPath) {
 }
 
 function validateSdkFamily(surface, config) {
-  const sdkFamilyDir = resolve(repoRoot, 'sdks', config.sdkFamily);
-  if (!existsSync(sdkFamilyDir)) {
+  const familyRoot = resolve(repoRoot, 'sdks', config.sdkFamily);
+  if (!existsSync(familyRoot)) {
     console.warn(`[sdkwork-notes] SDK family directory not yet present: sdks/${config.sdkFamily}`);
     return false;
   }
-  const assemblyPath = resolve(sdkFamilyDir, '.sdkwork-assembly.json');
+  const assemblyPath = resolve(familyRoot, '.sdkwork-assembly.json');
   if (!existsSync(assemblyPath)) {
     console.warn(`[sdkwork-notes] Missing assembly manifest for ${config.sdkFamily}`);
     return false;
   }
+
+  const assembly = JSON.parse(readFileSync(assemblyPath, 'utf8').replace(/^\uFEFF/u, ''));
+  const requiredLanguages = ['typescript', 'rust'];
+  for (const language of requiredLanguages) {
+    const entry = (assembly.languages ?? []).find((item) => item.language === language);
+    if (!entry) {
+      console.warn(`[sdkwork-notes] ${config.sdkFamily} missing ${language} language declaration`);
+      return false;
+    }
+    const manifestPath = resolve(familyRoot, entry.manifestPath);
+    if (!existsSync(manifestPath)) {
+      console.warn(
+        `[sdkwork-notes] Missing generated manifest for ${config.sdkFamily} ${language}: ${entry.manifestPath}`,
+      );
+      return false;
+    }
+    if (entry.generationState !== 'generated') {
+      console.warn(
+        `[sdkwork-notes] ${config.sdkFamily} ${language} generationState must be generated (found ${entry.generationState})`,
+      );
+      return false;
+    }
+  }
+
   console.log(`[sdkwork-notes] OK: ${surface} SDK family sdks/${config.sdkFamily}`);
   return true;
 }

@@ -1,3 +1,4 @@
+import { isBlank, trim } from '@sdkwork/utils';
 import { createClient as createNotesGeneratedClient } from '@sdkwork-internal/notes-app-sdk-generated';
 import type { Page, PageContent, PageSummary } from '@sdkwork-internal/notes-app-sdk-generated';
 import type {
@@ -39,8 +40,8 @@ function readEnvString(...keys: string[]): string | undefined {
 
   for (const key of keys) {
     const value = meta.env?.[key];
-    if (typeof value === 'string' && value.trim().length > 0) {
-      return value.trim();
+    if (typeof value === 'string' && !isBlank(value)) {
+      return trim(value);
     }
   }
 
@@ -56,11 +57,11 @@ function resolveNotesActorContext(config: AppSdkClientConfig): NotesActorContext
     accessToken: config.accessToken,
     authToken: config.authToken,
   });
-  const tenantId = (config.tenantId || identityClaims.tenantId || '').trim();
-  const organizationId = (config.organizationId || identityClaims.organizationId || '').trim();
-  const operatorId = (identityClaims.userId || '').trim();
+  const tenantId = trim(config.tenantId || identityClaims.tenantId || '');
+  const organizationId = trim(config.organizationId || identityClaims.organizationId || '');
+  const operatorId = trim(identityClaims.userId || '');
 
-  if (!tenantId || !organizationId || !operatorId) {
+  if (isBlank(tenantId) || isBlank(organizationId) || isBlank(operatorId)) {
     throw new Error(
       'Notes app SDK requires tenantId, organizationId, and userId from dual-token JWT claims. Log in through the SaaS IAM session flow instead of configuring fixed identity env variables.',
     );

@@ -1,4 +1,5 @@
 import type { Note, NoteFolder, NoteSummary, PageRequest, ServiceResult } from '@sdkwork/notes-pc-types';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 import {
   createRemoteAppSdkNoteWorkspaceDataSource,
   type NoteWorkspaceDataSource,
@@ -38,16 +39,6 @@ export interface NoteWorkspaceOrchestrator {
       trashedNotes?: NoteSummary[];
     },
   ): Promise<ServiceResult<NoteWorkspaceSelectionState>>;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
 }
 
 function toTimestamp(value: unknown) {

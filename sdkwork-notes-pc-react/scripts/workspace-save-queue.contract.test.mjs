@@ -4,6 +4,7 @@ import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 const workspaceRoot = process.cwd();
 const workspaceSaveQueueModulePath = 'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceSaveQueue.ts';
@@ -53,7 +54,7 @@ async function loadWorkspaceSaveQueueModule() {
     fileName: entryPoint,
   });
 
-  return import(createDataModuleUrl(transpiled.outputText));
+  return import(createDataModuleUrl(applyContractModuleStubs(transpiled.outputText)));
 }
 
 test('workspace save queue runtime exists and is exported from the services boundary', async () => {

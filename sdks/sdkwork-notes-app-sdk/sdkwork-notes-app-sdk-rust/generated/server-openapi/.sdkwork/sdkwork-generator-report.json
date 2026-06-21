@@ -1,0 +1,484 @@
+{
+  "schemaVersion": 1,
+  "generator": "@sdkwork/sdk-generator",
+  "artifacts": {
+    "stateDir": ".sdkwork",
+    "manifestPath": ".sdkwork/sdkwork-generator-manifest.json",
+    "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
+    "executionReportPath": ".sdkwork/sdkwork-generator-report.json",
+    "manualBackupDir": ".sdkwork/manual-backups"
+  },
+  "status": "ok",
+  "mode": "apply",
+  "hasChanges": true,
+  "hasDestructiveChanges": false,
+  "changeFingerprint": "88900bade72bd4fe6404e120450d6bc1f3b87b93774fea73cce38d12b8a04d96",
+  "changeImpact": {
+    "schemaVersion": 1,
+    "areas": [
+      "api-surface",
+      "models",
+      "runtime",
+      "build-metadata",
+      "publish-workflow",
+      "documentation",
+      "custom-scaffold",
+      "unknown"
+    ],
+    "details": [
+      {
+        "area": "api-surface",
+        "paths": [
+          "src/api/base.rs",
+          "src/api/mod.rs",
+          "src/api/notes.rs",
+          "src/api/paths.rs",
+          "src/lib.rs"
+        ]
+      },
+      {
+        "area": "models",
+        "paths": [
+          "src/models/ai_feedback_create_request.rs",
+          "src/models/ai_feedback.rs",
+          "src/models/ai_job.rs",
+          "src/models/ai_suggestion_apply_request.rs",
+          "src/models/ai_suggestion_decision_request.rs",
+          "src/models/ai_suggestion_page.rs",
+          "src/models/ai_suggestion.rs",
+          "src/models/common.rs",
+          "src/models/create_ai_job_request.rs",
+          "src/models/create_page_request.rs",
+          "src/models/create_workspace_request.rs",
+          "src/models/drive_version_page.rs",
+          "src/models/drive_version_summary.rs",
+          "src/models/field_error.rs",
+          "src/models/mod.rs",
+          "src/models/note_remote_apply_conflict.rs",
+          "src/models/note_remote_apply_mutation_patch.rs",
+          "src/models/note_remote_apply_request.rs",
+          "src/models/note_remote_apply_result.rs",
+          "src/models/object_type_summary.rs",
+          "src/models/page_content.rs",
+          "src/models/page_info.rs",
+          "src/models/page_summary_page.rs",
+          "src/models/page_summary.rs",
+          "src/models/page.rs",
+          "src/models/problem_detail.rs",
+          "src/models/restore_page_version_request.rs",
+          "src/models/search_result_page.rs",
+          "src/models/search_result.rs",
+          "src/models/update_page_content_request.rs",
+          "src/models/update_page_request.rs",
+          "src/models/workspace_bootstrap.rs",
+          "src/models/workspace_page.rs",
+          "src/models/workspace.rs"
+        ]
+      },
+      {
+        "area": "runtime",
+        "paths": [
+          "src/http/client.rs",
+          "src/http/mod.rs"
+        ]
+      },
+      {
+        "area": "build-metadata",
+        "paths": [
+          "Cargo.toml",
+          "sdkwork-sdk.json"
+        ]
+      },
+      {
+        "area": "publish-workflow",
+        "paths": [
+          "bin/publish-core.mjs",
+          "bin/publish.ps1",
+          "bin/publish.sh"
+        ]
+      },
+      {
+        "area": "documentation",
+        "paths": [
+          "CHANGELOG.md",
+          "custom/README.md",
+          "README.md"
+        ]
+      },
+      {
+        "area": "custom-scaffold",
+        "paths": [
+          "custom/README.md"
+        ]
+      },
+      {
+        "area": "unknown",
+        "paths": [
+          "LICENSE",
+          "src/client.rs"
+        ]
+      }
+    ],
+    "requiresVerification": true,
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required."
+  },
+  "executionDecision": {
+    "schemaVersion": 1,
+    "riskLevel": "high",
+    "nextAction": "verify",
+    "requiresManualReview": false,
+    "applyRequiresExpectedFingerprint": false,
+    "summary": "Changes have been applied. Run the required verification plan now.",
+    "reasons": [
+      "manual-review-required",
+      "preserved-legacy-files",
+      "unknown-impact",
+      "verification-required"
+    ]
+  },
+  "executionHandoff": {
+    "schemaVersion": 1,
+    "summary": "Run the required verification commands now.",
+    "steps": [
+      {
+        "id": "verify-check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "rust",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
+      },
+      {
+        "id": "verify-build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "rust",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
+      }
+    ]
+  },
+  "verificationPlan": {
+    "shouldRun": true,
+    "runPhase": "now",
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "steps": [
+      {
+        "id": "check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "rust",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
+      },
+      {
+        "id": "build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "rust",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
+      }
+    ]
+  },
+  "sdk": {
+    "name": "sdkwork-notes-app-sdk",
+    "version": "0.1.0",
+    "language": "rust",
+    "sdkType": "app",
+    "protocol": "http",
+    "outputPath": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
+    "packageName": "sdkwork-notes-app-sdk-generated"
+  },
+  "versioning": {
+    "resolvedVersion": "0.1.0",
+    "localVersions": []
+  },
+  "stats": {
+    "totalFiles": 51,
+    "models": 32,
+    "apis": 1,
+    "types": 34
+  },
+  "warnings": [],
+  "syncSummary": {
+    "dryRun": false,
+    "controlPlaneEnabled": true,
+    "writtenFiles": 51,
+    "skippedScaffoldFiles": 0,
+    "skippedUnchangedGeneratedFiles": 0,
+    "deletedGeneratedFiles": 0,
+    "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
+    "changeFingerprint": "88900bade72bd4fe6404e120450d6bc1f3b87b93774fea73cce38d12b8a04d96",
+    "changes": {
+      "createdGeneratedFiles": [
+        "bin/publish-core.mjs",
+        "bin/publish.ps1",
+        "bin/publish.sh",
+        "Cargo.toml",
+        "CHANGELOG.md",
+        "LICENSE",
+        "README.md",
+        "sdkwork-sdk.json",
+        "src/api/base.rs",
+        "src/api/mod.rs",
+        "src/api/notes.rs",
+        "src/api/paths.rs",
+        "src/client.rs",
+        "src/http/client.rs",
+        "src/http/mod.rs",
+        "src/lib.rs",
+        "src/models/ai_feedback_create_request.rs",
+        "src/models/ai_feedback.rs",
+        "src/models/ai_job.rs",
+        "src/models/ai_suggestion_apply_request.rs",
+        "src/models/ai_suggestion_decision_request.rs",
+        "src/models/ai_suggestion_page.rs",
+        "src/models/ai_suggestion.rs",
+        "src/models/common.rs",
+        "src/models/create_ai_job_request.rs",
+        "src/models/create_page_request.rs",
+        "src/models/create_workspace_request.rs",
+        "src/models/drive_version_page.rs",
+        "src/models/drive_version_summary.rs",
+        "src/models/field_error.rs",
+        "src/models/mod.rs",
+        "src/models/note_remote_apply_conflict.rs",
+        "src/models/note_remote_apply_mutation_patch.rs",
+        "src/models/note_remote_apply_request.rs",
+        "src/models/note_remote_apply_result.rs",
+        "src/models/object_type_summary.rs",
+        "src/models/page_content.rs",
+        "src/models/page_info.rs",
+        "src/models/page_summary_page.rs",
+        "src/models/page_summary.rs",
+        "src/models/page.rs",
+        "src/models/problem_detail.rs",
+        "src/models/restore_page_version_request.rs",
+        "src/models/search_result_page.rs",
+        "src/models/search_result.rs",
+        "src/models/update_page_content_request.rs",
+        "src/models/update_page_request.rs",
+        "src/models/workspace_bootstrap.rs",
+        "src/models/workspace_page.rs",
+        "src/models/workspace.rs"
+      ],
+      "updatedGeneratedFiles": [],
+      "unchangedGeneratedFiles": [],
+      "deletedGeneratedFiles": [],
+      "scaffoldedFiles": [
+        "custom/README.md"
+      ],
+      "preservedScaffoldFiles": [],
+      "backedUpFiles": []
+    },
+    "impact": {
+      "schemaVersion": 1,
+      "areas": [
+        "api-surface",
+        "models",
+        "runtime",
+        "build-metadata",
+        "publish-workflow",
+        "documentation",
+        "custom-scaffold",
+        "unknown"
+      ],
+      "details": [
+        {
+          "area": "api-surface",
+          "paths": [
+            "src/api/base.rs",
+            "src/api/mod.rs",
+            "src/api/notes.rs",
+            "src/api/paths.rs",
+            "src/lib.rs"
+          ]
+        },
+        {
+          "area": "models",
+          "paths": [
+            "src/models/ai_feedback_create_request.rs",
+            "src/models/ai_feedback.rs",
+            "src/models/ai_job.rs",
+            "src/models/ai_suggestion_apply_request.rs",
+            "src/models/ai_suggestion_decision_request.rs",
+            "src/models/ai_suggestion_page.rs",
+            "src/models/ai_suggestion.rs",
+            "src/models/common.rs",
+            "src/models/create_ai_job_request.rs",
+            "src/models/create_page_request.rs",
+            "src/models/create_workspace_request.rs",
+            "src/models/drive_version_page.rs",
+            "src/models/drive_version_summary.rs",
+            "src/models/field_error.rs",
+            "src/models/mod.rs",
+            "src/models/note_remote_apply_conflict.rs",
+            "src/models/note_remote_apply_mutation_patch.rs",
+            "src/models/note_remote_apply_request.rs",
+            "src/models/note_remote_apply_result.rs",
+            "src/models/object_type_summary.rs",
+            "src/models/page_content.rs",
+            "src/models/page_info.rs",
+            "src/models/page_summary_page.rs",
+            "src/models/page_summary.rs",
+            "src/models/page.rs",
+            "src/models/problem_detail.rs",
+            "src/models/restore_page_version_request.rs",
+            "src/models/search_result_page.rs",
+            "src/models/search_result.rs",
+            "src/models/update_page_content_request.rs",
+            "src/models/update_page_request.rs",
+            "src/models/workspace_bootstrap.rs",
+            "src/models/workspace_page.rs",
+            "src/models/workspace.rs"
+          ]
+        },
+        {
+          "area": "runtime",
+          "paths": [
+            "src/http/client.rs",
+            "src/http/mod.rs"
+          ]
+        },
+        {
+          "area": "build-metadata",
+          "paths": [
+            "Cargo.toml",
+            "sdkwork-sdk.json"
+          ]
+        },
+        {
+          "area": "publish-workflow",
+          "paths": [
+            "bin/publish-core.mjs",
+            "bin/publish.ps1",
+            "bin/publish.sh"
+          ]
+        },
+        {
+          "area": "documentation",
+          "paths": [
+            "CHANGELOG.md",
+            "custom/README.md",
+            "README.md"
+          ]
+        },
+        {
+          "area": "custom-scaffold",
+          "paths": [
+            "custom/README.md"
+          ]
+        },
+        {
+          "area": "unknown",
+          "paths": [
+            "LICENSE",
+            "src/client.rs"
+          ]
+        }
+      ],
+      "requiresVerification": true,
+      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required."
+    },
+    "verificationPlan": {
+      "shouldRun": true,
+      "runPhase": "now",
+      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown. Verification is required. Run the required verification commands now against the generated SDK output.",
+      "steps": [
+        {
+          "id": "check",
+          "title": "Unified package check",
+          "required": true,
+          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+          "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
+          "command": "node",
+          "args": [
+            "./bin/publish-core.mjs",
+            "--language",
+            "rust",
+            "--project-dir",
+            ".",
+            "--action",
+            "check"
+          ],
+          "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
+        },
+        {
+          "id": "build",
+          "title": "Unified package build",
+          "required": true,
+          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation, custom-scaffold, unknown.",
+          "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
+          "command": "node",
+          "args": [
+            "./bin/publish-core.mjs",
+            "--language",
+            "rust",
+            "--project-dir",
+            ".",
+            "--action",
+            "build"
+          ],
+          "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
+        }
+      ]
+    },
+    "executionDecision": {
+      "schemaVersion": 1,
+      "riskLevel": "high",
+      "nextAction": "verify",
+      "requiresManualReview": false,
+      "applyRequiresExpectedFingerprint": false,
+      "summary": "Changes have been applied. Run the required verification plan now.",
+      "reasons": [
+        "manual-review-required",
+        "preserved-legacy-files",
+        "unknown-impact",
+        "verification-required"
+      ]
+    },
+    "backedUpFiles": [],
+    "preservedLegacyFiles": true
+  }
+}

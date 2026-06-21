@@ -62,4 +62,8 @@ test('web and desktop vite configs load workspace env files and allow overriding
   assert.match(desktopViteConfig, /envDir:\s*workspaceRootDir/);
   assert.match(desktopViteConfig, /SDKWORK_NOTES_APP_MODE/);
   assert.match(desktopViteConfig, /VITE_APP_PLATFORM/);
+  assert.match(webViteConfig, /vite-private-env/);
+  assert.match(desktopViteConfig, /vite-private-env/);
+  assert.doesNotMatch(webViteConfig, /@sdkwork\/core-pc-react/);
+  assert.doesNotMatch(desktopViteConfig, /@sdkwork\/core-pc-react/);
 });

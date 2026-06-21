@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "kind": "sdkwork.component.spec",
   "component": {
-    "name": "sdkwork-notes-desktop",
+    "name": "sdkwork-notes-pc-desktop",
     "displayName": "SDKWork Notes Desktop",
     "version": "0.1.0",
     "type": "tauri-host",
@@ -120,7 +120,7 @@
   },
   "verification": {
     "commands": [
-      "cargo test --manifest-path apps/sdkwork-notes/sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/Cargo.toml"
+      "cargo test --manifest-path sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/Cargo.toml"
     ]
   },
   "metadata": {

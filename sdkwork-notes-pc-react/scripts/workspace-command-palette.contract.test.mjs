@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import test from 'node:test';
 import ts from 'typescript';
+import { applyContractModuleStubs } from './contract-transpile-helpers.mjs';
 
 function createDataModuleUrl(source) {
   return `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
@@ -25,15 +26,17 @@ async function loadWorkspaceCommandPaletteModule() {
     'packages/sdkwork-notes-pc-notes/src/services/noteWorkspaceCommandPaletteModel.ts',
   );
   const notesSearchModuleUrl = createDataModuleUrl(
-    (
-      await transpileTypeScriptModule('packages/sdkwork-notes-pc-search/src/index.ts')
-    ).outputText,
+    applyContractModuleStubs(
+      (
+        await transpileTypeScriptModule('packages/sdkwork-notes-pc-search/src/index.ts')
+      ).outputText,
+    ),
   );
   const moduleSource = commandPaletteModule.outputText
     .replaceAll("'@sdkwork/notes-pc-search'", `'${notesSearchModuleUrl}'`)
     .replaceAll('"@sdkwork/notes-pc-search"', `"${notesSearchModuleUrl}"`);
 
-  return import(createDataModuleUrl(moduleSource));
+  return import(createDataModuleUrl(applyContractModuleStubs(moduleSource)));
 }
 
 const workspaceCommandPaletteModule = await loadWorkspaceCommandPaletteModule();

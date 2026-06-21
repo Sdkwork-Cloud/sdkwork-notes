@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
@@ -129,6 +129,21 @@ test('integrates sdkwork-utils-typescript in PC React workspace', () => {
   assert.match(packageJson.dependencies['@sdkwork/utils'], /workspace:\*/);
 });
 
+test('consumes @sdkwork/utils from shared PC commons text helpers', () => {
+  const textUtils = read('sdkwork-notes-pc-react/packages/sdkwork-notes-pc-commons/src/utils/text.ts');
+  assert.match(textUtils, /@sdkwork\/utils/);
+  assert.match(textUtils, /isBlank/);
+  assert.match(textUtils, /trim/);
+});
+
+test('integrates sdkwork-utils-rust in product service validation', () => {
+  const serviceCargo = read('crates/sdkwork-notes-pages-service/Cargo.toml');
+  assert.match(serviceCargo, /sdkwork-utils-rust/);
+
+  const serviceSource = read('crates/sdkwork-notes-pages-service/src/service.rs');
+  assert.match(serviceSource, /sdkwork_utils_rust::string::\{is_blank/);
+});
+
 test('integrates sdkwork-database in api-server bootstrap', () => {
   const apiServerCargo = read('crates/sdkwork-notes-api-server/Cargo.toml');
   assert.match(apiServerCargo, /sdkwork-database-config/);
@@ -136,6 +151,101 @@ test('integrates sdkwork-database in api-server bootstrap', () => {
 
   const databaseBootstrap = read('crates/sdkwork-notes-api-server/src/bootstrap/database.rs');
   assert.match(databaseBootstrap, /DatabaseConfig::from_env\("notes"\)/);
+});
+
+test('integrates sdkwork-database-repository entities in pages repository crate', () => {
+  const repositoryCargo = read('crates/sdkwork-notes-pages-repository-sqlx/Cargo.toml');
+  assert.match(repositoryCargo, /sdkwork-database-repository/);
+
+  const entities = read('crates/sdkwork-notes-pages-repository-sqlx/src/entities/mod.rs');
+  assert.match(entities, /sdkwork_database_repository::\{impl_entity_string_pk, Entity\}/);
+  assert.match(entities, /notes_workspace/);
+  assert.match(entities, /notes_page/);
+  assert.match(entities, /notes_ai_job/);
+});
+
+test('declares canonical sdkgen transport output for typescript and rust SDK families', () => {
+  const families = [
+    {
+      assembly: 'sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json',
+      typescriptManifest:
+        'sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi/package.json',
+      rustManifest:
+        'sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-rust/generated/server-openapi/Cargo.toml',
+    },
+    {
+      assembly: 'sdks/sdkwork-notes-backend-sdk/.sdkwork-assembly.json',
+      typescriptManifest:
+        'sdks/sdkwork-notes-backend-sdk/sdkwork-notes-backend-sdk-typescript/generated/server-openapi/package.json',
+      rustManifest:
+        'sdks/sdkwork-notes-backend-sdk/sdkwork-notes-backend-sdk-rust/generated/server-openapi/Cargo.toml',
+    },
+    {
+      assembly: 'sdks/sdkwork-notes-sdk/.sdkwork-assembly.json',
+      typescriptManifest:
+        'sdks/sdkwork-notes-sdk/sdkwork-notes-sdk-typescript/generated/server-openapi/package.json',
+      rustManifest: 'sdks/sdkwork-notes-sdk/sdkwork-notes-sdk-rust/generated/server-openapi/Cargo.toml',
+    },
+  ];
+
+  for (const family of families) {
+    assert.equal(exists(family.typescriptManifest), true, `${family.typescriptManifest} should exist`);
+    assert.equal(exists(family.rustManifest), true, `${family.rustManifest} should exist`);
+
+    const assembly = readJson(family.assembly);
+    for (const language of ['typescript', 'rust']) {
+      const entry = assembly.languages.find((item) => item.language === language);
+      assert.equal(entry.generationState, 'generated', `${family.assembly} ${language} must be generated`);
+    }
+  }
+});
+
+test('PC React packages follow APP_PC_ARCHITECTURE_SPEC directory and npm naming', () => {
+  const packagesDir = 'sdkwork-notes-pc-react/packages';
+  const packageDirs = readdirSync(path.join(ROOT, packagesDir), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+
+  assert.ok(packageDirs.length > 0, `${packagesDir} should declare PC packages`);
+
+  for (const directory of packageDirs) {
+    assert.match(
+      directory,
+      /^sdkwork-notes-pc(-[a-z0-9-]+)?$/,
+      `${directory} must follow sdkwork-notes-pc-* directory naming`,
+    );
+
+    const packageJson = readJson(`${packagesDir}/${directory}/package.json`);
+    assert.match(
+      packageJson.name,
+      /^@sdkwork\/notes-pc(-[a-z0-9-]+)?$/,
+      `${directory} npm name must follow @sdkwork/notes-pc-*`,
+    );
+  }
+});
+
+test('SqlNotesStore SQL references only database contract registry tables', () => {
+  const store = read('crates/sdkwork-notes-pages-repository-sqlx/src/notes_store.rs');
+  const registry = readJson('database/contract/table-registry.json');
+  const registered = new Set(registry.tables.map((entry) => entry.table_name));
+  const matches = store.matchAll(/\b(?:FROM|INTO|UPDATE|JOIN)\s+(notes_[a-z_]+)/gi);
+  const referenced = new Set([...matches].map((match) => match[1]));
+
+  for (const table of referenced) {
+    assert.equal(
+      registered.has(table),
+      true,
+      `notes_store.rs references ${table} which must exist in database/contract/table-registry.json`,
+    );
+  }
+});
+
+test('integrates sdkwork-utils in HTTP auth actor context checks', () => {
+  const authCargo = read('crates/sdkwork-router-notes-http-auth/Cargo.toml');
+  assert.match(authCargo, /sdkwork-utils-rust/);
+
+  const actorContext = read('crates/sdkwork-router-notes-http-auth/src/actor_context.rs');
+  assert.match(actorContext, /sdkwork_utils_rust::string::trim/);
 });
 
 test('does not declare sdkwork-discovery without RPC services', () => {
@@ -217,6 +327,51 @@ test('Rust HTTP crates follow sdkwork-router-* and sdkwork-notes-api-server nami
   const cargo = read('Cargo.toml');
   for (const member of expectedMembers) {
     assert.match(cargo, new RegExp(`"${member.replaceAll('/', '\\/')}"`));
+  }
+});
+
+test('Tauri desktop host component follows sdkwork-notes-pc-desktop naming', () => {
+  const componentSpec = readJson(
+    'sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/specs/component.spec.json',
+  );
+  assert.equal(componentSpec.component.name, 'sdkwork-notes-pc-desktop');
+
+  const cargo = read('sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/src-tauri/Cargo.toml');
+  assert.match(cargo, /^name = "sdkwork-notes-pc-desktop"/m);
+});
+
+test('PC vite configs use notes-owned private env helpers instead of core-pc-react', () => {
+  const viteConfigs = [
+    'sdkwork-notes-pc-react/vite.config.ts',
+    'sdkwork-notes-pc-react/packages/sdkwork-notes-pc-desktop/vite.config.ts',
+  ];
+
+  for (const file of viteConfigs) {
+    const source = read(file);
+    assert.doesNotMatch(source, /@sdkwork\/core-pc-react/, `${file} must not import core-pc-react`);
+    assert.match(source, /vite-private-env/, `${file} must import notes-owned vite-private-env helpers`);
+  }
+
+  assert.equal(exists('sdkwork-notes-pc-react/scripts/vite-private-env.ts'), true);
+});
+
+test('packaging workflow targets follow standalone desktop naming', () => {
+  const workflow = readJson('sdkwork.workflow.json');
+  const targetIds = (workflow.targets ?? []).map((target) => target.id);
+
+  assert.ok(targetIds.length > 0, 'sdkwork.workflow.json should declare desktop release targets');
+
+  for (const targetId of targetIds) {
+    assert.match(
+      targetId,
+      /-standalone-desktop-/,
+      `Expected ${targetId} to include standalone desktop profile segment`,
+    );
+    assert.match(
+      workflow.targets.find((target) => target.id === targetId)?.outputGlobs?.join('\n') ?? '',
+      /sdkwork-notes-pc-desktop/,
+      `Expected ${targetId} artifact globs to reference sdkwork-notes-pc-desktop`,
+    );
   }
 });
 

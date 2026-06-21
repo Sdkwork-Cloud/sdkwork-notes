@@ -1,4 +1,5 @@
 import type { NoteFolder } from '@sdkwork/notes-pc-types';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 
 export const INVALID_FOLDER_MOVE_MESSAGE = 'Cannot move a folder into itself or one of its descendants';
 
@@ -14,16 +15,6 @@ export interface NoteWorkspaceFolderMovePlan {
   nextParentId: string | null;
   expandedFolderIds: string[];
   errorMessage: string | null;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
 }
 
 function normalizeParentId(parentId: string | null | undefined) {

@@ -1,4 +1,5 @@
 import type { Note, NoteFolder, NoteSummary, ServiceResult } from '@sdkwork/notes-pc-types';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 
 export interface NoteWorkspaceCreatedNotePlan {
   notes: NoteSummary[];
@@ -85,16 +86,6 @@ export type NoteWorkspaceMoveNoteStateResult =
       nextParentId: string | null;
       errorMessage: string;
     };
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
-}
 
 function normalizeParentId(parentId: string | null | undefined) {
   return normalizeString(parentId) || null;

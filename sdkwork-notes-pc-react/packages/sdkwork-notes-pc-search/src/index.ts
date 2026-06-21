@@ -1,3 +1,9 @@
+import {
+  normalizeNullableString,
+  normalizeString,
+  normalizeStringArray,
+} from '@sdkwork/notes-pc-commons';
+
 export const NOTES_SEARCH_PACKAGE = '@sdkwork/notes-pc-search';
 export const NOTES_SEARCH_QUERY_LIMIT_DEFAULT = 20;
 
@@ -107,42 +113,6 @@ export interface NotesSearchDocumentBuilderInput {
 export interface NotesSearchService {
   search(query: NotesSearchQuery): Promise<NotesSearchResult[]>;
   rebuild(documents?: NotesSearchDocument[]): Promise<void>;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
-}
-
-function normalizeNullableString(value: unknown) {
-  const normalized = normalizeString(value);
-  return normalized || null;
-}
-
-function normalizeStringArray(value: unknown) {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  const values: string[] = [];
-  const seen = new Set<string>();
-
-  value.forEach((item) => {
-    const normalized = normalizeString(item);
-    if (!normalized || seen.has(normalized)) {
-      return;
-    }
-
-    seen.add(normalized);
-    values.push(normalized);
-  });
-
-  return values;
 }
 
 function normalizeFilterTags(value: unknown) {

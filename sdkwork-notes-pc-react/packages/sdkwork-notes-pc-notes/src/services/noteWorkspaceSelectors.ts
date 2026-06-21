@@ -1,4 +1,5 @@
 import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-pc-types';
+import { normalizeString } from '@sdkwork/notes-pc-commons';
 import { buildNotesSearchDocuments, searchNotesSearchDocuments } from '@sdkwork/notes-pc-search';
 import type { NotesCollectionView } from '../types/notesWorkspace';
 
@@ -73,16 +74,6 @@ export interface NotesWorkspaceViewModel {
   activeNoteFolderName: string | null;
   activeNoteUpdatedLabel: string;
   syncSummary: NotesWorkspaceSyncSummary;
-}
-
-function normalizeString(value: unknown) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return String(value);
-  }
-  return '';
 }
 
 function toTimestamp(value: unknown) {
