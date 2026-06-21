@@ -22,27 +22,27 @@
   "canonicalSpecs": [
     {
       "file": "CODE_STYLE_SPEC.md",
-      "path": "../../../sdkwork-specs/CODE_STYLE_SPEC.md",
+      "path": "../../../../sdkwork-specs/CODE_STYLE_SPEC.md",
       "purpose": "Authored source structure and generated-code boundaries."
     },
     {
       "file": "NAMING_SPEC.md",
-      "path": "../../../sdkwork-specs/NAMING_SPEC.md",
+      "path": "../../../../sdkwork-specs/NAMING_SPEC.md",
       "purpose": "Canonical Rust repository crate naming."
     },
     {
       "file": "RUST_CODE_SPEC.md",
-      "path": "../../../sdkwork-specs/RUST_CODE_SPEC.md",
+      "path": "../../../../sdkwork-specs/RUST_CODE_SPEC.md",
       "purpose": "Rust repository crate layout and SQLx boundaries."
     },
     {
       "file": "DATABASE_SPEC.md",
-      "path": "../../../sdkwork-specs/DATABASE_SPEC.md",
+      "path": "../../../../sdkwork-specs/DATABASE_SPEC.md",
       "purpose": "Portable table contracts and schema evolution."
     },
     {
       "file": "WEB_BACKEND_SPEC.md",
-      "path": "../../../sdkwork-specs/WEB_BACKEND_SPEC.md",
+      "path": "../../../../sdkwork-specs/WEB_BACKEND_SPEC.md",
       "purpose": "Repository/service layering."
     }
   ],

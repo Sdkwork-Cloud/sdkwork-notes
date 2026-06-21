@@ -47,10 +47,21 @@ export function resolveDefaultAppSdkBaseUrl(profileEnv = {}) {
   );
 }
 
-export function resolveDevProfileId(hosting, serviceLayout = 'split-services') {
+export function resolveDevProfileId(deploymentProfile, serviceLayout = 'split-services') {
+  const hosting = toLegacyHosting(deploymentProfile);
   runtime.assertHosting(hosting);
   runtime.assertServiceLayout(serviceLayout);
   return buildProfileId(hosting, serviceLayout, 'development');
+}
+
+function toLegacyHosting(deploymentProfile) {
+  if (deploymentProfile === 'standalone') {
+    return 'self-hosted';
+  }
+  if (deploymentProfile === 'cloud') {
+    return 'cloud-hosted';
+  }
+  return deploymentProfile;
 }
 
 export const loadProfile = runtime.loadProfile;

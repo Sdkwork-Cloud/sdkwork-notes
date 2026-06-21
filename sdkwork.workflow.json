@@ -52,7 +52,7 @@
           "SDKWORK_SHARED_SDK_GIT_REF": "main",
           "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/Sdkwork-Cloud/sdkwork-sdk-commons.git"
         },
-        "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\npnpm prepare:shared-sdk\npnpm test:desktop:contracts\npnpm --filter @sdkwork/notes-shell test\npnpm --filter @sdkwork/notes-desktop test\npnpm test:desktop:rust\npnpm typecheck\npnpm build"
+        "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\npnpm install:shared-sdk\npnpm test:desktop:contracts\npnpm --filter @sdkwork/notes-shell test\npnpm --filter @sdkwork/notes-desktop test\npnpm test:desktop:rust\npnpm typecheck\npnpm build"
       }
     ],
     "package": [

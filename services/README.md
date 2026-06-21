@@ -1,6 +1,6 @@
 # services/
 
-Rust product/service crates for SDKWork Notes business logic.
+This directory is reserved per the SDKWork root dictionary. Notes product/service crates live under [../crates/](../crates/) instead:
 
 | Crate | Role |
 | --- | --- |

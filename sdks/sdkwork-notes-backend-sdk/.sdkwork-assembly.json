@@ -3,10 +3,10 @@
   "title": "SDKWork Notes Backend API SDK",
   "apiVersion": "0.1.0",
   "openapiVersion": "3.1.2",
-  "authoritySpec": "../../generated/openapi/notes-backend-api.openapi.json",
-  "generationInputSpec": "../../generated/openapi/notes-backend-api.openapi.json",
+  "authoritySpec": "../../apis/backend-api/notes/notes-backend-api.openapi.json",
+  "generationInputSpec": "../../apis/backend-api/notes/notes-backend-api.openapi.json",
   "derivedSpecs": {
-    "default": "../../generated/openapi/notes-backend-api.openapi.json"
+    "default": "../../apis/backend-api/notes/notes-backend-api.openapi.json"
   },
   "apiAuthority": "sdkwork-notes-backend-api",
   "discoverySurface": {

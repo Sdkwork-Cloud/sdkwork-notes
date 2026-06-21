@@ -13,13 +13,13 @@ test('parseSharedSdkModeCliArgs extracts sdk mode and forwarded command argument
     '--filter',
     '@sdkwork/notes-pc-desktop',
     'run',
-    'tauri:dev',
+    'dev:desktop',
   ]);
 
   assert.deepEqual(parsed, {
     mode: 'source',
     command: 'pnpm',
-    args: ['--filter', '@sdkwork/notes-pc-desktop', 'run', 'tauri:dev'],
+    args: ['--filter', '@sdkwork/notes-pc-desktop', 'run', 'dev:desktop'],
   });
 });
 
@@ -41,7 +41,7 @@ test('createSharedSdkModeCommandPlan prepends the Windows cargo bin directory fo
   const plan = createSharedSdkModeCommandPlan({
     mode: 'source',
     command: 'pnpm',
-    args: ['--filter', '@sdkwork/notes-pc-desktop', 'run', 'tauri:info'],
+    args: ['--filter', '@sdkwork/notes-pc-desktop', 'run', 'build:desktop'],
     runtimePlatform: 'win32',
     windowsCargoBinDir: 'C:\\Users\\admin\\.cargo\\bin',
     env: {

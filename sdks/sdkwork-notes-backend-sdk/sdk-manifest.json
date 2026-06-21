@@ -6,7 +6,7 @@
   "sdkFamily": "sdkwork-notes-backend-sdk",
   "sdkType": "backend",
   "apiPrefix": "/backend/v3/api",
-  "generationInputSpec": "../../generated/openapi/notes-backend-api.openapi.json",
+  "generationInputSpec": "../../apis/backend-api/notes/notes-backend-api.openapi.json",
   "generatedPackages": {
     "typescript": {
       "language": "typescript",

@@ -6,7 +6,7 @@
   "sdkFamily": "sdkwork-notes-sdk",
   "sdkType": "custom",
   "apiPrefix": "/notes/v3/api",
-  "generationInputSpec": "../../generated/openapi/notes-open-api.openapi.json",
+  "generationInputSpec": "../../apis/open-api/notes/notes-open-api.openapi.json",
   "generatedPackages": {
     "typescript": {
       "language": "typescript",

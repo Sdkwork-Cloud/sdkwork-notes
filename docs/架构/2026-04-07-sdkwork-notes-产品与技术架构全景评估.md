@@ -14,7 +14,7 @@
 SDKWork Notes 当前已经具备较完整的现代桌面应用基础能力：
 
 - 产品形态明确，当前主线是桌面优先的 Notes Studio，预留了未来移动端扩展位。
-- 工程结构清晰，采用 `pnpm workspace + Turbo + 分包 + Tauri 2` 的模块化架构。
+- 工程结构清晰，采用 package workspace + Turbo + 分包 + Tauri 2 的模块化架构。
 - 用户主流程完整，已经具备登录、注册、忘记密码、OAuth 回调、笔记工作台、富文本编辑、文件夹组织、收藏、回收站、账户设置、桌面托盘与窗口控制等闭环。
 - 技术路线整体先进，前端采用 `React 19 + Vite 8 + Tailwind 4 + Zustand + TanStack Query + i18next + Tiptap`，桌面端采用 `Tauri 2 + Rust`。
 - 发布链路具备工程化基础，支持共享 SDK 的 `source/git` 双模式、跨平台桌面打包、GitHub Actions 多平台发布。
@@ -637,7 +637,7 @@ SDKWork Notes 当前已经具备较完整的现代桌面应用基础能力：
 - 状态管理：应用壳层提供 `QueryClient`，而当前主工作流主要使用 `useAppStore + useNotesWorkspaceStore` 两个 Zustand store；TanStack Query 目前更多承担远端查询能力的基础设施位
 - 国际化：i18next
 - 编辑器：Tiptap
-- 构建与包治理：pnpm workspace + Turbo
+- 构建与包治理：package workspace + Turbo
 - 发布：GitHub Actions + 多平台桌面打包
 - 桌面插件：当前仅启用 `tauri-plugin-opener` 与 `tauri-plugin-single-instance`
 - 启动策略：Web 与 Desktop 双入口，Desktop 额外带自定义启动屏与 runtime bridge 装配
@@ -687,7 +687,7 @@ SDKWork Notes 当前已经具备较完整的现代桌面应用基础能力：
 | 编辑器 | Tiptap 3 | 专业富文本路线，明显优于自研简陋编辑器 |
 | 状态管理 | Zustand + TanStack Query | 当前以 Zustand 壳状态与工作区状态为主，TanStack Query 已就位但尚未成为 Notes 主数据流核心 |
 | 桌面容器 | Tauri 2 + Rust | 性能、体积和平台控制力优于 Electron 重壳方案 |
-| 多包治理 | pnpm workspace + Turbo | 适合中大型前端产品 |
+| 多包治理 | package workspace + Turbo | 适合中大型前端产品 |
 | 国际化 | i18next | 成熟稳定 |
 
 ## 9.2 对标行业最佳的评价

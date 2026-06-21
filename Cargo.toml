@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "crates/sdkwork-notes-database-host",
-    "services/sdkwork-notes-pages-service",
+    "crates/sdkwork-notes-pages-service",
     "crates/sdkwork-notes-pages-repository-sqlx",
     "crates/sdkwork-router-notes-http-auth",
     "crates/sdkwork-router-notes-app-api",
@@ -28,7 +28,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 sdkwork-notes-database-host = { path = "crates/sdkwork-notes-database-host" }
-sdkwork-notes-pages-service = { path = "services/sdkwork-notes-pages-service" }
+sdkwork-notes-pages-service = { path = "crates/sdkwork-notes-pages-service" }
+sdkwork-utils-rust = { path = "../sdkwork-utils/packages/sdkwork-utils-rust" }
 sdkwork-notes-pages-repository-sqlx = { path = "crates/sdkwork-notes-pages-repository-sqlx" }
 sdkwork-router-notes-http-auth = { path = "crates/sdkwork-router-notes-http-auth" }
 sdkwork-router-notes-app-api = { path = "crates/sdkwork-router-notes-app-api" }

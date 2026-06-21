@@ -33,18 +33,6 @@ const OPENAPI_FILES = [
     file: 'apis/open-api/notes/notes-open-api.openapi.json',
     apiSurface: 'open-api',
   },
-  {
-    file: 'generated/openapi/notes-app-api.openapi.json',
-    apiSurface: 'app-api',
-  },
-  {
-    file: 'generated/openapi/notes-backend-api.openapi.json',
-    apiSurface: 'backend-api',
-  },
-  {
-    file: 'generated/openapi/notes-open-api.openapi.json',
-    apiSurface: 'open-api',
-  },
 ];
 
 async function readJson(relativePath) {

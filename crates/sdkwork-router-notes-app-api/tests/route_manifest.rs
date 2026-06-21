@@ -81,7 +81,7 @@ fn route_manifest_matches_app_openapi_operations() {
 }
 
 fn read_openapi() -> Value {
-    let path = workspace_root().join("generated/openapi/notes-app-api.openapi.json");
+    let path = workspace_root().join("apis/app-api/notes/notes-app-api.openapi.json");
     let text = fs::read_to_string(path).expect("notes app OpenAPI authority should be readable");
     serde_json::from_str(&text).expect("notes app OpenAPI authority should be valid json")
 }

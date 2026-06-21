@@ -430,7 +430,7 @@ async function createFixture(options = {}) {
   );
 
   await writeJson(
-    path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json'),
+    path.join(rootDir, 'apis/app-api/notes/notes-app-api.openapi.json'),
     openApi({
       [options.appPath ?? '/app/v3/api/notes/pages']: {
         get: withTemporaryContextQuery(
@@ -455,7 +455,7 @@ async function createFixture(options = {}) {
       })
     })
   );
-  const appOpenapiPath = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+  const appOpenapiPath = path.join(rootDir, 'apis/app-api/notes/notes-app-api.openapi.json');
   const appOpenapi = JSON.parse(await readFile(appOpenapiPath, 'utf8'));
   appOpenapi.components.parameters ??= {};
   appOpenapi.components.parameters.IdempotencyKeyHeader = {
@@ -471,7 +471,7 @@ async function createFixture(options = {}) {
   await writeJson(appOpenapiPath, appOpenapi);
 
   await writeJson(
-    path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json'),
+    path.join(rootDir, 'apis/open-api/notes/notes-open-api.openapi.json'),
     openApi({
       [options.openPath ?? '/notes/v3/api/pages']: {
         get: operation(options.openOperationId ?? 'pages.list')
@@ -486,7 +486,7 @@ async function createFixture(options = {}) {
   );
 
   await writeJson(
-    path.join(rootDir, 'generated/openapi/notes-backend-api.openapi.json'),
+    path.join(rootDir, 'apis/backend-api/notes/notes-backend-api.openapi.json'),
     openApi({
       [options.backendPath ?? '/backend/v3/api/notes/pages']: {
         get: withTemporaryContextQuery(
@@ -631,7 +631,7 @@ test('rejects nullable current Drive version refs on notes_page schema registry 
 test('rejects OpenAPI Drive version reference fields that are present but not required', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const file = path.join(rootDir, 'apis/open-api/notes/notes-open-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     openapi.components.schemas.PageContent.required =
       openapi.components.schemas.PageContent.required.filter((field) => (
@@ -649,7 +649,7 @@ test('rejects OpenAPI Drive version reference fields that are present but not re
 test('rejects OpenAPI page metadata missing content schema version required by Drive-backed page content', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const file = path.join(rootDir, 'apis/open-api/notes/notes-open-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     const pageExtension = openapi.components.schemas.Page.allOf[1];
     pageExtension.required = pageExtension.required.filter((field) => field !== 'contentSchemaVersion');
@@ -798,7 +798,7 @@ test('rejects SDK family metadata that declares a historical authority alias as 
         sdkOwner: 'sdkwork-notes',
         sdkFamily: 'sdkwork-notes-app-sdk',
         apiAuthority: 'sdkwork-notes.app',
-        generationInputSpec: '../../generated/openapi/notes-app-api.openapi.json',
+        generationInputSpec: '../../apis/app-api/notes/notes-app-api.openapi.json',
         sdkDependencies: [
           {
             workspace: 'sdkwork-drive-app-sdk',
@@ -815,7 +815,7 @@ test('rejects SDK family metadata that declares a historical authority alias as 
         sdkOwner: 'sdkwork-notes',
         sdkFamily: 'sdkwork-notes-app-sdk',
         apiAuthority: 'sdkwork-notes.app',
-        generationInputSpec: '../../generated/openapi/notes-app-api.openapi.json',
+        generationInputSpec: '../../apis/app-api/notes/notes-app-api.openapi.json',
         sdkDependencies: [
           {
             workspace: 'sdkwork-drive-app-sdk',
@@ -886,7 +886,7 @@ test('rejects app body schemas missing temporary route context fields required b
 test('rejects app body schemas that require fields defaulted by implemented DTOs', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+    const file = path.join(rootDir, 'apis/app-api/notes/notes-app-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     openapi.components.schemas.UpdatePageContentRequest.required.push('contentType');
     await writeJson(file, openapi);
@@ -901,7 +901,7 @@ test('rejects app body schemas that require fields defaulted by implemented DTOs
 test('rejects app restore version schema missing expected current Drive version guard field', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+    const file = path.join(rootDir, 'apis/app-api/notes/notes-app-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     delete openapi.components.schemas.RestorePageVersionRequest.properties.expectedCurrentDriveVersionId;
     await writeJson(file, openapi);
@@ -916,7 +916,7 @@ test('rejects app restore version schema missing expected current Drive version 
 test('rejects app page content metadata schemas missing service-backed max length constraints', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+    const file = path.join(rootDir, 'apis/app-api/notes/notes-app-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     delete openapi.components.schemas.CreatePageRequest.properties.contentType.maxLength;
     openapi.components.schemas.CreatePageRequest.properties.contentSchemaVersion.maxLength = 255;
@@ -936,7 +936,7 @@ test('rejects app page content metadata schemas missing service-backed max lengt
 test('rejects open-api content update schemas that require metadata preserved by default', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const file = path.join(rootDir, 'apis/open-api/notes/notes-open-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     openapi.components.schemas.UpdatePageContentRequest.required.push('contentType');
     await writeJson(file, openapi);
@@ -951,7 +951,7 @@ test('rejects open-api content update schemas that require metadata preserved by
 test('rejects open-api page content metadata schemas missing service-backed max length constraints', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const file = path.join(rootDir, 'apis/open-api/notes/notes-open-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     delete openapi.components.schemas.CreatePageRequest.properties.contentType.maxLength;
     openapi.components.schemas.CreatePageRequest.properties.contentSchemaVersion.maxLength = 255;
@@ -971,7 +971,7 @@ test('rejects open-api page content metadata schemas missing service-backed max 
 test('rejects open-api page create schemas missing content schema version for custom content models', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-open-api.openapi.json');
+    const file = path.join(rootDir, 'apis/open-api/notes/notes-open-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     delete openapi.components.schemas.CreatePageRequest.properties.contentSchemaVersion;
     await writeJson(file, openapi);
@@ -986,7 +986,7 @@ test('rejects open-api page create schemas missing content schema version for cu
 test('rejects app AI suggestion schemas missing temporary route context fields required by implemented DTOs', async () => {
   const rootDir = await createFixture();
   try {
-    const file = path.join(rootDir, 'generated/openapi/notes-app-api.openapi.json');
+    const file = path.join(rootDir, 'apis/app-api/notes/notes-app-api.openapi.json');
     const openapi = JSON.parse(await readFile(file, 'utf8'));
     delete openapi.components.schemas.AiFeedbackCreateRequest.properties.tenantId;
     openapi.components.schemas.AiFeedbackCreateRequest.required =

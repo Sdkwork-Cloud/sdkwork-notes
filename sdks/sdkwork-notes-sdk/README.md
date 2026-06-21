@@ -2,7 +2,7 @@
 
 SDKWork Notes Open API SDK family metadata skeleton.
 
-This directory declares the public/domain integration SDK family generated from `../../generated/openapi/notes-open-api.openapi.json`.
+This directory declares the public/domain integration SDK family generated from `../../apis/open-api/notes/notes-open-api.openapi.json`.
 
 Status:
 

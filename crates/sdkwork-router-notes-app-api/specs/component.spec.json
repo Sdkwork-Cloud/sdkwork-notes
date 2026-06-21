@@ -65,7 +65,7 @@
     "apiAuthority": {
       "name": "sdkwork-notes-app-api",
       "prefix": "/app/v3/api/notes",
-      "authorityOpenApi": "../../../generated/openapi/notes-app-api.openapi.json",
+      "authorityOpenApi": "../../../apis/app-api/notes/notes-app-api.openapi.json",
       "owner": "sdkwork-notes"
     },
     "publicExports": [

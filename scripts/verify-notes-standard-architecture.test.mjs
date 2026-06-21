@@ -9,6 +9,7 @@ const STANDARD_ROOT_DIRECTORIES = [
   'apis',
   'apps',
   'crates',
+  'database',
   'sdks',
   'jobs',
   'tools',
@@ -65,7 +66,8 @@ function read(relativePath) {
 }
 
 function readJson(relativePath) {
-  return JSON.parse(read(relativePath));
+  const text = read(relativePath).replace(/^\uFEFF/u, '');
+  return JSON.parse(text);
 }
 
 function exists(relativePath) {
@@ -108,8 +110,23 @@ test('integrates sdkwork-web-framework in HTTP route crates and api-server', () 
   }
 
   const authBootstrap = read('crates/sdkwork-notes-api-server/src/bootstrap/auth.rs');
-  assert.match(authBootstrap, /build_web_framework_layer/);
-  assert.match(authBootstrap, /with_web_request_context/);
+  assert.match(authBootstrap, /wrap_router_with_web_framework_from_env/);
+});
+
+test('integrates sdkwork-utils in HTTP route crates', () => {
+  const rootCargo = read('Cargo.toml');
+  assert.match(rootCargo, /sdkwork-utils-rust/);
+
+  const appRouteCargo = read('crates/sdkwork-router-notes-app-api/Cargo.toml');
+  assert.match(appRouteCargo, /sdkwork-utils-rust/);
+});
+
+test('integrates sdkwork-utils-typescript in PC React workspace', () => {
+  const workspace = read('sdkwork-notes-pc-react/pnpm-workspace.yaml');
+  assert.match(workspace, /sdkwork-utils-typescript/);
+
+  const packageJson = readJson('sdkwork-notes-pc-react/package.json');
+  assert.match(packageJson.dependencies['@sdkwork/utils'], /workspace:\*/);
 });
 
 test('integrates sdkwork-database in api-server bootstrap', () => {
@@ -193,7 +210,7 @@ test('Rust HTTP crates follow sdkwork-router-* and sdkwork-notes-api-server nami
     'crates/sdkwork-router-notes-backend-api',
     'crates/sdkwork-router-notes-http-auth',
     'crates/sdkwork-notes-api-server',
-    'services/sdkwork-notes-pages-service',
+    'crates/sdkwork-notes-pages-service',
     'crates/sdkwork-notes-pages-repository-sqlx',
   ];
 

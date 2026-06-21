@@ -2,7 +2,7 @@
 
 SDKWork Notes is a standalone workspace for the Notes product line.
 
-The current primary deliverable is the desktop application in `sdkwork-notes-pc-react`, built with a pnpm workspace architecture, split packages, and a Tauri desktop shell. The repository is prepared for future expansion with `sdkwork-notes-mobile-react` and `sdkwork-notes-mobile-flutter`.
+The current primary deliverable is the desktop application in `sdkwork-notes-pc-react`, built as a monorepo with split packages and a Tauri desktop shell. The repository is prepared for future expansion with `sdkwork-notes-mobile-react` and `sdkwork-notes-mobile-flutter`.
 
 ## Contract Foundation (2026-06-08)
 
@@ -30,7 +30,7 @@ Key contract decisions:
 The first executable backend service layer has been started at the repository root. It is a Rust workspace that mirrors the SDKWork Drive service structure while keeping Drive as the content and version authority.
 
 - Root Rust workspace: [Cargo.toml](Cargo.toml)
-- Product service crate: [services/sdkwork-notes-pages-service](services/sdkwork-notes-pages-service)
+- Product service crate: [crates/sdkwork-notes-pages-service](crates/sdkwork-notes-pages-service)
 - App API route crate: [crates/sdkwork-router-notes-app-api](crates/sdkwork-router-notes-app-api)
 - Phase 1 service design: [docs/superpowers/specs/2026-06-08-sdkwork-notes-phase1-rust-service-design.md](docs/superpowers/specs/2026-06-08-sdkwork-notes-phase1-rust-service-design.md)
 - Phase 1 implementation plan: [docs/superpowers/plans/2026-06-08-sdkwork-notes-phase1-rust-service.md](docs/superpowers/plans/2026-06-08-sdkwork-notes-phase1-rust-service.md)
@@ -279,7 +279,7 @@ This phase does not read or write Drive content, create Drive versions, mutate p
 
 This repository contains the Notes application workspace with:
 
-- A React + Vite + pnpm workspace desktop app
+- A React + Vite monorepo desktop app
 - A Tauri desktop shell with tray support and cross-platform packaging
 - Split package architecture for auth, shell, notes, user, desktop, i18n, commons, and core
 - A GitHub Actions release workflow for Windows, Linux, and macOS desktop bundles
@@ -303,24 +303,24 @@ Reserved for future work:
 
 ```text
 sdkwork-notes/
-├─ .github/
-�? └─ workflows/
-�?    └─ sdkwork-notes-desktop-release.yml
-├─ sdkwork-notes-pc-react/
-�? ├─ packages/
-�? �? ├─ sdkwork-notes-auth/
-�? �? ├─ sdkwork-notes-commons/
-�? �? ├─ sdkwork-notes-core/
-�? �? ├─ sdkwork-notes-desktop/
-�? �? ├─ sdkwork-notes-i18n/
-�? �? ├─ sdkwork-notes-notes/
-�? �? ├─ sdkwork-notes-shell/
-�? �? ├─ sdkwork-notes-types/
-�? �? └─ sdkwork-notes-user/
-�? ├─ scripts/
-�? └─ src/
-├─ sdkwork-notes-mobile-react/
-└─ sdkwork-notes-mobile-flutter/
+?? .github/
+?? ?? workflows/
+??    ?? sdkwork-notes-desktop-release.yml
+?? sdkwork-notes-pc-react/
+?? ?? packages/
+?? ?? ?? sdkwork-notes-auth/
+?? ?? ?? sdkwork-notes-commons/
+?? ?? ?? sdkwork-notes-core/
+?? ?? ?? sdkwork-notes-desktop/
+?? ?? ?? sdkwork-notes-i18n/
+?? ?? ?? sdkwork-notes-notes/
+?? ?? ?? sdkwork-notes-shell/
+?? ?? ?? sdkwork-notes-types/
+?? ?? ?? sdkwork-notes-user/
+?? ?? scripts/
+?? ?? src/
+?? sdkwork-notes-mobile-react/
+?? sdkwork-notes-mobile-flutter/
 ```
 
 ### Tech Stack
@@ -339,7 +339,7 @@ sdkwork-notes/
 
 Before running the desktop app locally, make sure you have:
 
-1. Node.js and pnpm installed
+1. Install Node.js (v22+) and enable Corepack
 2. Rust and Cargo installed
 3. Tauri platform dependencies installed for your operating system
 4. The shared SDK repositories available locally for source-mode development, or rely on git mode for release
@@ -349,7 +349,7 @@ Before running the desktop app locally, make sure you have:
 The desktop workspace supports two shared SDK modes:
 
 - `source`
-  - Used by local desktop development commands such as `tauri:dev`, `tauri:build`, and `tauri:info`
+  - Used by local desktop development commands such as `dev:desktop`, `build:desktop`, and `check:desktop:toolchain`
   - Prefers local sibling SDK sources
 - `git`
   - Used by release commands such as `release:desktop`
@@ -386,9 +386,9 @@ pnpm test
 pnpm check:desktop
 pnpm typecheck
 pnpm build
-pnpm tauri:info
-pnpm tauri:dev
-pnpm tauri:build
+pnpm check:desktop:toolchain
+pnpm dev:desktop
+pnpm build:desktop
 pnpm release:desktop -- --target x86_64-pc-windows-msvc
 ```
 
@@ -436,28 +436,28 @@ This repository is currently centered on the desktop Notes product. The mobile d
 
 ---
 
-## 中文
+## ??
 
-### 仓库说明
+### ????
 
-`sdkwork-notes` �?Notes 产品线的独立工作区仓库�?
-当前已经完成的核心交付物�?`sdkwork-notes-pc-react`，它采用 pnpm workspace + 分包架构，并集成�?Tauri 桌面端外壳。仓库同时预留了 `sdkwork-notes-mobile-react` �?`sdkwork-notes-mobile-flutter` 两个目录，便于后续扩展多端形态�?
-### 当前已完成内�?
-- `sdkwork-notes-pc-react` 桌面�?Notes 工作�?- React + Vite + pnpm workspace 架构
-- Tauri 桌面端架构、托盘行为与跨平台打包能�?- 本地开发使用相对路�?/ source 模式共享 SDK
-- Release 打包使用 git 模式共享 SDK
-- GitHub Actions 多平台、多架构桌面端发布工作流
+`sdkwork-notes` ??Notes ?????????????
+??????????????`sdkwork-notes-pc-react`???? package workspace + ??????????Tauri ????????????? `sdkwork-notes-mobile-react` ??`sdkwork-notes-mobile-flutter` ?????????????????
+### ????????
+- `sdkwork-notes-pc-react` ????Notes ????- React + Vite + package workspace ??
+- Tauri ???????????????????- ???????????/ source ???? SDK
+- Release ???? git ???? SDK
+- GitHub Actions ???????????????
 
-### 目录结构
+### ????
 
-仓库顶层结构如下�?
+??????????
 - `.github/workflows`
-  - 仓库自身的桌面端 release workflow
+  - ???????? release workflow
 - `sdkwork-notes-pc-react`
-  - 当前主应用，包含桌面�?Notes 工作�?- `sdkwork-notes-mobile-react`
-  - React 移动端预留目�?- `sdkwork-notes-mobile-flutter`
-  - Flutter 移动端预留目�?
-### 技术栈
+  - ????????????Notes ????- `sdkwork-notes-mobile-react`
+  - React ????????- `sdkwork-notes-mobile-flutter`
+  - Flutter ????????
+### ???
 
 - Node.js 22
 - pnpm 10
@@ -469,65 +469,65 @@ This repository is currently centered on the desktop Notes product. The mobile d
 - Rust / Cargo
 - Turbo
 
-### 本地运行前提
+### ??????
 
-在本地运行桌面端前，请确认：
+??????????????
 
-1. 已安�?Node.js �?pnpm
-2. 已安�?Rust �?Cargo
-3. 已安装当前操作系统所需�?Tauri 依赖
-4. 已准备共�?SDK 的本地源码，或者在 release 场景下使�?git 模式自动拉取
+1. ????Node.js ??pnpm
+2. ????Rust ??Cargo
+3. ?????????????Tauri ??
+4. ??????SDK ????????? release ??????git ??????
 
-### 共享 SDK 模式说明
+### ?? SDK ????
 
-当前桌面工作区支持两种共�?SDK 模式�?
+??????????????SDK ????
 - `source`
-  - 用于本地开发命令，例如 `tauri:dev`、`tauri:build`、`tauri:info`
-  - 优先使用本地相对路径 SDK
+  - ?????? `dev:desktop`?`build:desktop` ?????
+  - ?????????? SDK
 - `git`
-  - 用于发布命令，例�?`release:desktop`
-  - 通过 git 仓库准备共享 SDK 依赖
+  - ??????????`release:desktop`
+  - ?? git ?????? SDK ??
 
-如需自定义本地共�?SDK 目录，可使用以下环境变量�?
+??????????SDK ??????????????
 - `SDKWORK_SHARED_SDK_APP_LOCAL_ROOT`
 - `SDKWORK_SHARED_SDK_COMMON_LOCAL_ROOT`
 
-默认情况下，独立仓库模式会优先查找这些同级目录：
+????????????????????????
 
 - `../legacy-java-plus-app-api`
 - `../sdk`
 
-### 快速开�?
-在仓库根目录执行�?
+### ?????
+??????????
 ```bash
 cd sdkwork-notes-pc-react
 pnpm install
 pnpm dev
 ```
 
-### 桌面端常用命�?
-�?`sdkwork-notes-pc-react` 目录下执行：
+### ????????
+??`sdkwork-notes-pc-react` ??????
 
 ```bash
 pnpm test
 pnpm check:desktop
 pnpm typecheck
 pnpm build
-pnpm tauri:info
-pnpm tauri:dev
-pnpm tauri:build
+pnpm check:desktop:toolchain
+pnpm dev:desktop
+pnpm build:desktop
 pnpm release:desktop -- --target x86_64-pc-windows-msvc
 ```
 
-### Release 工作�?
-仓库已内置桌面端 release workflow�?
+### Release ????
+???????? release workflow??
 - `.github/workflows/sdkwork-notes-desktop-release.yml`
 
-触发方式�?
-- 推送符�?`sdkwork-notes-release-*` 规则�?tag
-- 手动触发 `workflow_dispatch`
+??????
+- ?????`sdkwork-notes-release-*` ????tag
+- ???? `workflow_dispatch`
 
-当前已配置的桌面端发布矩阵包括：
+????????????????
 
 - Windows x64
 - Windows arm64
@@ -536,6 +536,6 @@ pnpm release:desktop -- --target x86_64-pc-windows-msvc
 - macOS Intel
 - macOS Apple Silicon
 
-### 当前定位
+### ????
 
-当前仓库重点是桌面端 Notes 产品。移动端目录暂时作为占位保留，后续可以在不改变顶层仓库结构的前提下继续扩展为完整的多�?Notes 工作区�?
+?????????? Notes ??????????????????????????????????????????????Notes ?????

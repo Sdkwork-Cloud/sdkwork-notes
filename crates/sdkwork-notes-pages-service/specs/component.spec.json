@@ -6,7 +6,7 @@
     "displayName": "SDKWork Notes Pages Service",
     "version": "0.1.0",
     "type": "web-backend-service",
-    "root": "sdkwork-notes/services/sdkwork-notes-pages-service",
+    "root": "sdkwork-notes/crates/sdkwork-notes-pages-service",
     "domain": "notes",
     "capability": "pages",
     "surface": "service",

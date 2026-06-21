@@ -144,8 +144,8 @@ assert.match(
 );
 assert.match(
   JSON.stringify(packageJson.scripts ?? {}),
-  /notes:dev/u,
-  'package.json must expose notes:dev',
+  /"dev"\s*:/u,
+  'package.json must expose dev',
 );
 
 assert.ok(fs.existsSync(path.join(repoRoot, 'scripts/notes-dev.mjs')), 'notes-dev orchestrator required');

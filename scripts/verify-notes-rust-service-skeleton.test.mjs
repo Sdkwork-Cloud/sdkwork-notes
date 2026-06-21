@@ -66,14 +66,14 @@ test('declares root Rust workspace service and app-api route crates for Notes ru
 
   const cargo = await read('Cargo.toml');
   assert.match(cargo, /\[workspace\]/);
-  assert.match(cargo, /"services\/sdkwork-notes-pages-service"/);
+  assert.match(cargo, /"crates\/sdkwork-notes-pages-service"/);
   assert.match(cargo, /"crates\/sdkwork-notes-pages-repository-sqlx"/);
   assert.match(cargo, /"crates\/sdkwork-router-notes-app-api"/);
   assert.match(cargo, /"crates\/sdkwork-router-notes-backend-api"/);
   assert.doesNotMatch(cargo, /packages\/native-rust/);
   assert.doesNotMatch(cargo, /sdkwork-routes-notes/);
 
-  const productCargo = await read('services/sdkwork-notes-pages-service/Cargo.toml');
+  const productCargo = await read('crates/sdkwork-notes-pages-service/Cargo.toml');
   assert.match(productCargo, /name\s*=\s*"sdkwork-notes-pages-service"/);
 
   const repositoryCargo = await read('crates/sdkwork-notes-pages-repository-sqlx/Cargo.toml');
@@ -106,7 +106,7 @@ test('does not create generated SDK transport output inside Notes SDK families',
 
 test('declares component specs for new Rust service crates', async () => {
   for (const relativePath of [
-    'services/sdkwork-notes-pages-service/specs/component.spec.json',
+    'crates/sdkwork-notes-pages-service/specs/component.spec.json',
     'crates/sdkwork-notes-pages-repository-sqlx/specs/component.spec.json',
     'crates/sdkwork-router-notes-app-api/specs/component.spec.json',
     'crates/sdkwork-router-notes-backend-api/specs/component.spec.json'
@@ -153,7 +153,7 @@ test('declares a route manifest artifact aligned with the Notes App OpenAPI auth
   assert.equal(componentSpec.component.type, 'rust-route-crate');
   assert.equal(componentSpec.contracts.routeManifest, '../../../sdks/_route-manifests/app-api/sdkwork-router-notes-app-api.route-manifest.json');
 
-  const openapi = await readJson('generated/openapi/notes-app-api.openapi.json');
+  const openapi = await readJson('apis/app-api/notes/notes-app-api.openapi.json');
   const openapiOperations = new Map();
   for (const [apiPath, pathItem] of Object.entries(openapi.paths ?? {})) {
     for (const [method, operation] of Object.entries(pathItem ?? {})) {
@@ -206,7 +206,7 @@ test('declares a route manifest artifact aligned with the Notes App OpenAPI auth
 
   for (const [key, route] of manifestOperations) {
     const operation = openapiOperations.get(key);
-    assert.ok(operation, `${key} should exist in generated/openapi/notes-app-api.openapi.json`);
+    assert.ok(operation, `${key} should exist in apis/app-api/notes/notes-app-api.openapi.json`);
     assert.equal(route.operationId, operation.operationId);
     assert.equal(route.ownership.owner, operation['x-sdkwork-owner']);
     assert.equal(operation['x-sdkwork-api-authority'], 'sdkwork-notes-app-api');
@@ -237,7 +237,7 @@ test('declares a backend route manifest artifact aligned with the Notes Backend 
   assert.equal(componentSpec.component.type, 'rust-route-crate');
   assert.equal(componentSpec.contracts.routeManifest, '../../../sdks/_route-manifests/backend-api/sdkwork-router-notes-backend-api.route-manifest.json');
 
-  const openapi = await readJson('generated/openapi/notes-backend-api.openapi.json');
+  const openapi = await readJson('apis/backend-api/notes/notes-backend-api.openapi.json');
   const openapiOperations = new Map();
   for (const [apiPath, pathItem] of Object.entries(openapi.paths ?? {})) {
     for (const [method, operation] of Object.entries(pathItem ?? {})) {
@@ -280,7 +280,7 @@ test('declares a backend route manifest artifact aligned with the Notes Backend 
 
   for (const [key, route] of manifestOperations) {
     const operation = openapiOperations.get(key);
-    assert.ok(operation, `${key} should exist in generated/openapi/notes-backend-api.openapi.json`);
+    assert.ok(operation, `${key} should exist in apis/backend-api/notes/notes-backend-api.openapi.json`);
     assert.equal(route.operationId, operation.operationId);
     assert.equal(route.ownership.owner, operation['x-sdkwork-owner']);
     assert.equal(operation['x-sdkwork-api-authority'], 'sdkwork-notes-backend-api');

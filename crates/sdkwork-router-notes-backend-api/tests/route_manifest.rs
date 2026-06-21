@@ -73,7 +73,7 @@ fn backend_route_manifest_matches_backend_openapi_ai_job_operations() {
 }
 
 fn read_openapi() -> Value {
-    let path = workspace_root().join("generated/openapi/notes-backend-api.openapi.json");
+    let path = workspace_root().join("apis/backend-api/notes/notes-backend-api.openapi.json");
     let text =
         fs::read_to_string(path).expect("notes backend OpenAPI authority should be readable");
     serde_json::from_str(&text).expect("notes backend OpenAPI authority should be valid json")

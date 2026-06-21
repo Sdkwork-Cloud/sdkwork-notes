@@ -1,0 +1,14 @@
+# SDKWork Notes PC server-side runtime profile (development example)
+
+[app]
+key = "sdkwork-notes-pc-react"
+environment = "development"
+config_profile = "dev"
+
+[ingress]
+application_public_http_url = "http://127.0.0.1:8787"
+platform_api_gateway_http_url = "http://127.0.0.1:3900"
+
+[database]
+engine = "sqlite"
+url = "sqlite://./.sdkwork/notes/product.db"

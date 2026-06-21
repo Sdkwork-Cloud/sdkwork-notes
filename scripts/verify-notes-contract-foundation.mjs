@@ -6,21 +6,21 @@ const HTTP_METHODS = new Set(['get', 'put', 'post', 'delete', 'patch', 'options'
 
 const OPENAPI_AUTHORITIES = [
   {
-    file: 'generated/openapi/notes-app-api.openapi.json',
+    file: 'apis/app-api/notes/notes-app-api.openapi.json',
     prefix: '/app/v3/api/notes',
     surface: 'app-api',
     apiAuthority: 'sdkwork-notes-app-api',
     requiredSecuritySchemes: ['AuthToken', 'AccessToken']
   },
   {
-    file: 'generated/openapi/notes-open-api.openapi.json',
+    file: 'apis/open-api/notes/notes-open-api.openapi.json',
     prefix: '/notes/v3/api',
     surface: 'open-api',
     apiAuthority: 'sdkwork-notes-open-api',
     requiredSecuritySchemes: ['ApiKey']
   },
   {
-    file: 'generated/openapi/notes-backend-api.openapi.json',
+    file: 'apis/backend-api/notes/notes-backend-api.openapi.json',
     prefix: '/backend/v3/api/notes',
     surface: 'backend-api',
     apiAuthority: 'sdkwork-notes-backend-api',
@@ -349,7 +349,7 @@ const SDK_FAMILY_EXPECTATIONS = [
     surface: 'open-api',
     sdkFamily: 'sdkwork-notes-sdk',
     apiPrefix: '/notes/v3/api',
-    generationInputSpec: '../../generated/openapi/notes-open-api.openapi.json'
+    generationInputSpec: '../../apis/open-api/notes/notes-open-api.openapi.json'
   },
   {
     familyDir: 'sdks/sdkwork-notes-app-sdk',
@@ -357,7 +357,7 @@ const SDK_FAMILY_EXPECTATIONS = [
     surface: 'app-api',
     sdkFamily: 'sdkwork-notes-app-sdk',
     apiPrefix: '/app/v3/api',
-    generationInputSpec: '../../generated/openapi/notes-app-api.openapi.json'
+    generationInputSpec: '../../apis/app-api/notes/notes-app-api.openapi.json'
   },
   {
     familyDir: 'sdks/sdkwork-notes-backend-sdk',
@@ -365,7 +365,7 @@ const SDK_FAMILY_EXPECTATIONS = [
     surface: 'backend-api',
     sdkFamily: 'sdkwork-notes-backend-sdk',
     apiPrefix: '/backend/v3/api',
-    generationInputSpec: '../../generated/openapi/notes-backend-api.openapi.json'
+    generationInputSpec: '../../apis/backend-api/notes/notes-backend-api.openapi.json'
   }
 ];
 
@@ -536,7 +536,7 @@ function scanTextForPatterns({ findings, relativePath, text, patterns, code, all
 async function verifyForbiddenNames(rootDir, findings) {
   const scanFiles = [
     ...await walkFiles(rootDir, 'docs/schema-registry'),
-    ...await walkFiles(rootDir, 'generated/openapi'),
+    ...await walkFiles(rootDir, 'apis'),
     ...await walkFiles(rootDir, 'sdks')
   ];
 
@@ -805,7 +805,7 @@ function operationById(openapi, operationId) {
 }
 
 async function verifyAppApiImplementedHeaderContracts(rootDir, findings) {
-  const file = 'generated/openapi/notes-app-api.openapi.json';
+  const file = 'apis/app-api/notes/notes-app-api.openapi.json';
   if (!(await pathExists(path.join(rootDir, file)))) {
     return;
   }
@@ -843,7 +843,7 @@ async function verifyAppApiImplementedHeaderContracts(rootDir, findings) {
 }
 
 async function verifyAppApiImplementedBodyContracts(rootDir, findings) {
-  const file = 'generated/openapi/notes-app-api.openapi.json';
+  const file = 'apis/app-api/notes/notes-app-api.openapi.json';
   if (!(await pathExists(path.join(rootDir, file)))) {
     return;
   }
@@ -906,7 +906,7 @@ async function verifyAppApiImplementedBodyContracts(rootDir, findings) {
 }
 
 async function verifyOpenApiImplementedBodyContracts(rootDir, findings) {
-  const file = 'generated/openapi/notes-open-api.openapi.json';
+  const file = 'apis/open-api/notes/notes-open-api.openapi.json';
   if (!(await pathExists(path.join(rootDir, file)))) {
     return;
   }
@@ -966,12 +966,12 @@ async function verifyOpenApiImplementedBodyContracts(rootDir, findings) {
 async function verifyImplementedQueryContextContracts(rootDir, findings) {
   const authorities = [
     {
-      file: 'generated/openapi/notes-app-api.openapi.json',
+      file: 'apis/app-api/notes/notes-app-api.openapi.json',
       requirements: APP_QUERY_CONTEXT_REQUIREMENTS,
       code: 'APP_QUERY_CONTEXT_CONTRACT_MISSING'
     },
     {
-      file: 'generated/openapi/notes-backend-api.openapi.json',
+      file: 'apis/backend-api/notes/notes-backend-api.openapi.json',
       requirements: BACKEND_QUERY_CONTEXT_REQUIREMENTS,
       code: 'BACKEND_QUERY_CONTEXT_CONTRACT_MISSING'
     }
@@ -1017,8 +1017,8 @@ async function verifyImplementedQueryContextContracts(rootDir, findings) {
 
 async function verifyImplementedSchemaValueContracts(rootDir, findings) {
   for (const file of [
-    'generated/openapi/notes-app-api.openapi.json',
-    'generated/openapi/notes-backend-api.openapi.json'
+    'apis/app-api/notes/notes-app-api.openapi.json',
+    'apis/backend-api/notes/notes-backend-api.openapi.json'
   ]) {
     if (!(await pathExists(path.join(rootDir, file)))) {
       continue;

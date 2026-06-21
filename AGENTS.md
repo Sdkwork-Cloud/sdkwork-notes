@@ -20,7 +20,7 @@ Do not copy root standard text into this repository. If these relative paths do 
 
 ## Application Identity
 
-No `sdkwork.app.config.json` is present at this root. If the task changes application behavior, runtime config, SDK wiring, release metadata, or app-owned capabilities, first locate the nearest application root that has this manifest or add one according to the root specs.
+No `sdkwork.app.config.json` is present at this root. The PC application surface owns the manifest at `sdkwork-notes-pc-react/sdkwork.app.config.json`. If the task changes application behavior, runtime config, SDK wiring, release metadata, or app-owned capabilities, read that manifest or add one according to the root specs.
 
 ## Local Dictionary Structure
 
@@ -28,11 +28,14 @@ No `sdkwork.app.config.json` is present at this root. If the task changes applic
 - `CLAUDE.md`: Claude Code compatibility shim that points to `AGENTS.md` and must not duplicate rules.
 - `GEMINI.md`: Gemini CLI compatibility shim that points to `AGENTS.md` and must not duplicate rules.
 - `CODEX.md`: Codex compatibility shim that points to `AGENTS.md` and must not duplicate rules.
-- `sdkwork.app.config.json`: not present here; required for application roots.
-- `.sdkwork/`: reserved local dictionary folder; create only for local skills, plugins, manifests, or AI workspace metadata.
-- `specs/`: not present here; use when local contracts need to narrow root standards.
-- `sdks/`: not present here; use only for SDK authority or generation surfaces.
-- Local directories to inspect first when relevant: `.github/`, `docs/`, `sdkwork-notes-mobile-flutter/`, `sdkwork-notes-mobile-react/`, `sdkwork-notes-pc-react/`.
+- `sdkwork.app.config.json`: owned by `sdkwork-notes-pc-react/` (hybrid app placement).
+- `.sdkwork/`: source-controlled workspace metadata (`skills/`, `plugins/`).
+- `specs/`: root topology and workspace component contracts (`topology.spec.json`, `component.spec.json`).
+- `sdks/`: SDK family workspaces, route manifests, and generated transport output.
+- `database/`: application database lifecycle assets (contract, migrations, seeds, drift).
+- `apis/`: author-owned OpenAPI authorities for app/backend/open surfaces.
+- `crates/`: Rust route crates, API server, product services, and SQLx repositories.
+- Local directories to inspect first when relevant: `.github/`, `docs/`, `configs/`, `deployments/`, `sdkwork-notes-pc-react/`, `sdkwork-notes-mobile-react/`, `sdkwork-notes-mobile-flutter/`.
 
 ## Spec Resolution Order
 
@@ -63,7 +66,19 @@ Load language specs only when touched: Rust uses `RUST_CODE_SPEC.md`, Java/Sprin
 
 ## Build, Test, and Verification
 
-No standard build manifest was detected at this root. Read `README.md`, local `specs/`, and parent repository guidance before choosing commands. Record any manual verification in the task result.
+Run commands from this repository root unless a command explicitly targets another path.
+
+- `pnpm dev`: start browser development with standalone unified-process topology.
+- `pnpm dev:desktop`: start Tauri desktop development.
+- `pnpm start:api-server`: run the Notes API server with topology profile env.
+- `pnpm build`: build the Rust workspace.
+- `pnpm test`: run topology and contract verification scripts.
+- `pnpm check`: run Rust checks, PNPM script standard, architecture alignment, topology, database, and API contract checks.
+- `pnpm verify`: run `cargo test --workspace` and `pnpm test`.
+- `pnpm api:check` / `pnpm sdk:generate`: validate or generate SDK families under `sdks/`.
+- `pnpm db:*`: database lifecycle commands via `sdkwork-database` CLI.
+
+Run the narrowest relevant check first, then broader verification when API contracts, SDK generation, persistence, security, or cross-package boundaries change.
 
 ## Agent Execution Rules
 

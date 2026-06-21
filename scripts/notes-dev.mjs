@@ -39,9 +39,10 @@ function pnpmCommand() {
 
 function parseArgs(argv) {
   const settings = {
-    hosting: 'self-hosted',
-    serviceLayout: 'split-services',
-    target: 'browser',
+    deploymentProfile: 'standalone',
+    serviceLayout: 'unified-process',
+    runtimeTarget: 'browser',
+    database: 'postgres',
     dryRun: false,
     help: false,
   };
@@ -52,8 +53,8 @@ function parseArgs(argv) {
       settings.help = true;
       continue;
     }
-    if (arg === '--hosting') {
-      settings.hosting = argv[index + 1] ?? settings.hosting;
+    if (arg === '--deployment-profile') {
+      settings.deploymentProfile = argv[index + 1] ?? settings.deploymentProfile;
       index += 1;
       continue;
     }
@@ -62,13 +63,24 @@ function parseArgs(argv) {
       index += 1;
       continue;
     }
-    if (arg === '--target') {
-      settings.target = argv[index + 1] ?? settings.target;
+    if (arg === '--runtime-target') {
+      settings.runtimeTarget = argv[index + 1] ?? settings.runtimeTarget;
       index += 1;
       continue;
     }
+    if (arg === '--database') {
+      settings.database = argv[index + 1] ?? settings.database;
+      index += 1;
+      continue;
+    }
+    if (arg === '--hosting') {
+      throw new Error('--hosting is retired; use --deployment-profile standalone|cloud');
+    }
+    if (arg === '--target') {
+      throw new Error('--target is retired; use --runtime-target browser|desktop');
+    }
     if (arg === '--topology') {
-      throw new Error('--topology is retired; use --hosting (standalone -> self-hosted, cloud -> cloud-hosted)');
+      throw new Error('--topology is retired; use --deployment-profile and --service-layout');
     }
     if (arg === '--dry-run') {
       settings.dryRun = true;
@@ -84,9 +96,10 @@ function printHelp() {
 Topology-aware Notes dev entry. Loads configs/topology profile env via @sdkwork/app-topology.
 
 Options:
-  --hosting <self-hosted|cloud-hosted>              Default: self-hosted
-  --service-layout <split-services|unified-process> Default: split-services
-  --target <browser|desktop>                        Default: browser
+  --deployment-profile <standalone|cloud>           Default: standalone
+  --service-layout <unified-process|split-services> Default: unified-process
+  --runtime-target <browser|desktop>                Default: browser
+  --database <postgres|sqlite>                      Default: postgres
   --dry-run                                         Print plan without executing
   --help, -h
 `);
@@ -160,7 +173,7 @@ function createPlatformGatewayProcess(env) {
   };
 }
 
-function buildProcessesFromOrchestration(profileId, env, target) {
+function buildProcessesFromOrchestration(profileId, env, runtimeTarget) {
   const processes = [];
 
   for (const processDef of listOrchestrationProcesses(profileId)) {
@@ -178,15 +191,15 @@ function buildProcessesFromOrchestration(profileId, env, target) {
     }
 
     if (processDef.id === 'pc-renderer') {
-      processes.push(createPcRendererProcess(env, target));
+      processes.push(createPcRendererProcess(env, runtimeTarget));
     }
   }
 
   return processes;
 }
 
-function createPcRendererProcess(env, target) {
-  const script = target === 'desktop' ? 'tauri:dev' : 'dev';
+function createPcRendererProcess(env, runtimeTarget) {
+  const script = runtimeTarget === 'desktop' ? 'dev:desktop' : 'dev';
   return {
     label: `sdkwork-notes-pc-react:${script}`,
     command: pnpmCommand(),
@@ -226,7 +239,7 @@ async function main() {
     process.exit(0);
   }
 
-  const profileId = resolveDevProfileId(settings.hosting, settings.serviceLayout)
+  const profileId = resolveDevProfileId(settings.deploymentProfile, settings.serviceLayout)
     || DEFAULT_DEV_PROFILE_ID;
   const profileEnv = loadProfile(profileId);
   const runtimeEnv = mergeRuntimeEnv(
@@ -236,13 +249,14 @@ async function main() {
     {
       SDKWORK_NOTES_PROFILE_ID: profileId,
       SDKWORK_NOTES_DEV_MODE: '1',
+      SDKWORK_NOTES_DATABASE_ENGINE: settings.database,
     },
   );
 
-  const processes = buildProcessesFromOrchestration(profileId, runtimeEnv, settings.target);
+  const processes = buildProcessesFromOrchestration(profileId, runtimeEnv, settings.runtimeTarget);
 
   if (settings.dryRun) {
-    console.log(`[sdkwork-notes] profile=${profileId} target=${settings.target}`);
+    console.log(`[sdkwork-notes] profile=${profileId} runtimeTarget=${settings.runtimeTarget}`);
     for (const entry of processes) {
       console.log(`[${entry.label}] ${entry.command} ${entry.args.join(' ')}`);
     }
@@ -302,7 +316,7 @@ async function main() {
     throw error;
   }
 
-  console.log(`[sdkwork-notes] dev stack ready (profile=${profileId}, target=${settings.target})`);
+  console.log(`[sdkwork-notes] dev stack ready (profile=${profileId}, runtimeTarget=${settings.runtimeTarget})`);
   const stop = () => shutdown();
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);

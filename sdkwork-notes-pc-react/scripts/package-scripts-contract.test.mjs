@@ -8,11 +8,11 @@ const packageJsonPath = path.resolve(workspaceRoot, 'package.json');
 const desktopPackageJsonPath = path.resolve(
   workspaceRoot,
   'packages',
-  'sdkwork-notes-desktop',
+  'sdkwork-notes-pc-desktop',
   'package.json',
 );
 
-test('package scripts pin local tauri commands to source SDK mode and release builds to git SDK mode', () => {
+test('package scripts pin local desktop commands to source SDK mode and release builds to git SDK mode', () => {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
   const scripts = packageJson.scripts ?? {};
   const desktopPackageJson = JSON.parse(fs.readFileSync(desktopPackageJsonPath, 'utf8'));
@@ -20,12 +20,12 @@ test('package scripts pin local tauri commands to source SDK mode and release bu
   const nodeTestCommand = 'node --test --experimental-test-isolation=none';
 
   assert.equal(
-    scripts['dev:test'],
+    scripts['dev:browser:test-runner'],
     'node scripts/run-with-app-mode.mjs test -- pnpm exec vite --host 127.0.0.1 --port 4178 --strictPort',
   );
   assert.equal(
     scripts['build:test'],
-    'node scripts/run-with-app-mode.mjs test -- pnpm prepare:shared-sdk && pnpm build:packages && pnpm exec vite build --mode test',
+    'node scripts/run-with-app-mode.mjs test -- pnpm install:shared-sdk && pnpm build:packages && pnpm exec vite build --mode test',
   );
   assert.equal(
     scripts['build:packages'],
@@ -33,7 +33,7 @@ test('package scripts pin local tauri commands to source SDK mode and release bu
   );
   assert.equal(
     scripts.typecheck,
-    'pnpm test:workspace:contracts && pnpm prepare:shared-sdk && node scripts/run-internal-packages-turbo.mjs typecheck && tsc -p tsconfig.json --noEmit',
+    'pnpm test:workspace:contracts && pnpm install:shared-sdk && node scripts/run-internal-packages-turbo.mjs typecheck && tsc -p tsconfig.json --noEmit',
   );
   assert.equal(
     scripts['test:workspace:contracts'],
@@ -41,27 +41,27 @@ test('package scripts pin local tauri commands to source SDK mode and release bu
   );
   assert.equal(
     scripts.test,
-    'pnpm test:workspace:contracts && pnpm prepare:shared-sdk && node scripts/run-internal-packages-turbo.mjs test && pnpm test:app',
+    'pnpm test:workspace:contracts && pnpm install:shared-sdk && node scripts/run-internal-packages-turbo.mjs test && pnpm test:app',
   );
   assert.equal(
     scripts['test:desktop:contracts'],
     `pnpm test:workspace:contracts && ${nodeTestCommand} scripts/desktop-session-bridge.contract.test.mjs && ${nodeTestCommand} scripts/desktop-toolchain-env.test.mjs && ${nodeTestCommand} scripts/shared-sdk-local-roots.test.mjs && ${nodeTestCommand} scripts/script-entry.test.mjs && ${nodeTestCommand} scripts/run-cargo-command.test.mjs && ${nodeTestCommand} scripts/release/desktop-targets.test.mjs && ${nodeTestCommand} scripts/run-desktop-release-build.test.mjs && ${nodeTestCommand} scripts/run-desktop-tauri-dev.test.mjs && ${nodeTestCommand} scripts/ensure-tauri-dev-port-free.test.mjs && ${nodeTestCommand} scripts/run-with-shared-sdk-mode.test.mjs && ${nodeTestCommand} scripts/run-with-app-mode.test.mjs && ${nodeTestCommand} scripts/package-scripts-contract.test.mjs && ${nodeTestCommand} scripts/prepare-shared-sdk-git-sources.test.mjs && ${nodeTestCommand} scripts/release-workflow-contract.test.mjs`,
   );
   assert.equal(
-    scripts['tauri:dev'],
+    scripts['dev:desktop'],
     'node scripts/run-desktop-tauri-dev.mjs',
   );
   assert.equal(
-    scripts['tauri:dev:test'],
+    scripts['dev:desktop:test-runner'],
     'node scripts/run-desktop-tauri-dev.mjs --mode test',
   );
   assert.equal(
-    scripts['tauri:build'],
-    'node scripts/run-with-shared-sdk-mode.mjs source -- pnpm --filter @sdkwork/notes-pc-desktop run tauri:build',
+    scripts['build:desktop'],
+    'node scripts/run-with-shared-sdk-mode.mjs source -- pnpm --filter @sdkwork/notes-pc-desktop run build:desktop',
   );
   assert.equal(
-    scripts['tauri:info'],
-    'node scripts/run-with-shared-sdk-mode.mjs source -- pnpm --filter @sdkwork/notes-pc-desktop run tauri:info',
+    scripts['check:desktop:toolchain'],
+    'node scripts/run-with-shared-sdk-mode.mjs source -- pnpm --filter @sdkwork/notes-pc-desktop run check:desktop:toolchain',
   );
   assert.equal(
     scripts['release:desktop'],
@@ -72,15 +72,11 @@ test('package scripts pin local tauri commands to source SDK mode and release bu
     'node scripts/ensure-desktop-frontend-dist.mjs && node scripts/run-cargo-command.mjs test --manifest-path packages/sdkwork-notes-pc-desktop/src-tauri/Cargo.toml',
   );
   assert.equal(
-    desktopScripts['tauri:dev'],
-    'node ../../scripts/run-desktop-tauri-dev.mjs',
-  );
-  assert.equal(
-    desktopScripts['dev:tauri'],
+    desktopScripts['dev:desktop'],
     'vite --host 127.0.0.1 --port 1430 --strictPort',
   );
   assert.equal(
-    desktopScripts['dev:tauri:test'],
+    desktopScripts['dev:desktop:test-runner'],
     'node ../../scripts/run-with-app-mode.mjs test -- pnpm exec vite --host 127.0.0.1 --port 1430 --strictPort --mode test',
   );
 });

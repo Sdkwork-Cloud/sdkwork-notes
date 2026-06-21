@@ -2,7 +2,7 @@
 
 Author-owned HTTP API contracts for SDKWork Notes.
 
-This directory holds reviewable OpenAPI authorities and validation inputs. Generated SDK transport output remains under `sdks/`; materialized runtime artifacts may also appear under `generated/openapi/` during migration.
+This directory holds reviewable OpenAPI authorities and validation inputs. Generated SDK transport output remains under `sdks/`.
 
 | Surface | Authority file |
 | --- | --- |

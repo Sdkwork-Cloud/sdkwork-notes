@@ -1,0 +1,15 @@
+{
+  "deploymentProfile": "standalone",
+  "environment": "development",
+  "configProfile": "dev",
+  "buildMode": "development",
+  "runtimeTarget": "browser",
+  "appKey": "sdkwork-notes-pc-react",
+  "sdkBaseUrls": {
+    "appApiBaseUrl": "http://127.0.0.1:8787",
+    "backendApiBaseUrl": "http://127.0.0.1:8787",
+    "openApiBaseUrl": "http://127.0.0.1:8787",
+    "platformApiGatewayBaseUrl": "http://127.0.0.1:3900"
+  },
+  "notes": "Safe checked-in browser runtime example aligned with self-hosted.unified-process.development topology."
+}

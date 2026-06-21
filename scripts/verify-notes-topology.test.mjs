@@ -55,10 +55,11 @@ test('declares v2 topology spec and profile env files for sdkwork-notes', async 
   }
 });
 
-test('root package.json wires @sdkwork/app-topology and notes:dev scripts', async () => {
+test('root package.json wires @sdkwork/app-topology and standard dev scripts', async () => {
   const packageJson = await readJson('package.json');
   assert.equal(packageJson.dependencies['@sdkwork/app-topology'], 'file:../sdkwork-app-topology');
-  assert.match(packageJson.scripts['notes:dev'], /scripts\/notes-dev\.mjs/);
+  assert.match(packageJson.scripts.dev, /scripts\/notes-dev\.mjs/);
+  assert.match(packageJson.scripts['dev:browser'], /scripts\/notes-dev\.mjs/);
   assert.match(packageJson.scripts['topology:validate'], /sdkwork-topology\.mjs validate/);
 });
 

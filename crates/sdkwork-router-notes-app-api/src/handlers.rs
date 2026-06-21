@@ -16,7 +16,9 @@ use crate::context::{
     authenticated_update_page_body, authenticated_workspace_body,
 };
 use crate::error::{map_product_error, problem, ApiResult, ProblemDetail};
-use sdkwork_web_core::WebRequestContext;use axum::Json;
+use sdkwork_utils_rust::string::{is_blank, trim};
+use sdkwork_web_core::WebRequestContext;
+use axum::Json;
 use http::{HeaderMap, StatusCode};
 use sdkwork_notes_pages_service::domain::{
     AcceptAiSuggestionCommand, ApplyAiSuggestionCommand, CreateAiFeedbackCommand,
@@ -614,7 +616,7 @@ fn idempotency_key_from_headers(
             "notes.validation.idempotency_key_invalid",
         )
     })?;
-    if value.trim().is_empty() {
+    if is_blank(Some(value)) {
         return Err(problem(
             StatusCode::BAD_REQUEST,
             "validation failed",
@@ -622,5 +624,5 @@ fn idempotency_key_from_headers(
             "notes.validation.idempotency_key_required",
         ));
     }
-    Ok(value.trim().to_string())
+    Ok(trim(value))
 }

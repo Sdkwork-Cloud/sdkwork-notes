@@ -2,7 +2,7 @@
 
 SDKWork Notes Backend API SDK family metadata skeleton.
 
-This directory declares the backend-admin SDK family generated from `../../generated/openapi/notes-backend-api.openapi.json`.
+This directory declares the backend-admin SDK family generated from `../../apis/backend-api/notes/notes-backend-api.openapi.json`.
 
 Status:
 

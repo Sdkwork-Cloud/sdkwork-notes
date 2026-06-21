@@ -65,7 +65,7 @@
     "apiAuthority": {
       "name": "sdkwork-notes-backend-api",
       "prefix": "/backend/v3/api/notes",
-      "authorityOpenApi": "../../../generated/openapi/notes-backend-api.openapi.json",
+      "authorityOpenApi": "../../../apis/backend-api/notes/notes-backend-api.openapi.json",
       "owner": "sdkwork-notes"
     },
     "publicExports": [
