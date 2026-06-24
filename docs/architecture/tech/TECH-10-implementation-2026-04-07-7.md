@@ -1,0 +1,55 @@
+> Migrated from `docs/架构/10-实施进度-创建笔记流程增量-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 04 创建笔记流程增量
+
+- 日期: 2026-04-07
+- Step: 04
+- 当前等级: L3
+- 增量主题: create note runtime extraction
+
+## 1. 本次完成项
+
+### 1.1 新增服务
+
+- 新增 `packages/sdkwork-notes-notes/src/services/noteWorkspaceCreateNoteRuntime.ts`
+- 新增 `createNotesWorkspaceCreateNoteRuntime()`
+
+### 1.2 页面改造
+
+- `NotesWorkspacePage.tsx` 不再内联创建笔记流程
+- 页面改为通过 create note runtime 统一组装默认标题、父目录与成功态视图切换
+
+### 1.3 合约接入
+
+- 新增 `sdkwork-notes-pc-react/scripts/workspace-create-note-runtime.contract.test.mjs`
+- `sdkwork-notes-pc-react/package.json` 已将该 contract 纳入 `test:workspace:contracts`
+- `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs` 已同步更新
+
+## 2. 已验证结果
+
+- `node --test --experimental-test-isolation=none scripts/workspace-create-note-runtime.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs`
+- `pnpm.cmd --filter @sdkwork/notes-notes typecheck`
+- `pnpm.cmd typecheck`
+
+结果: 全部通过。
+
+## 3. 进度判断
+
+本轮使 Step 04 在“页面运行时收敛”维度继续推进，但仍不足以升级为 `L4`。
+
+## 4. 阶段收益
+
+- 创建笔记流程拥有独立 runtime 边界
+- 默认标题与父目录透传具备稳定 contract
+- 页面层进一步向装配容器收缩
+
+## 5. 后续建议
+
+下一轮建议优先处理：
+
+1. hotkey runtime coordinator
+2. sidebar resize runtime coordinator
+3. store 内剩余写路径协同逻辑收敛
+

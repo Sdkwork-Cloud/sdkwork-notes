@@ -13,7 +13,7 @@ This repository adopts the shared SDKWork runtime topology framework.
 
 ## Default dev profile
 
-`self-hosted.split-services.development`
+`standalone.split-services.development`
 
 ## Commands
 
@@ -24,10 +24,10 @@ pnpm dev:desktop               # standalone unified-process development (Tauri)
 pnpm start:api-server          # Notes API server only (topology profile env)
 pnpm topology:validate         # validate specs/topology.spec.json
 pnpm gateway:matrix            # print gateway packaging matrix
-pnpm gateway:bundle:cloud      # bundle cloud gateway TOML configs
+pnpm gateway:package:cloud      # bundle cloud gateway TOML configs
 ```
 
-Cloud gateway config bundles live in `configs/sdkwork-api-gateway.notes.{development,production}.toml`.
+Cloud gateway config bundles live in `configs/sdkwork-api-cloud-gateway.notes.{development,production}.toml`.
 
 ## Local URLs (self-hosted split dev)
 

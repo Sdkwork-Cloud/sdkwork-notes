@@ -1,0 +1,90 @@
+> Migrated from `docs/review/step-03-会话安全方案-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 03 会话安全方案
+
+- 日期：`2026-04-07`
+- Step：`03-会话安全与配置治理升级`
+- 主题：`会话存储边界冻结`
+
+## 1. 问题定义
+
+Step 03 之前，当前应用仍存在以下高风险事实：
+
+- 会话令牌可通过浏览器 `localStorage` 长期持久化。
+- Web 与 Desktop 在会话存储层没有统一抽象。
+- 桌面侧没有独立的原生权威会话副本。
+- 历史会话键没有统一迁移与清理策略。
+
+## 2. 当前冻结方案
+
+### 2.1 Web 侧
+
+- Web 默认会话主持久层：`sessionStorage`
+- 会话主键：`sdkwork-notes-auth-session`
+- 兼容迁移键：
+  - `sdkwork.core.pc-react.auth-token`
+  - `sdkwork.core.pc-react.access-token`
+  - `sdkwork.core.pc-react.refresh-token`
+- 迁移规则：
+  - 启动时优先读取 `sessionStorage`
+  - 若未命中，再读取历史 `localStorage`
+  - 命中历史键后立即迁移到 `sessionStorage`
+  - 迁移完成后立即清理旧 `localStorage` 键
+
+### 2.2 Desktop 侧
+
+- 前端镜像层：`sessionStorage`
+- 原生权威层：Tauri app data 目录下的 `desktop-session.json`
+- 原生命令：
+  - `read_session_state`
+  - `write_session_state`
+  - `clear_session_state`
+- 启动流程：
+  - `createDesktopApp()` 检测到 Tauri runtime 后安装 `installDesktopSessionStoreBridge()`
+  - 启动期先读取原生会话
+  - 若原生无会话但前端镜像有值，则回写到原生
+  - 后续所有写入通过串行同步链进入原生文件
+
+### 2.3 统一抽象
+
+- 统一接口：`AppSdkSessionStoreAdapter`
+- 接口职责：
+  - `read()`
+  - `write(session)`
+  - `clear()`
+- 统一注册入口：`configureAppSdkSessionStoreAdapter()`
+- 统一消费面：`notes-core/useAppSdkClient.ts`
+
+## 3. 方案收益
+
+| 收益 | 说明 |
+| --- | --- |
+| 风险下降 | 不再以 `localStorage` 作为会话主持久层 |
+| 平台一致性 | Web/Desktop 共享同一会话消费接口 |
+| 迁移可控 | 历史键可兼容读取并自动清理 |
+| 桌面边界清晰 | 前端镜像与原生权威源分离，避免业务层直接碰原生文件 |
+| 测试可验证 | Web 会话行为、桌面会话桥和 Rust 原生读写都已具备契约或单元测试 |
+
+## 4. 评估标准
+
+| 评估项 | 达标标准 | 当前结论 |
+| --- | --- | --- |
+| 会话主持久层 | 不以 `localStorage` 作为主持久层 | 达标 |
+| 迁移兼容 | 历史会话键可迁移且迁移后清理 | 达标 |
+| 平台抽象 | Web/Desktop 共享统一接口 | 达标 |
+| 登出清理 | 清理前端镜像与桌面原生副本 | 达标 |
+| 可验证性 | 至少具备 Web 合同测试、桌面桥合同测试和 Rust 测试 | 达标 |
+
+## 5. 残余风险
+
+- Web 侧 `sessionStorage` 仍属于同源脚本可访问存储，不是零信任级别。
+- Desktop 原生会话文件当前是“受控原生文件”而非 OS Keychain / Credential Manager。
+- 异常会话检测、设备信任、远端会话吊销与审计事件仍未建设。
+
+## 6. 后续升级方向
+
+- Step 09 / 11 继续推进 Desktop 侧 OS Keychain 与可信发布链。
+- Step 10 引入安全事件、错误与行为观测。
+- 后续如引入 Web 高安全模式，应考虑更短生命周期访问令牌和更严格的前端安全基线。
+

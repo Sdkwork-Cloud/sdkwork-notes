@@ -1,0 +1,97 @@
+> Migrated from `docs/review/step-04-页面Chrome收敛-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 04 页面Chrome收敛 Review
+
+## 1. 本轮目标
+
+本轮继续执行 `Step 04-工作区边界收敛与数据访问抽象`，但不再重复处理已经完成的读策略注册表和页面展示模型能力，而是集中清理 `NotesWorkspacePage.tsx` 中剩余的两类页面容器胶水：
+
+1. 命令面板、指标卡、焦点卡共用的 icon map 仍直接写在页面层。
+2. 顶部 header action button 的 descriptor 仍以内联 JSX 方式散落在页面层。
+
+本轮目标不是新增产品功能，而是进一步把页面容器压缩为更薄的视图适配层。
+
+## 2. 实际落地
+
+### 新增
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspacePageChrome.ts`
+  - 新增 `resolveNotesWorkspaceChromeIcon()`
+  - 新增 `buildNotesWorkspacePageHeaderActions()`
+  - 统一承接页面顶部动作 descriptor 与工作区 chrome icon 解析策略
+- `sdkwork-notes-pc-react/scripts/workspace-page-chrome.contract.test.mjs`
+  - 新增页面 chrome 的 Node contract
+- `docs/架构/06-业务流程-应用接口与集成设计-页面Chrome收敛补充-2026-04-07.md`
+- `docs/架构/10-实施进度-页面Chrome增量-2026-04-07.md`
+- `docs/release/Step04-页面Chrome收敛-2026-04-07.md`
+
+### 变更
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+  - 删除页面内联 `COMMAND_PALETTE_ICONS` 与 `PAGE_PRESENTATION_ICONS`
+  - 顶部按钮区改为消费 `buildNotesWorkspacePageHeaderActions()` 输出
+  - 命令面板 item、指标卡与焦点卡 detail 全部改为消费 `resolveNotesWorkspaceChromeIcon()`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/index.ts`
+  - 导出新的页面 chrome 服务
+- `sdkwork-notes-pc-react/package.json`
+  - 将 `workspace-page-chrome.contract.test.mjs` 纳入 `test:workspace:contracts`
+- `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
+  - 同步冻结新的 contract 聚合链
+
+## 3. TDD 证据
+
+### RED
+
+先新增 `workspace-page-chrome.contract.test.mjs`，随后执行：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-chrome.contract.test.mjs
+```
+
+首轮失败原因为：
+
+- `ENOENT: ... noteWorkspacePageChrome.ts`
+
+这说明契约准确锁定了本轮新增目标模块，而不是误测已有能力。
+
+### GREEN
+
+完成 `noteWorkspacePageChrome.ts`、页面接线以及总脚本链接入后，同一命令转绿。
+
+## 4. 验证结果
+
+本轮已通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-chrome.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+补充说明：
+
+- `pnpm.cmd typecheck` 已重新执行 `test:workspace:contracts` 全链，新 contract 已进入总门禁。
+- 包内 Vitest 在当前环境仍受 `spawn EPERM` 约束，属于既有环境限制，不作为本轮结论依据。
+
+## 5. 审计结论
+
+### 本轮收益
+
+1. `NotesWorkspacePage.tsx` 不再直接维护页面级 icon registry，页面 chrome 的视觉符号策略已进入独立服务边界。
+2. 顶部动作区不再以内联 JSX 维护 if/else 风格的按钮定义，而是改为消费结构化 header action descriptor。
+3. 页面展示模型与页面 chrome 模型形成串联边界，后续若继续抽离 toolbar variant 或 page chrome layout，可沿同一模型层继续推进。
+
+### 当前准确状态
+
+- Step 04 仍然是 `L3`
+- 当前总评维持 `99 / 100`
+
+### 仍未关闭的残留
+
+1. `NotesWorkspacePage.tsx` 仍保留少量 JSX 级视图适配胶水，例如 command palette descriptor 到 `onSelect` 闭包的最终绑定。
+2. `WorkspaceMetricCard` 与焦点卡布局仍属于页面本地渲染辅助，尚未进一步模块化。
+3. 因此本轮属于 Step 04 的再次收敛，不构成 `L4` 关闭证据。
+

@@ -1,0 +1,41 @@
+> Migrated from `docs/架构/10-实施进度-页面Chrome增量-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-页面Chrome增量-2026-04-07
+
+## 1. 本轮定位
+
+- 日期：`2026-04-07`
+- 当前 Step：`04-工作区边界收敛与数据访问抽象`
+- 当前波次：`Wave-B / 第十八轮推进`
+- 当前等级：`L3`
+- 本轮增量：`页面Chrome收敛`
+
+## 2. 本轮完成
+
+1. 新增 `noteWorkspacePageChrome.ts`，统一页面级 icon 解析与顶部动作区 descriptor。
+2. `NotesWorkspacePage.tsx` 删除页面内联 icon map，改为消费页面 chrome 服务。
+3. `workspace-page-chrome.contract.test.mjs` 建立独立 Node contract，并进入 `test:workspace:contracts`。
+4. `package.json` 与 `package-scripts-contract.test.mjs` 已同步冻结新的 contract 链。
+
+## 3. 验证结果
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-chrome.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+## 4. 对 Step 04 的影响
+
+本轮后，repository 的未来读策略接缝与页面 icon/header action 胶水这两类历史阻塞里，只剩页面局部视图适配胶水仍未完全退出页面层。Step 04 的状态因此仍为 `L3`，但页面容器已经进一步接近“薄适配层”目标。
+
+## 5. 下一轮建议
+
+优先继续压缩 `NotesWorkspacePage.tsx` 中最后一段页面局部视图适配胶水，重点包括：
+
+1. command palette descriptor 到 `NoteCommandPaletteItem` 的最终 UI 绑定。
+2. `WorkspaceMetricCard` 与焦点卡局部布局辅助的组件化或模型化收敛。
+

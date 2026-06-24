@@ -1,0 +1,73 @@
+> Migrated from `docs/架构/06-业务流程-应用接口与集成设计-页面Chrome收敛补充-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 06-业务流程-应用接口与集成设计-页面Chrome收敛补充-2026-04-07
+
+## 1. 背景
+
+在页面展示模型已经收敛后，`NotesWorkspacePage.tsx` 仍保留两类不应继续停留在页面容器层的事实：
+
+1. command palette、指标卡、焦点卡细节卡片共用的 icon key 到 Lucide 组件的映射。
+2. 顶部 header action 的按钮定义、状态化 label 与动态图标选择。
+
+这两类逻辑不属于 store，也不属于 runtime 编排，但又会持续影响页面容器厚度和后续扩展成本，因此需要单独抽成页面 chrome 模型层。
+
+## 2. 设计决策
+
+本轮新增 `noteWorkspacePageChrome.ts`，定义工作区页面 chrome 的统一边界：
+
+### 输入
+
+- `t()`
+- `inspectorOpen`
+- `sidebarCollapsed`
+- `iconKey`
+
+### 输出
+
+- `buildNotesWorkspacePageHeaderActions()`
+  - 输出结构化 header action descriptor
+  - 统一承接顶部动作区的 label、iconKey、command/to
+- `resolveNotesWorkspaceChromeIcon()`
+  - 统一承接 command palette、指标卡、焦点卡 detail 所需的 icon 解析
+
+### 页面层保留职责
+
+- 负责 JSX 结构与样式落点
+- 负责把 `command` 绑定到 runtime 执行入口
+- 负责把 `to` 绑定到 `Link`
+- 负责本地渲染辅助组件和布局切片
+
+## 3. 设计价值
+
+### 高内聚
+
+页面 chrome 相关策略不再分散在 `NotesWorkspacePage.tsx` 的常量和按钮 JSX 中，而是聚合到单一服务中维护。
+
+### 低耦合
+
+header action 描述与 icon 解析不再直接依赖 React hook、store 或 DOM，只消费简单输入并产出稳定模型。
+
+### 易扩展
+
+后续新增 toolbar 变体、页面级 action 分组、更多 chrome icon 或不同端形态时，可以继续在该模型层迭代，而无需重新把规则塞回页面容器。
+
+## 4. 评估标准
+
+本轮页面 chrome 收敛是否达标，使用以下标准判断：
+
+1. 页面层不得继续内联维护页面级 icon map。
+2. 顶部动作区的 descriptor 必须由纯服务统一输出，而不是分散在 JSX 中手写按钮定义。
+3. 新增 contract 必须能独立验证 icon 解析和 header action 的状态化 label 决策。
+4. 新 contract 必须进入 `test:workspace:contracts` 聚合链，并由 `package-scripts-contract` 冻结。
+5. 页面容器剩余的职责应退回到“渲染 + 绑定”层，而不是重新承担规则定义层职责。
+
+## 5. 当前残留与后续方向
+
+本轮之后，Step 04 的页面侧主阻塞继续缩小为：
+
+1. command palette descriptor 到最终 `onSelect` 闭包的适配仍在页面层。
+2. `WorkspaceMetricCard` 与焦点卡布局仍是页面本地渲染辅助。
+
+因此，本轮属于页面容器进一步瘦身，但尚未达到 Step 04 的关闭条件。
+

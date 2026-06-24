@@ -1,0 +1,95 @@
+> Migrated from `docs/review/step-07-统一查询API审计-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 07 统一查询 API 审计 - 2026-04-13
+
+## 结论
+
+- `CP07-2 / 统一查询 API = L4`
+- `Step 07` 继续推进，暂不宣称 `L4`
+
+## 审计范围
+
+本轮只审计 `Step 07` 的第二个缺口 `CP07-2`，目标不是做 UI 接入，而是基于已经冻结的 `NotesSearchDocument / NotesSearchQuery / NotesSearchResult`，补齐最小可执行查询能力：
+
+1. 文本查询
+2. tag 过滤
+3. folder 过滤
+4. `includeTrashed`
+5. limit
+6. 基础排序
+7. 可重建的 in-memory query service
+
+## 本次交付
+
+### 新增 contract
+
+- `sdkwork-notes-pc-react/scripts/workspace-search-query.contract.test.mjs`
+
+该 contract 冻结以下事实：
+
+1. `notes-search` 必须提供统一查询函数。
+2. 查询必须支持文本匹配、tag 过滤、folder 过滤和 trash 控制。
+3. 查询结果必须返回统一 `NotesSearchResult`，并且能够区分 `workspace-search / command-palette`。
+4. in-memory service 必须能通过 `rebuild()` 更新文档源，并继续复用同一查询 API。
+
+### 搜索包查询实现
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-search/src/index.ts`
+
+本轮在 `notes-search` 内新增：
+
+1. `searchNotesSearchDocuments(...)`
+2. `createInMemoryNotesSearchService(...)`
+
+并冻结最小排序策略：
+
+1. 标题命中优先于正文命中
+2. 收藏项具备轻量加权
+3. 非 trash 结果优先于 trash 结果
+4. 同分结果按 `updatedAt` 进一步排序
+
+### 根脚本门禁
+
+- `sdkwork-notes-pc-react/package.json`
+- `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
+
+`workspace-search-query.contract.test.mjs` 已加入 `test:workspace:contracts`，后续查询 API 回退会被根级合同直接拦住。
+
+## 覆盖矩阵
+
+本轮 contract 覆盖以下查询场景：
+
+1. 文本 `recovery` 的 title/body 基础排序
+2. `tags + folderId` 的复合过滤
+3. `includeTrashed = false/true`
+4. `limit`
+5. `command-palette` 结果 source 标记
+6. in-memory service `rebuild()` 后切换文档源
+
+## 审计判断
+
+### 通过项
+
+1. `notes-search` 已具备统一查询 API，不再只是 schema 占位层。
+2. `workspace-search` 与 `command-palette` 已能共享同一套 query/result 语义。
+3. 查询 API 已能消费 `CP07-1` 冻结的 document schema，不需要继续引入 UI 层私有筛选逻辑。
+4. 本轮范围控制正确，未提前把 UI 接入和性能基线混入查询能力闭环。
+
+### 剩余风险
+
+1. 当前排序仍是最小规则，不是最终全文检索相关性模型。
+2. 当前未提供高亮片段输出，后续若需要可在不破坏现有结果 envelope 的前提下扩展。
+3. 顶部搜索与命令面板 UI 仍未切到统一查询服务，继续由 `CP07-3` 收口。
+4. 10k 规模性能基线仍未建立，继续由 `CP07-4` 收口。
+
+## 验证记录
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-search-schema.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-search-query.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-search typecheck
+pnpm.cmd typecheck
+```
+

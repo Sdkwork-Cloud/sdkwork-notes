@@ -1,0 +1,70 @@
+> Migrated from `docs/架构/10-实施进度-Step06本地快照接口增量-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-Step06本地快照接口增量
+
+- 日期：`2026-04-13`
+- 波次：`Wave-B / 第三十三轮推进`
+- 所属 Step：`Step 06`
+- 增量能力：`标准化本地快照 reader / resolver / empty snapshot 边界`
+
+## 1. 本轮结论
+
+本轮已正式把 `Step 06 / CP06-3` 冻结为可验证事实：
+
+1. `@sdkwork/notes-local` 现在显式暴露 `createEmptyNotesLocalWorkspaceSnapshot()`。
+2. `@sdkwork/notes-local` 现在显式暴露 `resolveNotesLocalWorkspaceSnapshot()`。
+3. `@sdkwork/notes-local` 现在显式暴露 `NotesLocalWorkspaceSnapshotReader` 和 `createNotesLocalWorkspaceSnapshotReader()`。
+4. 默认 reader `notesLocalWorkspaceSnapshotReader` 已被固定，可作为后续搜索与同步消费的统一入口。
+5. reader 会把 legacy raw、current envelope 和 loader failure 统一收敛为标准化本地快照。
+
+## 2. 代码落地
+
+1. `sdkwork-notes-pc-react/packages/sdkwork-notes-local/src/index.ts`
+   - 新增 reader / resolver / empty snapshot exports
+   - 保持现有 schema envelope 与恢复入口兼容
+2. `sdkwork-notes-pc-react/scripts/workspace-local-snapshot.contract.test.mjs`
+   - 新增标准化本地快照 contract
+3. `sdkwork-notes-pc-react/package.json`
+   - 接入 `workspace-local-snapshot.contract.test.mjs`
+4. `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
+   - 同步冻结根级脚本链
+
+## 3. 验证结果
+
+本轮 fresh verification：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-local-snapshot.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-local-schema.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-local-recovery.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-local typecheck
+pnpm.cmd typecheck
+```
+
+验证结论：
+
+1. 标准化本地快照 contract 已进入根级 `test:workspace:contracts`。
+2. `notes-local` 包级 typecheck 通过。
+3. 根级 `pnpm.cmd typecheck` 通过，说明新增快照边界已进入真实主门禁。
+
+## 4. 阶段状态变更
+
+1. 变更前：`Step 06 = L3`
+2. 变更后：`Step 06 = L3`
+3. 子能力判断：
+   - `CP06-1 / 本地 schema 与迁移策略 = L4`
+   - `CP06-2 / 草稿日志与恢复入口 = L4`
+   - `CP06-3 / 标准化本地快照接口 = L4`
+   - `CP06-4 / 启动恢复 smoke test` 尚未闭环
+
+## 5. 下一轮入口
+
+下一轮最优入口保持为：`Step 06-本地存储层与离线草稿能力一期`
+
+优先顺序：
+
+1. 补 `CP06-4`：启动恢复 smoke test
+2. 用启动级证据把 `Step 06` 从 `L3` 推向最终闭环
+

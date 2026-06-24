@@ -1,0 +1,57 @@
+> Migrated from `docs/review/step-08-主写入路径收口审计-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 08 主写入路径收口审计
+
+- 日期：`2026-04-13`
+- 审计对象：`CP08-3 / 主写入路径接入收口`
+
+## 审计结论
+
+- `CP08-3 / 主写入路径接入` 现已满足 note 级主写入链的设计、实现、测试、验证与文档闭环要求，可从“进行中”提升为 `L4`。
+- `Step 08` 整体仍不能提升为 `L3/L4`，因为 `CP08-4` 的 worker、回执、冲突恢复与离在线切换验证仍未落地。
+
+## 当前等级判定
+
+- `Step 08`：`L2`
+- `CP08-3 / 主写入路径接入`：`L4`
+
+## 关键审计证据
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-sync/src/index.ts`
+  - operation 集已冻结为 `upsert / delete / restore / move / permanent-delete`。
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+  - `deleteNotePermanently()` 显式产出 `note/permanent-delete` 任务。
+  - `toggleFavorite()` 的 clean-save 路径显式产出 `note/upsert` 任务。
+  - `clearTrash()` 会在一次 snapshot 中批量追加多条 `note/permanent-delete` 任务。
+  - `enqueueNotesSyncTasks(...)` 已成为 note 级单条/批量任务共用追加入口。
+- `sdkwork-notes-pc-react/scripts/workspace-sync-state-machine.contract.test.mjs`
+  - 已锁定 `permanent-delete` 为合法 operation。
+- `sdkwork-notes-pc-react/scripts/workspace-sync-queue.contract.test.mjs`
+  - 已证明 queue snapshot 可持久化 `permanent-delete` 任务。
+- `sdkwork-notes-pc-react/scripts/workspace-sync-write-path.contract.test.mjs`
+  - 现已覆盖 8 条 note 级真实写路径。
+
+## 本轮冻结的语义决策
+
+1. `delete`
+   - 当前只表示“移入废纸篓”的软删除。
+2. `permanent-delete`
+   - 当前只表示真正的永久删除。
+3. `toggleFavorite`
+   - 归类为 note 元数据更新，因此复用 `upsert`。
+4. `clearTrash`
+   - 一期内不新增 batch operation，而是拆成多条 per-note `permanent-delete` 任务，并要求一次 snapshot 持久化完成。
+
+## 风险与剩余缺口
+
+- 当前仍是“远端成功后补队列”的过渡模型，不是最终的本地事务优先双层确认链。
+- worker、回执、冲突提示和离在线切换验证未交付，导致 Step 08 仍不能进入 `L3/L4`。
+- 文件夹结构写路径与复杂结构冲突仍未纳入本轮收口范围。
+
+## 下一步建议
+
+1. 正式切换到 `CP08-4`，实现 queue worker、远端写执行和回执应用。
+2. 为 `permanent-delete`、`delete`、`restore`、`move` 准备最小 worker 调度与失败分类合同。
+3. 补齐离在线切换验证和冲突演练记录，推动 Step 08 从 `L2` 向 `L3` 过渡。
+

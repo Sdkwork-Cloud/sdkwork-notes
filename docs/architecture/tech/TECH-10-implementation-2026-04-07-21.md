@@ -1,0 +1,56 @@
+> Migrated from `docs/架构/10-实施进度-页面展示模型增量-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-页面展示模型增量-2026-04-07
+
+## 1. 增量摘要
+
+当前轮次：`Wave-B / 第十六轮推进`
+
+本轮新增的真实增量为“页面展示模型收敛”：
+
+1. 新增 `noteWorkspacePagePresentationModel.ts`
+2. 新增 `workspace-page-presentation-model.contract.test.mjs`
+3. `NotesWorkspacePage.tsx` 改为消费结构化 `pagePresentation`
+4. `test:workspace:contracts` 纳入新 contract
+
+## 2. 本轮完成项
+
+### 代码
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspacePagePresentationModel.ts`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/index.ts`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+- `sdkwork-notes-pc-react/scripts/workspace-page-presentation-model.contract.test.mjs`
+- `sdkwork-notes-pc-react/package.json`
+- `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
+
+### 验证
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+## 3. 对 Step 04 的影响
+
+### 已新增能力
+
+- 页面快捷键提示具备统一平台决策边界
+- 统计卡片与焦点卡片具备纯模型输出
+- 页面展示层具备独立 Node contract 回归能力
+
+### 仍未完成
+
+- Step 04 状态仍为 `L3`
+- 页面仍残留 command palette icon 映射与部分 action/layout 装配胶水
+- repository 未来同步策略接缝尚未建立
+
+## 4. 下一轮建议
+
+1. 继续压缩页面容器中的 icon/action descriptor 装配胶水。
+2. 为 repository 建立未来 read-through / replica / queued-sync 的策略接口。
+3. 在保持 Step 04 诚实状态的前提下，继续以“小增量 + contract + 文档回写”的节奏推进。
+

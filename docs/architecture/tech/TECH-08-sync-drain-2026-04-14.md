@@ -1,0 +1,79 @@
+> Migrated from `docs/step/08-工作区同步队列状态可视化与手动drain入口-2026-04-14.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 08 / CP08-4 / 工作区同步队列状态可视化与手动drain入口 - 2026-04-14
+
+## 本轮结论
+
+- `Step 08 = L2`
+- `CP08-4 / 冲突与失败恢复验证 = L2`
+- `CP08-4 / 工作区同步队列状态可视化与手动drain入口 = L3`
+
+## 本轮完成
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-sync/src/index.ts`
+  - `NotesSyncQueueStore` 新增可选 `subscribe(listener)`。
+  - `createBrowserNotesSyncQueueStore()` 现在会在 `saveQueue()` 与 `clearQueue()` 后保留最新 queue snapshot，并通知订阅者。
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+  - 新增 `syncQueueSnapshot` 状态。
+  - 新增 `requestSyncDrain(): Promise<boolean>`。
+  - `initialize()` 会加载当前队列快照。
+  - 本地 enqueue、手动 drain、runtime drain 后都会刷新 `syncQueueSnapshot`。
+  - 若当前 queue store 支持 `subscribe`，store 会继续消费外部队列变更。
+  - 若当前没有注入 `syncRuntime`，`requestSyncDrain()` 会返回 `false`，不伪造成功。
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspaceSelectors.ts`
+  - 新增 `syncSummary` 派生，统一产出：
+    - `pendingCount / blockingCount / queuedCount / retryingCount / failedCount / conflictCount / completedCount`
+    - `primaryStatus / primaryTaskId / primaryCode / primaryMessage`
+    - `nextRetryLabel`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspacePagePresentationModel.ts`
+  - 新增 `syncCard` 表现层模型。
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/components/NotesWorkspaceInsightsPanel.tsx`
+  - 新增 `workspace-sync-card`，展示同步状态标题、描述、徽章、明细与可选 action。
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+  - 接入 `syncQueueSnapshot` 与 `requestSyncDrain()`。
+  - 将同步卡片 action 绑定到 store 侧 drain 请求。
+- 国际化资源：
+  - `sdkwork-notes-pc-react/packages/sdkwork-notes-i18n/src/resources/en-US.ts`
+  - `sdkwork-notes-pc-react/packages/sdkwork-notes-i18n/src/resources/zh-CN.ts`
+  - 已新增 `notes.sync.*` 与 `notes.actions.retrySync`。
+
+## 当前用户可见变化
+
+- 工作区洞察面板现在会显式展示同步卡片，不再让 queue state 只停留在内部快照。
+- 用户现在可以看到：
+  - 当前待处理数
+  - 阻塞数
+  - 最新问题码
+  - 下一次重试时间
+  - `queued / retrying / failed / conflict` 徽章
+- 当本地队列仍有 pending task 时，页面会提供一个手动“重试同步”入口。
+- 这个入口的真实含义是“请求当前 runtime drain 队列”，不是“已经具备真实远端冲突恢复”。
+
+## 为什么这轮仍然只算 L3
+
+- 这轮新增的是工作区层的本地同步状态可见化，不是远端同步链路闭环。
+- 当前 `syncSummary` 只来自本地 queue snapshot，不代表真实远端 ack 状态。
+- 当前 `requestSyncDrain()` 只会委托给已有 runtime；没有 runtime 时会直接返回 `false`，不会伪造成功。
+- 当前仍未完成：
+  - 真实 `remoteApply`
+  - ack apply / `remoteCursor` 合并闭环
+  - 真实 conflict recovery UI 语义
+  - 离线/在线切换 smoke
+
+## 验证基线
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-view-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+## 下一轮入口
+
+- 若继续停留在 `Step 08 / CP08-4`，优先补真实 conflict recovery 语义或真实 `remoteApply` handler，而不是继续追加纯展示层包装。
+- 在真实 transport 闭合之前，必须继续保持 `Step 08 = L2` 与 `CP08-4 = L2`，不能把当前同步卡片误写成“失败恢复已完成”。
+

@@ -1,0 +1,89 @@
+> Migrated from `docs/review/step-07-索引文档模型冻结审计-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 07 索引文档模型冻结审计 - 2026-04-13
+
+## 结论
+
+- `CP07-1 / 索引文档模型冻结 = L4`
+- `Step 07` 继续推进，暂不宣称 `L4`
+
+## 审计范围
+
+本轮只审计 `Step 07` 的首个缺口 `CP07-1`，目标不是提前实现搜索 UI、排序算法或 10k 性能优化，而是先冻结统一检索的基础 contract：
+
+1. `NotesSearchDocument`
+2. `NotesSearchQuery`
+3. `NotesSearchResult`
+4. `buildNotesSearchDocuments(...)`
+5. `normalizeNotesSearchQuery(...)`
+6. `createNotesSearchResult(...)`
+
+## 本次交付
+
+### 新增 contract
+
+- `sdkwork-notes-pc-react/scripts/workspace-search-schema.contract.test.mjs`
+
+该 contract 通过真实的 `@sdkwork/notes-search` 源码入口，冻结以下事实：
+
+1. 搜索包必须显式导出统一文档 schema、查询模型和结果模型。
+2. 搜索文档必须包含 note identity、title、body、snippet、tags、folder、updatedAt、type、favorite 等关键字段。
+3. 文档构建必须消费标准化 `workspaceSnapshot + localSnapshot`，不能直接面向底层 raw storage shape。
+4. `workspace-search` 与 `command-palette` 必须共享同一套结果 envelope。
+
+### 搜索包最小实现
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-search/src/index.ts`
+
+本轮在 `notes-search` 内冻结了最小但完整的统一检索模型：
+
+1. `NotesSearchDocument` 作为统一索引文档结构。
+2. `NotesSearchQuery` 作为统一查询参数结构。
+3. `NotesSearchResult` 作为统一命中结果结构。
+4. `buildNotesSearchDocuments(...)` 负责将远端 workspace note summary 与本地 draft 快照合并为统一索引文档。
+5. `normalizeNotesSearchQuery(...)` 负责收口 query 文本、tag、folderId、limit 与 `includeTrashed`。
+6. `createNotesSearchResult(...)` 负责生成统一的 `workspace-search / command-palette` 结果 envelope。
+
+### 根脚本门禁
+
+- `sdkwork-notes-pc-react/package.json`
+- `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
+
+`workspace-search-schema.contract.test.mjs` 已加入根级 `test:workspace:contracts`，后续搜索能力扩展不会绕过该 schema 门禁。
+
+## 覆盖矩阵
+
+本轮 contract 覆盖以下场景：
+
+1. 搜索包导出统一 document/query/result schema
+2. query 文本、tag、folderId、limit、`includeTrashed` 标准化
+3. 本地 draft 覆盖远端 summary 的 title、body、tags、favorite、type
+4. folder name/path 由标准化 folder snapshot 稳定解析
+5. trash note 仍可生成统一文档，但会显式标记 `isTrashed`
+6. `workspace-search` 与 `command-palette` 共享同一结果模型，仅 `source` 不同
+
+## 审计判断
+
+### 通过项
+
+1. `notes-search` 已不再只是占位接口，当前已具备稳定的统一 schema 边界。
+2. 搜索索引文档已经能够消费 `Step 06` 冻结的标准化本地快照语义，而不是重新理解底层存储 shape。
+3. 后续顶部搜索与命令面板可以直接消费同一 `NotesSearchResult` 结构，不需要继续维护两套命中模型。
+4. 本轮只补 schema，不提前引入检索算法或 UI 接线，范围控制正确。
+
+### 剩余风险
+
+1. 本轮未实现真正的查询服务、排序与过滤执行逻辑，继续由 `CP07-2` 收口。
+2. 本轮未接入顶部搜索和命令面板 UI，继续由 `CP07-3` 收口。
+3. 本轮未建立 10k 规模索引构建/查询基线，继续由 `CP07-4` 收口。
+
+## 验证记录
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-search-schema.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-search typecheck
+pnpm.cmd typecheck
+```
+

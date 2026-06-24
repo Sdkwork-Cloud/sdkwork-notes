@@ -16,18 +16,18 @@ const __dirname = path.dirname(__filename);
 export const REPO_ROOT = path.resolve(__dirname, '..', '..');
 export const SPEC_PATH = path.join(REPO_ROOT, 'specs/topology.spec.json');
 export const PC_REACT_ROOT = path.join(REPO_ROOT, 'sdkwork-notes-pc-react');
-export const API_GATEWAY_REPO = path.resolve(REPO_ROOT, '..', 'sdkwork-api-gateway');
+export const API_GATEWAY_REPO = path.resolve(REPO_ROOT, '..', 'sdkwork-api-cloud-gateway');
 
 const spec = loadTopologySpec(SPEC_PATH);
 const runtime = createTopologyRuntime(spec, REPO_ROOT);
 
-export const VALID_HOSTING = runtime.hostingValues;
+export const VALID_DEPLOYMENT_PROFILES = runtime.deploymentProfileValues;
 export const VALID_SERVICE_LAYOUTS = runtime.serviceLayoutValues;
 export const VALID_ENVIRONMENTS = runtime.environmentValues;
 export const DEFAULT_DEV_PROFILE_ID = runtime.defaults.developmentProfileId;
 export const DEFAULT_PRODUCTION_PROFILE_ID = runtime.defaults.productionProfileId;
 export const DEFAULT_BUILD_PROFILE_ID = runtime.defaults.desktopBuildProfileId;
-export const DEFAULT_SELF_HOSTED_BUILD_PROFILE_ID = 'self-hosted.unified-process.production';
+export const DEFAULT_STANDALONE_BUILD_PROFILE_ID = 'standalone.unified-process.production';
 export const DEFAULT_GATEWAY_BIND = runtime.defaults.gatewayBind;
 
 export const APPLICATION_PUBLIC_INGRESS_PACKAGE_PROFILE = 'application-public-ingress';
@@ -48,27 +48,16 @@ export function resolveDefaultAppSdkBaseUrl(profileEnv = {}) {
 }
 
 export function resolveDevProfileId(deploymentProfile, serviceLayout = 'split-services') {
-  const hosting = toLegacyHosting(deploymentProfile);
-  runtime.assertHosting(hosting);
+  runtime.assertDeploymentProfile(deploymentProfile);
   runtime.assertServiceLayout(serviceLayout);
-  return buildProfileId(hosting, serviceLayout, 'development');
-}
-
-function toLegacyHosting(deploymentProfile) {
-  if (deploymentProfile === 'standalone') {
-    return 'self-hosted';
-  }
-  if (deploymentProfile === 'cloud') {
-    return 'cloud-hosted';
-  }
-  return deploymentProfile;
+  return buildProfileId(deploymentProfile, serviceLayout, 'development');
 }
 
 export const loadProfile = runtime.loadProfile;
 export const applyProfileEnv = runtime.applyProfileEnv;
 export const mergeRuntimeEnv = runtime.mergeRuntimeEnv;
 export const loadEnvFile = runtime.loadEnvFile;
-export const assertHosting = runtime.assertHosting;
+export const assertDeploymentProfile = runtime.assertDeploymentProfile;
 export const assertServiceLayout = runtime.assertServiceLayout;
 export const resolveSurfaceHttpUrl = runtime.resolveSurfaceHttpUrl.bind(runtime);
 export const resolveSurfaceBind = runtime.resolveSurfaceBind.bind(runtime);

@@ -1,0 +1,74 @@
+> Migrated from `docs/review/step-04-对话框底部适配边界收敛-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 04 对话框底部适配边界收敛
+
+- 日期：`2026-04-07`
+- 阶段：`Step 04 / L4`
+- 波次：`Wave-B / 第二十四轮推进`
+- 结论：`dialog footer` 已退出 `NotesWorkspacePage.tsx` 本地装配层，Step 04 达成 `L4`
+
+## 1. 本轮目标
+
+本轮不增加新功能，只继续压缩 `NotesWorkspacePage.tsx` 的页面容器职责，把 `Dialog` 的底部按钮区从“页面本地 fragment + Button JSX 装配”收敛为“页面只提供文案和动作，组件边界负责最终 UI 绑定”。
+
+## 2. 实际完成
+
+1. 新增 `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/components/NotesWorkspaceDialogFooter.tsx`，建立对话框底部适配边界。
+2. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx` 删除页面内联的 `footer={(<>...</>)}` 与 `Button` 装配，改为直接消费 `NotesWorkspaceDialogFooter`。
+3. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/components/index.ts` 已导出新组件，确保边界具备稳定入口。
+4. 新增 `sdkwork-notes-pc-react/scripts/workspace-page-dialog-footer-boundary.contract.test.mjs`，冻结“对话框底部最终 UI 绑定不得回退到页面层”的 source contract。
+5. `sdkwork-notes-pc-react/package.json` 与 `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs` 已同步纳入新 contract，确保该边界进入总门禁。
+
+## 3. 契约先行与验证事实
+
+本轮严格按“先 contract、再实现、再复验”的顺序推进：
+
+1. 先新增 `workspace-page-dialog-footer-boundary.contract.test.mjs`。
+2. 先跑一次新 contract，失败原因准确指向“页面尚未引入 `NotesWorkspaceDialogFooter`，仍保留本地 `Button appearance="ghost"`、`Button appearance="danger"` 与 `footer={(<>...</>)}`”。
+3. 再完成最小实现。
+4. 最终重新执行以下验证并全部通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-dialog-footer-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-error-banner-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-shortcut-hints-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-header-actions-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-command-palette-boundary.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+## 4. 架构判断
+
+本轮完成后，对话框底部链路的职责分布更新为：
+
+1. `buildNotesWorkspaceDialogState()`
+   - 继续负责输出标题、描述与 `confirmLabel`。
+2. `createNotesWorkspaceDialogRuntime()`
+   - 继续负责 `closeDialog()` 与 `confirmDialog()` 行为。
+3. `NotesWorkspaceDialogFooter.tsx`
+   - 负责 `cancelLabel / confirmLabel / onCancel / onConfirm` 的最终视图绑定。
+   - 负责 `ghost` 与 `danger` 两类按钮样式的最终适配。
+4. `NotesWorkspacePage.tsx`
+   - 只负责提供底部文案和动作入口，不再承担 `Dialog footer` 的最终 JSX 装配责任。
+
+因此，`NotesWorkspacePage.tsx` 已无上一轮审计定义下的高优先级本地视图胶水残项。
+
+## 5. Step 04 收口结论
+
+1. `header actions`、`command palette`、`shortcut hints`、`error banner`、`dialog footer` 均已退出页面层最终 UI 绑定。
+2. 工作区主链的数据访问、页面 runtime、服务模型与页面适配边界已形成稳定分层。
+3. Step 04 达成 `L4`，允许切换到 `Step 05-编辑器与自动保存可靠性升级`。
+
+## 6. 结论
+
+- 当前真实状态：`Step 04 / L4`
+- 当前真实结论：`dialog footer` 边界收敛已完成，Step 04 已收口
+- 当前真实约束：后续 Step 不得回退到页面层重建最终 UI 绑定胶水
+- 下一步建议：
+  1. 切换执行入口到 `Step 05-编辑器与自动保存可靠性升级`
+  2. 后续任何新增对话框底部样式差异，应优先复用或扩展 `NotesWorkspaceDialogFooter`
+

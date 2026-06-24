@@ -1,0 +1,46 @@
+> Migrated from `docs/release/Step08-工作区同步阻塞问题恢复动作语义与受影响笔记定位-2026-04-14.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step08-工作区同步阻塞问题恢复动作语义与受影响笔记定位 - 2026-04-14
+
+## 本轮发布内容
+
+- 工作区同步摘要现在会携带主阻塞问题对应的受影响笔记身份与更可读的问题消息。
+- 工作区同步卡片现在会区分两类动作：
+  - `retry-sync`
+  - `review-note`
+- 当主阻塞任务能定位到具体笔记时，页面 CTA 现在会切换为“查看受影响笔记”，而不是继续误导性地展示统一重试。
+- 当仍有可继续推进的待处理队列时，页面仍保留“重试同步”入口，请求已有 runtime 继续 drain。
+- 中英文资源已补齐 `notes.actions.reviewSyncIssue`。
+
+## 风险与限制
+
+- 当前“查看受影响笔记”只是人工恢复入口，不代表冲突或失败已被解决。
+- 当前 `requestSyncDrain()` 只会请求已有 runtime 继续 drain，它不能恢复终态 `failed / conflict`。
+- 当前仍没有：
+  - 真实 `remoteApply`
+  - ack apply / `remoteCursor` 合并闭环
+  - 真实 conflict recovery UI
+  - 离线/在线切换 smoke
+
+## 验证基线
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-view-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+## 当前状态
+
+- `Step 08 = L2`
+- `CP08-4 / 冲突与失败恢复验证 = L2`
+- `CP08-4 / 工作区同步阻塞问题恢复动作语义与受影响笔记定位 = L3`
+
+## 下一轮发布入口
+
+- 优先补真实 `remoteApply` 闭环，或把当前 `review-note` 继续推进为真正的冲突恢复交互。
+- 在真实恢复链路闭合之前，本轮增量只能被视为“问题更诚实、入口更可执行”，不能被视为 `CP08-4` 完成。
+

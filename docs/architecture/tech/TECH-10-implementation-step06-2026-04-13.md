@@ -1,0 +1,73 @@
+> Migrated from `docs/架构/10-实施进度-Step06恢复入口增量-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-Step06恢复入口增量
+
+- 日期：`2026-04-13`
+- 波次：`Wave-B / 第三十一轮推进`
+- 所属 Step：`Step 06`
+- 增量能力：`本地恢复草稿读侧接入 + 页面恢复入口 + 主链回放`
+
+## 1. 本轮结论
+
+本轮已把 `Step 05` 遗留的“退出恢复检查点”正式消费到 `Step 06` 的恢复入口中，形成以下可验证事实：
+
+1. 启动后会读取 `NotesLocalStore.loadWorkspace().drafts`。
+2. 只有当前 workspace 的 live note 会进入恢复候选。
+3. 页面能提供“打开 / 恢复 / 放弃”恢复草稿动作。
+4. 恢复动作重新进入当前保存主链，而不是平行写本地副本。
+
+## 2. 代码落地
+
+1. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspaceRecovery.ts`
+   - 新增恢复候选解析、选中、移除、回放纯函数。
+2. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+   - 初始化时读取本地恢复草稿。
+   - 新增恢复候选状态与恢复/放弃动作。
+3. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/components/NotesWorkspaceRecoveryBanner.tsx`
+   - 新增恢复提示 UI 组件。
+4. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+   - 页面装配恢复提示与 CTA。
+5. `sdkwork-notes-pc-react/packages/sdkwork-notes-i18n/src/resources/zh-CN.ts`
+   - 新增中文恢复文案。
+6. `sdkwork-notes-pc-react/packages/sdkwork-notes-i18n/src/resources/en-US.ts`
+   - 新增英文恢复文案。
+7. `sdkwork-notes-pc-react/scripts/workspace-local-recovery.contract.test.mjs`
+   - 新增恢复入口 contract 并接入主门禁。
+
+## 3. 验证结果
+
+本轮 fresh verification：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-local-recovery.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+验证结论：
+
+1. 恢复入口 contract 已进入 `test:workspace:contracts`。
+2. 包级 `notes-notes` typecheck 通过。
+3. 根级 `pnpm.cmd typecheck` 通过，说明本轮增量已进入真实主门禁。
+
+## 4. 阶段状态变更
+
+1. 变更前：`Step 06 = L0`
+2. 变更后：`Step 06 = L2`
+3. 子能力判断：
+   - `CP06-2 / 草稿日志与恢复入口 = L4`
+   - `CP06-1 / schema 与迁移策略` 仍未闭环
+   - `CP06-3 / 标准化本地快照接口` 尚未启动
+
+## 5. 下一轮入口
+
+下一轮最优入口保持为：`Step 06-本地存储层与离线草稿能力一期`
+
+优先顺序：
+
+1. schema version / migration / key model 冻结
+2. 本地 workspace snapshot 扩展到 `notes / folders`
+3. 为搜索与同步提供标准化本地快照接口
+

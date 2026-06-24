@@ -1,0 +1,46 @@
+> Migrated from `docs/review/step-04-视图模型边界收敛-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 04 视图模型边界收敛评审
+
+- 日期：`2026-04-07`
+- Step：`04-工作区数据访问与初始化链重构`
+- 主题：`selector / page 视图模型边界收敛`
+
+## 1. 评审目标
+
+验证 `NotesWorkspacePage` 是否已经停止自行拼装工作区视图派生状态，并确认 selector 层是否形成稳定、可测试、可扩展的统一出口。
+
+## 2. 本轮结论
+
+- `buildNotesWorkspaceViewModel()` 已成为页面消费的统一视图模型入口。
+- 页面层不再直接拼装：
+  - `visibleNotes`
+  - `counts`
+  - `activeOutline`
+  - `activeTaskProgress`
+  - `activeWordCount`
+  - `activeNoteFolderName`
+  - `activeNoteUpdatedLabel`
+- 新边界已被 `workspace-view-model.contract.test.mjs` 冻结，并接入 `test:workspace:contracts`。
+
+## 3. 评估标准
+
+| 评估项 | 达标标准 | 结论 |
+| --- | --- | --- |
+| 单一出口 | 页面主要消费单一视图模型而非多个原始派生切面 | 达标 |
+| 纯函数化 | selector 输出由显式输入决定，无副作用 | 达标 |
+| 可测试性 | 视图模型存在稳定合同测试 | 达标 |
+| 可扩展性 | 后续可继续向该视图模型挂接离线、副本、索引能力 | 基本达标 |
+
+## 4. 剩余缺口
+
+- 页面仍承担命令面板条目装配与快捷键编排。
+- store 仍承担较重写路径和刷新编排。
+- 未来数据源切换能力尚未进入 selector / orchestrator 的稳定契约。
+
+## 5. go / no-go 结论
+
+- `go`：允许继续在 Step 04 内推进下一轮 orchestrator / store / page 收敛。
+- `no-go`：不允许据此宣布 Step 04 `L4` 完成，也不允许进入 Step 05。
+

@@ -1,0 +1,103 @@
+> Migrated from `docs/架构/06-业务流程-应用接口与集成设计-移动笔记写路径补充-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 06-业务流程-应用接口与集成设计-移动笔记写路径补充-2026-04-07
+
+## 1. 变更背景
+
+在本轮增量之前，`moveNote()` 仍由 store 直接承担：
+
+1. 校验 note 是否存在与 parentId 是否变化。
+2. 调用 `workspaceService.moveNote()`。
+3. 调用 `planMovedNoteState()` 生成 notes、activeNote 与 expandedFolderIds 的目标状态。
+
+这意味着 Step 04 的最后一条明显写路径仍未完成与 `createNote / createFolder / renameFolder` 一致的收口模式。
+
+## 2. 新的接口设计
+
+本轮在 `noteWorkspaceWriteCoordinator.ts` 中为 `createNotesWorkspaceWriteCoordinator()` 补充以下能力：
+
+### 2.1 依赖注入
+
+新增依赖：
+
+```ts
+moveNote: (note: NoteSummary, newParentId: string | null) => Promise<ServiceResult<void>>;
+```
+
+### 2.2 返回类型
+
+新增结果类型：
+
+```ts
+type NoteWorkspaceMoveNoteStateResult =
+  | ({ errorMessage: null } & NoteWorkspaceMoveNotePlan)
+  | { status: 'error'; nextParentId: string | null; errorMessage: string };
+```
+
+设计意图：
+
+1. `apply / noop / missing` 继续复用 `planMovedNoteState()` 的业务语义。
+2. `error` 统一承接远程移动失败。
+3. Store 只需消费结果，不再重复组合“预判 -> service 调用 -> 计划拼装”的知识。
+
+### 2.3 写路径编排入口
+
+新增入口：
+
+```ts
+moveNoteState(options)
+```
+
+其职责为：
+
+1. 先调用 `planMovedNoteState()` 做预判。
+2. 对 `missing / noop` 直接短路返回。
+3. 对 `apply` 再执行远程移动。
+4. 对失败结果统一归一化为 `status: 'error'`。
+
+## 3. 集成流程
+
+新的调用时序如下：
+
+1. `useNotesWorkspaceStore.moveNote()` 收集当前状态快照与目标 note。
+2. Store 调用 `workspaceWriteCoordinator.moveNoteState()`。
+3. Coordinator 先用 `planMovedNoteState()` 生成 move plan。
+4. 若 plan 为 `apply`，则调用 `workspaceService.moveNote()`。
+5. 成功后将 move plan 回传给 store；失败则返回 `error`。
+6. Store 只负责应用 `notes / activeNote / expandedFolderIds` 与错误状态。
+
+## 4. 设计收益
+
+### 4.1 高内聚
+
+`moveNote` 的预判、远程调用与状态结果拼装都进入同一个 write coordinator 能力域。
+
+### 4.2 低耦合
+
+Store 不再依赖移动笔记的服务返回规则和状态推导规则，只依赖显式结果对象。
+
+### 4.3 统一模式
+
+`createNote / createFolder / renameFolder / moveNote` 四类主写路径现在都走同一层编排模式，这使后续 Step 04 的重点能够从写路径收口转向 repository 和页面装配边界。
+
+### 4.4 易测试
+
+通过 `workspace-write-path.contract.test.mjs`，`moveNoteState()` 已具备脱离页面环境的合同回归能力。
+
+## 5. 评估标准
+
+本轮架构补充的验收标准如下：
+
+1. `moveNote()` 的 service 调用与 plan 拼装不再直接留在 store。
+2. `missing / noop / apply / error` 四类结果必须被显式表达。
+3. `note.parentId`、`activeNote.parentId`、`expandedFolderIds` 的一致性必须被合同锁定。
+4. 本轮不能虚报 Step 完成度，文档必须明确 Step 04 仍为 `L3`。
+
+## 6. 当前结论
+
+本轮后，Step 04 的主要写路径收口已经基本完成。当前的主要剩余问题不再是 store 内联 mutation，而是：
+
+1. repository 的未来同步策略接缝
+2. 页面容器的纯装配化收口
+

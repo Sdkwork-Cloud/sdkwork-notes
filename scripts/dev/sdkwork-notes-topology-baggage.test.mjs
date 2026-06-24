@@ -30,7 +30,7 @@ const skipPathFragments = [
 const allowlistPathFragments = [
   'specs/topology.spec.json',
   'configs/topology/',
-  'configs/sdkwork-api-gateway.notes.',
+  'configs/sdkwork-api-cloud-gateway.notes.',
   'sdkwork-notes-pc-react/.env.development.local.example',
   'docs/架构/',
 ];
@@ -123,7 +123,7 @@ assert.ok(fs.existsSync(path.join(repoRoot, 'specs/topology.spec.json')), 'topol
 const spec = JSON.parse(readText('specs/topology.spec.json'));
 assert.equal(spec.schemaVersion, 2);
 assert.equal(spec.archetype, 'application-http-gateway');
-assert.equal(spec.defaults.developmentProfileId, 'self-hosted.split-services.development');
+assert.equal(spec.defaults.developmentProfileId, 'standalone.split-services.development');
 
 for (const configFile of spec.packaging.cloudConfigFiles) {
   assert.ok(

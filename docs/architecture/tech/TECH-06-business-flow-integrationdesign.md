@@ -1,0 +1,414 @@
+> Migrated from `docs/架构/06-业务流程-应用接口与集成设计.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 06. 业务流程-应用接口与集成设计
+
+## 6.1 文档目标
+
+本文档聚焦“系统是怎么跑起来的”以及“业务流程如何与远端能力、桌面能力、会话治理和工作区边界协同”，重点覆盖：
+
+- 应用启动流程
+- 认证流程
+- 笔记工作区核心流程
+- 账户与设置流程
+- 桌面托盘与窗口流程
+- 当前应用接口矩阵
+- 当前评估标准与成熟度
+
+---
+
+## 6.2 当前路由结构
+
+基于 `AppRoutes.tsx`，当前路由结构如下：
+
+| 路由 | 访问控制 | 说明 |
+| --- | --- | --- |
+| `/` | 自动分流 | 已登录进入 `/notes`，否则进入 `/auth/login` |
+| `/auth/login` | 未登录可访问 | 登录页 |
+| `/auth/register` | 未登录可访问 | 注册页 |
+| `/auth/forgot-password` | 未登录可访问 | 忘记密码 |
+| `/auth/oauth/callback/:provider` | 未登录可访问 | OAuth 回调 |
+| `/notes` | 登录后访问 | 主工作区 |
+| `/account` | 登录后访问 | 账户与设置 |
+
+当前壳层还做了两层语义分流：
+
+- 认证路由使用 `ShellLayout mode="auth"`，保留品牌和桌面窗口控件，但收起工作区主导航与账户信息。
+- 业务路由使用默认 `ShellLayout`，通过 `AppHeader` 提供品牌、搜索入口、`/notes` 与 `/account` 主导航、账户入口和桌面窗口控件。
+
+---
+
+## 6.3 应用启动流程
+
+### 6.3.1 当前双入口结构
+
+当前应用不是单一入口，而是 Web 与 Desktop 共用业务壳、各自负责入口编排：
+
+| 入口 | 当前定位 |
+| --- | --- |
+| Web | 负责 `ensureI18n()` 后挂载 `App -> AppRoot`，不注入桌面桥 |
+| Desktop | 在共享业务壳前增加启动外观快照、Tauri runtime 探测、桌面桥注入、启动屏与托盘路由桥 |
+
+### 6.3.2 当前桌面启动链
+
+```text
+createDesktopApp
+  -> 读取启动外观快照
+  -> 等待 Tauri 运行时就绪
+  -> 注入桌面桥接 API
+  -> 安装会话桥
+  -> ensureI18n
+  -> 渲染 DesktopBootstrapApp
+      -> 准备桌面窗口
+      -> 显示 Startup Screen
+      -> 挂载 DesktopProviders
+      -> 挂载 DesktopTrayRouteBridge
+      -> 挂载 AppRoot
+          -> AppProviders
+              -> AuthStoreProvider
+              -> QueryClientProvider
+              -> ThemeManager / LanguageManager / Router
+              -> MainLayout
+                  -> AppRoutes
+```
+
+### 6.3.3 当前 Web 启动链
+
+```text
+src/main.tsx
+  -> ensureI18n
+  -> React.StrictMode
+  -> App
+      -> AppRoot
+          -> AppProviders
+              -> MainLayout
+                  -> AppRoutes
+```
+
+### 6.3.4 当前启动流程关键特征
+
+- 启动外观快照会在业务壳挂载前读取 `themeMode / themeColor / languagePreference`，提前写入 `lang`、`data-theme` 和 `color-scheme`，降低闪烁。
+- 桌面启动屏最短可见时间为 `180ms`，避免瞬时闪烁。
+- Desktop 启动会优先等待 Tauri runtime，默认等待窗口约 `600ms`。
+- `DesktopProviders` 会持续同步桌面语义属性、文档标题和语言偏好。
+- 桌面会话桥在启动期安装，前端以 `sessionStorage` 维护镜像，原生权威副本存储在 `desktop-session.json`。
+
+### 6.3.5 当前运行时降级行为
+
+- 当未检测到 Tauri runtime 时，Desktop 入口不会失败退出，而是以 Web-safe fallback 继续挂载共享业务壳。
+- `getInfo()`、`getRuntimeInfo()` 在非 Tauri runtime 下返回 `null`。
+- `showMainWindow()` 在非 Tauri runtime 下退化为 `window.focus()`。
+- `closeWindow()`、`requestExplicitQuit()` 在非 Tauri runtime 下退化为 `window.close()`。
+- `DesktopWindowControls` 仅在检测到完整 `__NOTES_DESKTOP_API__.window` 时渲染。
+
+### 6.3.6 当前启动链短板
+
+- 启动链路尚未形成系统化性能观测点。
+- 缺少最近工作区恢复、本地草稿恢复和预热缓存等能力。
+- 登录后工作区数据仍主要由业务层按需拉取，尚未形成启动预热策略。
+
+---
+
+## 6.4 认证流程
+
+### 6.4.1 当前认证编排
+
+认证主要由 `notes-auth` + `@sdkwork/auth-pc-react` + `notes-core` 协同完成：
+
+```text
+AuthPage / AuthOAuthCallbackPage
+  -> SdkworkAuthPage / SdkworkAuthOAuthCallbackPage
+  -> notesAuthRuntimeConfig
+      - loginMethods: password / phoneCode / emailCode
+      - qrLoginEnabled: true
+      - oauthProviders: wechat / douyin / github / google
+  -> useAuthController()
+  -> createNotesAuthController()
+      -> bindNotesAuthClient()
+      -> createNotesAuthService()
+          -> getAppSdkClientWithSession()
+          -> persistAppSdkSessionTokens()
+          -> readAppSdkSessionTokens()
+          -> clearAppSdkSessionTokens()
+```
+
+### 6.4.2 当前认证关键行为
+
+- `AuthStoreProvider` 挂载后会触发 `controller.bootstrap()`。
+- `AppRoutes` 通过 `isAuthenticated` 与 `isSessionReady` 控制受保护路由。
+- 未登录访问受保护页面时自动跳转到登录页并携带 `redirect` 参数。
+- 用户态通过 `useAuthStore()` 与共享认证控制器状态保持同步。
+- `syncUserProfile()` 会在账户资料更新后回灌当前用户信息。
+
+### 6.4.3 当前会话治理事实
+
+- 会话通过 `notes-core/useAppSdkClient.ts` 进入统一会话存储适配层。
+- Web 默认使用 `sessionStorage`。
+- Desktop 通过 `notes-desktop/sessionBridge` 写入 Tauri 原生 `desktop-session.json`。
+- 旧版 `localStorage` 会话键只作为一次性迁移输入，迁移后立即清理。
+
+### 6.4.4 当前认证流程评估
+
+优点：
+
+- 认证 UI 与认证服务边界清晰。
+- 路由保护逻辑明确。
+- 共享 SDK 和共享认证控制器避免了重复实现。
+
+短板：
+
+- Web 会话仍属于浏览器同源脚本可访问的会话级存储，尚未达到 OS Keychain 级别。
+- 缺少更强的设备信任、异常会话回收、审计与风控能力。
+
+---
+
+## 6.5 笔记工作区核心流程
+
+### 6.5.1 工作区初始化
+
+当前工作区初始化仍由 `useNotesWorkspaceStore.initialize()` 触发，但 Step 04 已把初始化主链显式下沉到 `noteWorkspaceOrchestrator.ts`：
+
+```text
+NotesWorkspacePage mount
+  -> initialize()
+  -> noteWorkspaceOrchestrator.initializeWorkspace()
+      -> queryWorkspaceSnapshot()
+          -> list active notes pages
+          -> list deleted notes pages
+          -> list folders
+      -> sort notes / trashedNotes / folders
+      -> resolve initial activeNoteId
+      -> loadWorkspaceNote(activeNoteId)
+  -> store 应用编排结果
+```
+
+关键特征：
+
+- 初始化是“列表快照 + 详情补全”的模式。
+- 快照排序、默认选中和详情补全规则已从 store 内联逻辑开始下沉到 orchestrator 层。
+- 当前默认选中已不再是单一“总是第一条正常笔记”的规则，而是按当前列表源回退：
+  - `all / favorites / recent` 视图从当前非删除列表源中选择第一条
+  - `trash` 视图刷新时从 `trashedNotes` 列表源中选择第一条删除笔记
+- `currentSelectedFolderId` 也已进入 orchestrator 初始化契约：
+  - 当前文件夹仍存在时保留
+  - 当前文件夹缺失时回退为 `null`
+  - `trash` 视图中强制清空文件夹选择
+- 当 `trash` 视图命中的详情接口未返回实体时，orchestrator 会回退到回收站摘要构造只读详情，避免刷新后丢失当前上下文。
+- 工作区的 `all / favorites / recent / trash` 都在客户端做视图过滤。
+- 文件夹筛选不是只看当前节点，而是把所选文件夹的后代层级一并纳入可见范围。
+- `recent` 视图当前只截取最近 `12` 条已加载笔记。
+- 命令面板、最近视图和搜索结果当前都建立在“已加载快照”之上。
+- Step 04 第二轮已将 `visibleNotes / counts / activeOutline / activeTaskProgress / activeWordCount / activeNoteFolderName / activeNoteUpdatedLabel` 收敛为 `buildNotesWorkspaceViewModel()`，页面改为消费统一视图模型，而不是自行拼装多个派生切面。
+- `workspace-view-model.contract.test.mjs` 已接入 `test:workspace:contracts`，用于冻结 selector/page 边界下的视图模型输出合同。
+- `workspace-orchestrator.contract.test.mjs` 已继续冻结 `trash` 视图刷新后的列表源回退与文件夹选择有效性行为。
+- 这说明 Step 04 已进入“初始化链与视图模型边界收敛”的在途状态，但 repository / store / orchestrator / selector / page 仍未全部达到最终目标层次。
+
+### 6.5.2 笔记编辑与自动保存
+
+```text
+Editor onUpdate
+  -> onDraftChange()
+  -> store.activeNote 更新
+  -> saveState = dirty
+  -> deferredDraftKey(useDeferredValue)
+  -> autosavePlan(schedule/flush)
+  -> 700ms debounce / visibilitychange(hidden) / pagehide / CmdOrCtrl+Enter / high-risk transition
+  -> flushDraft()
+      -> persistActiveNote()
+          -> activeNoteSaveQueue.run(save)
+              -> resolveNotesWorkspaceSaveRequestState()
+              -> buildSavePayload()
+              -> noteRepository.save()
+              -> resolveNotesWorkspaceSaveCompletion()
+```
+
+关键特征：
+
+- 仅提交发生变化的字段。
+- `visibilitychange(hidden)`、`pagehide`、快捷键保存与高风险动作前刷盘都会触发同一 `flushDraft`。
+- 在切换笔记、切换文件夹、移动到回收站、删除文件夹等动作前：
+  - `dirty / error` 会立即 flush
+  - `saving / retrying` 会等待当前请求完成
+- 连续保存请求当前已通过 `save queue` 串行化，同一时刻只保留一个 active request，并最多合并一次 replay。
+- 保存成功后只有在当前草稿仍与请求快照一致时才更新 `activeNote`；若本地已有更新编辑，则只更新 `persistedActiveNote` 并保持当前草稿为 `dirty`。
+- 当前仍缺自动退避、重试上限、保存观测以及真正的本地崩溃恢复，这些将继续作为 Step 05 / Step 06 的剩余输入。
+
+### 6.5.3 文件夹、导航与命令面板
+
+当前支持：
+
+- 树形文件夹创建、重命名、删除、移动。
+- 文件夹与笔记拖放。
+- 收藏、最近、回收站等快速视图。
+- 命令面板快速跳转笔记、文件夹和动作。
+
+当前细节还包括：
+
+- 拖拽协议由 `noteSidebarDragDrop.ts` 统一编码/解码，不在组件层散落自定义格式。
+- 文件夹拖拽内置“不能拖入自身或其子树”校验，避免结构性脏数据。
+- 当前完整笔记类型支持 `doc / article / novel / log / news / code`，但快捷创建入口和命令面板当前只直接暴露 `doc / article / code` 三种高频类型。
+- 检视器中的提纲、任务进度、阅读时长和统计信息当前来自客户端解析正文 HTML 的派生结果。
+- 文件夹删除/移动后的即时状态协调，当前已从 store 中抽出为 `noteWorkspaceFolderMutationCoordinator.ts` 纯函数服务，用于统一处理子树裁剪、无效选中清理、descendant move 校验和新父节点展开规则。
+- 命令面板条目模型当前由 `buildNoteWorkspaceCommandPaletteItems()` 统一产出，页面不再直接装配 actions / views / folders / notes 四类条目。
+- 命令面板当前已支持：
+  - 新建 `doc / article / code`
+  - 切换 `all / favorites / recent / trash`
+  - 切换侧栏、检视器
+  - 聚焦搜索、清空搜索
+- 跳转账户页
+- 打开文件夹和笔记
+- 创建笔记入口当前已通过 `noteWorkspaceCreateNoteRuntime.ts` 统一协调默认标题解析、当前文件夹上下文透传与成功后的 `all` 视图回切，页面不再内联这段异步流程。
+- workspace hotkey 当前已通过 `noteWorkspaceHotkeyRuntime.ts` 统一协调 keydown 绑定、搜索焦点透传、preventDefault 与页面命令分发，页面不再内联这段事件运行时流程。
+- workspace sidebar resize 当前已通过 `noteWorkspaceSidebarResizeRuntime.ts` 统一协调 `pointermove/pointerup` 生命周期、`220..420` 宽度钳制与一次性 cleanup，页面仅保留 `pointerdown` 入口与事件适配注入。
+- 顶部动作、命令面板、快捷键提示和错误提示条的最终 UI 绑定，当前已分别收敛到 `NotesWorkspaceHeaderActions.tsx`、`NotesWorkspaceCommandPalette.tsx`、`NotesWorkspaceShortcutHints.tsx` 与 `NotesWorkspaceErrorBanner.tsx`，页面只保留 descriptor / props / command 入口注入。
+- `Dialog footer` 的最终视图绑定当前已收敛到 `NotesWorkspaceDialogFooter.tsx`，页面不再本地装配 cancel/confirm 按钮 JSX。
+- 当前页面侧的主要 runtime 热点已经收敛，create note flow、hotkey runtime、sidebar resize、错误提示展示与对话框底部适配均已完成页面级收敛。
+- 当前页面层已无上一轮审计定义下的高优先级本地视图胶水，Step 04 达到 `L4`。
+
+限制：
+
+- 导航仍然基于当前已加载快照。
+- 没有大规模数据虚拟化和后台索引。
+
+### 6.5.4 回收站与恢复
+
+当前流程：
+
+```text
+moveToTrash -> 远端 deleteNote
+restoreFromTrash -> 远端 restore
+deletePermanently -> 远端 permanentlyDelete
+clearTrash -> 远端 clearTrash
+```
+
+优点：
+
+- 生命周期清晰，危险操作有确认弹窗。
+- `clearTrash / deleteNote / deleteFolder` 都通过统一 `Dialog` 确认，而不是直接执行危险动作。
+
+短板：
+
+- 没有版本历史和局部恢复。
+- 没有“最近删除恢复窗口”之外的高级恢复能力。
+
+---
+
+## 6.6 账户与设置流程
+
+### 6.6.1 当前设置同步模式
+
+设置分为两类：
+
+- 远端设置：`themeMode / languagePreference / user profile`
+- 本地设置：`themeColor / sidebarCollapsed / inspectorOpen / sidebarWidth`
+
+流程如下：
+
+```text
+AppProviders
+  -> 已认证后拉取远端 settings
+  -> 基于 authenticated email（lowercase）做一次性 hydration 去重
+  -> 若 email 缺失则使用 __authenticated__ 作为回退键
+  -> hydratePreferences(themeMode, languagePreference)
+
+AccountPage
+  -> getCurrentProfile / getCurrentSettings
+  -> updateCurrentProfile / updateCurrentSettings
+  -> syncUserProfile()
+```
+
+### 6.6.2 当前配置治理事实
+
+- 远端与本地偏好已完成基础分层。
+- `themeMode / languagePreference` 已形成“远端主记录 + 本地副本”的过渡形态。
+- `themeColor` 当前仍只存在于本地，没有远端主记录。
+- 远端 settings hydration 失败时采取“保留本地默认值并继续运行”的弱失败策略。
+- 运行时配置解析已从页面层上收至 `notes-core`：
+  - 来源优先级冻结为 `__SDKWORK_NOTES_ENV__ > import.meta.env > process.env`
+  - `ownerMode` 冻结为 `root / tenant / organization`
+  - 平台判定冻结为 `override > Tauri runtime > env default`
+
+---
+
+## 6.7 桌面托盘与窗口流程
+
+### 6.7.1 当前桌面流程
+
+Rust 桌面壳负责：
+
+- 创建主窗口
+- 拦截关闭并默认隐藏到托盘
+- 托盘菜单提供 `show window / open notes / open account / quit app`
+- 设置语言配置
+- 暴露运行时信息、窗口控制命令和会话状态读写命令
+
+### 6.7.2 当前桌面导航链
+
+```text
+Tray menu click / tray icon click
+  -> Rust emit tray://navigate
+  -> Rust 同时写入 __NOTES_PENDING_TRAY_ROUTE__
+  -> Rust dispatch notes:tray-navigate
+  -> DesktopTrayRouteBridge 同时监听 Tauri event 与 window custom event
+  -> 仅允许 /notes 与 /account
+  -> startTransition + history.pushState(route)
+  -> AppRoutes 响应
+```
+
+### 6.7.3 当前桌面流程评估
+
+- 托盘到路由的桥接清晰且边界克制。
+- 可用性良好，适合桌面优先产品。
+- 当前只开放 `/notes` 与 `/account` 两个托盘目标，符合最小暴露原则。
+- 在非 Tauri runtime 下，托盘订阅链会自然降级为空，不会让共享业务壳因平台能力缺失而崩溃。
+
+---
+
+## 6.8 当前应用接口矩阵
+
+### 6.8.1 远端接口矩阵
+
+| 领域 | 当前接口 |
+| --- | --- |
+| Auth | 通过 `@sdkwork/auth-pc-react` 控制器和共享客户端接入 |
+| Note | `listNotes`、`getNoteDetail`、`getNoteContent`、`createNote`、`updateNote`、`updateNoteContent`、`move`、`archive`、`restore`、`deleteNote`、`permanentlyDelete`、`clearTrash`、`favorite`、`unfavorite` |
+| Folder | `listFolders`、`createFolder`、`updateFolder`、`deleteFolder` |
+| Filesystem | `moveNode` |
+| User | `getUserProfile`、`updateUserProfile`、`getUserSettings`、`updateUserSettings` |
+
+### 6.8.2 桌面桥接接口矩阵
+
+| 类型 | 接口 |
+| --- | --- |
+| App | `getInfo`、`getRuntimeInfo`、`setLanguage` |
+| Window | `showMainWindow`、`minimizeWindow`、`maximizeWindow`、`restoreWindow`、`closeWindow`、`requestExplicitQuit` |
+| Event | `tray://navigate`、`notes:tray-navigate` |
+| Session | `read_session_state`、`write_session_state`、`clear_session_state` |
+
+---
+
+## 6.9 接口与流程设计标准
+
+| 标准项 | 达标要求 |
+| --- | --- |
+| 流程完整性 | 每条主业务链都要覆盖成功、失败、恢复、取消 |
+| 幂等性 | 重试或重复点击不导致脏状态 |
+| 可恢复性 | 网络失败、页面隐藏、桌面恢复后可继续 |
+| 最小暴露 | 前端只拿到必需接口，不暴露平台内部细节 |
+| 错误归因 | 错误信息可区分认证、网络、数据、平台、权限 |
+| 可观测性 | 启动、登录、快照拉取、保存、同步必须可打点 |
+
+---
+
+## 6.10 当前成熟度评估
+
+| 维度 | 评分（10 分） | 说明 |
+| --- | ---: | --- |
+| 主流程完整度 | 8.8 | 当前单人工作流闭环清晰 |
+| 接口收口质量 | 8.9 | 通过 SDK、会话适配和桌面桥做了较好收口 |
+| 工作区边界清晰度 | 9.1 | Step 04 已完成初始化 orchestration、视图模型、主要页面 runtime 以及 header/command/shortcut/error banner/dialog footer 五类页面适配边界收敛，页面层已回到薄容器职责 |
+| 恢复与异常处理 | 7.6 | 基础具备，但缺少更深的失败恢复策略 |
+| 平台集成熟练度 | 8.5 | 桌面壳与路由协作设计良好 |
+
+**结论：当前业务流程与接口设计已达到优秀偏先进水位，Step 04 已完成工作区主链边界收敛；下一阶段应切换到 Step 05 的编辑器与自动保存可靠性升级，并继续在 Step 06/07/08 推进本地优先、索引与同步能力。**
+

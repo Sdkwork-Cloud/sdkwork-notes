@@ -1,0 +1,76 @@
+> Migrated from `docs/架构/10-实施进度-Step07索引文档模型冻结-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-Step07索引文档模型冻结-2026-04-13
+
+## 背景
+
+`Step 07` 的目标是建立 `notes-search` 能力层，让顶部搜索、命令面板、最近访问和快速跳转逐步共享统一检索语义。
+
+在 `Step 06 = L4` 之后，本轮选择先完成 `CP07-1 / 索引文档模型冻结`，而不是直接做 UI 接入，原因是：
+
+1. schema 不稳时，后续查询 API、命令面板接入和同步联动都会返工。
+2. `Step 06` 已提供标准化本地快照语义，本轮正好可以把搜索输入边界先固定下来。
+3. 先冻结 `document/query/result`，后续各入口可以并行接入，不再争论索引字段形状。
+
+## 实施内容
+
+1. 新增 `workspace-search-schema.contract.test.mjs`
+2. 重写 `@sdkwork/notes-search` 的统一 schema/query/result API
+3. 引入 `workspaceSnapshot + localSnapshot` 的索引文档构建入口
+4. 将新 contract 接入根级 `test:workspace:contracts`
+
+## 当前状态
+
+1. `CP07-1 / 索引文档模型冻结 = L4`
+2. `CP07-2 / 查询 API = pending`
+3. `CP07-3 / 顶部搜索与命令面板接入 = pending`
+4. `CP07-4 / 性能与验证基线 = pending`
+5. `Step 07` 暂不宣称 `L4`
+
+## 本轮冻结结果
+
+### 统一文档模型
+
+`NotesSearchDocument` 当前已冻结以下字段：
+
+1. note identity
+2. title
+3. body
+4. snippet
+5. tags
+6. folder metadata
+7. updatedAt
+8. note type
+9. favorite / trash / local-draft state
+
+### 统一输入边界
+
+`buildNotesSearchDocuments(...)` 当前明确消费：
+
+1. 远端 `workspaceSnapshot`
+2. 本地 `localSnapshot.drafts`
+
+并通过本地 draft 覆盖远端 summary 的标题、正文、标签、类型和收藏态，确保索引文档优先反映本地最新编辑状态。
+
+### 统一结果模型
+
+`NotesSearchResult` 当前已冻结为：
+
+1. `document`
+2. `score`
+3. `source`
+
+这意味着后续 `workspace-search` 与 `command-palette` 只需要在结果消费层做差异化渲染，不再需要继续分裂数据结构。
+
+## 对后续 Step 的价值
+
+完成本轮后，`Step 07` 已具备：
+
+1. 稳定的 search document schema
+2. 稳定的 query/result contract
+3. 标准化快照到索引文档的转换入口
+4. 根级 contract 回归门禁
+
+这意味着后续 `CP07-2` 可以直接实现查询 API，`CP07-3` 可以直接把 UI 接到统一结果 envelope，`Step 08` 也能复用统一索引文档语义做变更感知设计。
+

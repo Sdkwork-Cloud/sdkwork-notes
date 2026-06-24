@@ -1,0 +1,40 @@
+> Migrated from `docs/release/Step07-顶部搜索与命令面板接入-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step07-顶部搜索与命令面板接入-2026-04-13
+
+## 发布摘要
+
+`Step 07` 已完成第三个缺口 `CP07-3 / 顶部搜索与命令面板接入`。本轮没有继续扩写搜索包能力，而是把现有工作区顶部搜索与命令面板候选正式切到共享 `notes-search`。
+
+## 本轮新增
+
+1. `sdkwork-notes-pc-react/scripts/workspace-view-model.contract.test.mjs`
+2. `sdkwork-notes-pc-react/scripts/workspace-command-palette.contract.test.mjs`
+3. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspaceSelectors.ts` 中的共享搜索接线
+4. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspaceCommandPaletteModel.ts` 中的共享搜索接线
+
+## 已冻结能力
+
+1. 顶部搜索可通过 folder path 命中 note
+2. 命令面板 note/folder 候选可随查询词缩窄
+3. note 候选继承共享搜索分数与 folder path 关键词
+4. 工作区 UI service/model 已不再维持两套分散的 note 检索逻辑
+
+## 当前完成度
+
+1. `CP07-1 / 索引文档模型冻结 = L4`
+2. `CP07-2 / 统一查询 API = L4`
+3. `CP07-3 / 顶部搜索与命令面板接入 = L4`
+4. `Step 07` 继续推进，未达 `L4`
+
+## 验证命令
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-view-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-command-palette.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-search typecheck
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+

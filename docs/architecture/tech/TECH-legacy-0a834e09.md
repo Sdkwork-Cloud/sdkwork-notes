@@ -1,0 +1,1152 @@
+> Migrated from `docs/release/最新版本说明.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 最新版本说明
+
+## 2026-04-14 / 第六十四轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，没有跳到 `Step 09`。推进重点从“让同步阻塞状态可见”继续收敛到“让同步阻塞问题的恢复动作更诚实，并能把用户带到受影响笔记”。本轮没有伪造新的远端能力，而是在当前工作区同步卡片上补齐一条真实可用的人工恢复入口。
+
+本轮真实增量：
+
+1. `noteWorkspaceSelectors.ts` 现在会在 `syncSummary` 中导出：
+   - `primaryEntityId`
+   - `primaryMessage`
+2. `noteWorkspacePagePresentationModel.ts` 现在把同步卡片 action 收敛为：
+   - `review-note`
+   - `retry-sync`
+3. 同步卡片“最新问题”现在优先展示 `primaryMessage`，不再只显示问题码。
+4. `NotesWorkspacePage.tsx` 现在按 `actionKind` 分流：
+   - `retry-sync -> requestSyncDrain()`
+   - `review-note -> selectNote(actionTargetNoteId)`
+5. 国际化资源已新增 `notes.actions.reviewSyncIssue`。
+6. 合同测试已补齐并冻结新的动作语义与页面接线。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-view-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `CP08-4 / app-sdk远程apply合同缺口审计 = L3`
+11. `CP08-4 / app-sdk远程apply目标合同冻结 = L3`
+12. `CP08-4 / app-sdk远程apply结果适配合同冻结 = L3`
+13. `CP08-4 / app-sdk远程apply共享包装服务合同冻结 = L3`
+14. `CP08-4 / app-sdk远程apply上游闭环输入合同冻结 = L3`
+15. `CP08-4 / app-sdk远程apply生成产物合同冻结 = L3`
+16. `CP08-4 / 工作区同步队列状态可视化与手动drain入口 = L3`
+17. `CP08-4 / 工作区同步阻塞问题恢复动作语义与受影响笔记定位 = L3`
+18. `Step 08` 总体仍为 `L2`
+
+必须继续保持保守判断：
+
+- 当前“查看受影响笔记”只是人工恢复入口，不是远端恢复闭环。
+- 当前 `requestSyncDrain()` 只会请求已有 runtime 继续 drain，不能解决终态 `failed / conflict`。
+- 当前仍未完成：
+  - 真实 `remoteApply`
+  - ack apply / `remoteCursor` 合并闭环
+  - 真实 conflict recovery UI
+  - 离线/在线切换 smoke
+
+下一轮执行入口：如果继续停留在 `Step 08 / CP08-4`，优先补真实远端闭环，或把当前 `review-note` 继续推进为真正的冲突恢复交互；在那之前，不进入 `Step 09`。
+
+## 2026-04-14 / 第六十三轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，没有跳到 `Step 09`。推进重点从“冻结 future app-sdk remote apply 合同与生成产物”转到“把已经存在的本地同步队列状态变成工作区用户可见事实”。本轮新增的不是新的远端能力，而是一条真实可用的用户可见链路：`queue snapshot -> store -> selector -> presentation -> insights panel`，并在此基础上提供一个不伪造成功的手动 drain 入口。
+
+本轮真实增量：
+
+1. `NotesSyncQueueStore` 新增可选 `subscribe(listener)`，`createBrowserNotesSyncQueueStore()` 会在 `saveQueue()` / `clearQueue()` 后发布最新 queue snapshot。
+2. `useNotesWorkspaceStore.ts` 新增：
+   - `syncQueueSnapshot`
+   - `requestSyncDrain(): Promise<boolean>`
+   - `initialize()` 的 queue snapshot 装载
+   - enqueue / drain / subscribe 后的 snapshot 同步
+3. `noteWorkspaceSelectors.ts` 新增 `syncSummary`，统一汇总：
+   - `pendingCount / blockingCount / queuedCount / retryingCount / failedCount / conflictCount / completedCount`
+   - `primaryStatus / primaryTaskId / primaryCode / primaryMessage`
+   - `nextRetryLabel`
+4. `noteWorkspacePagePresentationModel.ts` 新增 `syncCard`，把 selector 输出收敛为工作区同步卡片。
+5. `NotesWorkspaceInsightsPanel.tsx` 新增 `workspace-sync-card`；`NotesWorkspacePage.tsx` 已把页面 action 绑定到 `requestSyncDrain()`。
+6. 中英文文案已补齐 `notes.sync.*` 与 `notes.actions.retrySync`。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-view-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `CP08-4 / app-sdk远程apply合同缺口审计 = L3`
+11. `CP08-4 / app-sdk远程apply目标合同冻结 = L3`
+12. `CP08-4 / app-sdk远程apply结果适配合同冻结 = L3`
+13. `CP08-4 / app-sdk远程apply共享包装服务合同冻结 = L3`
+14. `CP08-4 / app-sdk远程apply上游闭环输入合同冻结 = L3`
+15. `CP08-4 / app-sdk远程apply生成产物合同冻结 = L3`
+16. `CP08-4 / 工作区同步队列状态可视化与手动drain入口 = L3`
+17. `Step 08` 总体仍为 `L2`
+
+必须继续保持保守判断：
+
+- 当前同步卡片反映的是本地 queue state，不是远端 ack state。
+- 当前手动 drain 入口只是请求已有 runtime 继续 drain；若没有 runtime，它只会返回 `false`，不会伪造成功。
+- 当前仍未完成：
+  - 真实 `remoteApply`
+  - ack apply / `remoteCursor` 合并闭环
+  - 真实 conflict recovery UI
+  - 离线/在线切换 smoke
+
+下一轮执行入口：如果继续停留在 `Step 08 / CP08-4`，应优先补真实恢复语义或真实 transport，而不是继续增加展示包装；在真实闭环完成前，不进入 `Step 09`。
+
+## 2026-04-14 / 第六十二轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，没有跳到 `Step 09`。推进重点从“冻结 future 上游 `legacy-java-plus-app-api / OpenAPI / generator` 的闭环输入”继续收敛到“冻结 future TypeScript app-sdk generated output 应该长成什么样”。本轮新增的是一份可执行的 generated output contract：在 `notes-remote-apply-app-sdk-generated-output.contract.json` 中，明确未来真实 `remoteApply` 生成物必须包含 request type、result type、`PlusApiResult` envelope、`types/index.ts` barrel export 与 `api/note.ts` 的 method binding，而不是复用当前 `batchUpdate` DTO 或省略 envelope export。
+
+本轮真实增量：
+
+1. 新增 generated output contract spec，冻结：
+   - request：
+     - `sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-remote-apply-request.ts`
+     - `NoteRemoteApplyRequest`
+   - result：
+     - `sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/note-remote-apply-result-vo.ts`
+     - `NoteRemoteApplyResultVO`
+   - envelope：
+     - `sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/plus-api-result-note-remote-apply-result-vo.ts`
+     - `PlusApiResultNoteRemoteApplyResultVO`
+   - types barrel：
+     - `sdkwork-sdk-app/sdkwork-app-sdk-typescript/src/types/index.ts`
+   - API binding：
+     - `client.note.remoteApply(noteId, body: NoteRemoteApplyRequest)`
+2. 新增 `workspace-sync-app-sdk-generated-output-contract.test.mjs`，把上述 generated output surface、target contract、upstream closure contract 与当前 app-api TypeScript SDK 中仍不存在这些产物的事实绑定为根级 contract。
+3. `package.json` 与 `package-scripts-contract.test.mjs` 已把该测试纳入 `test:workspace:contracts`。
+4. 当前 generated output contract 继续保持三条禁止项：
+   - 禁止 remote apply 复用 `note-batch-update-request.ts`
+   - 禁止 remote apply 复用 `note-batch-update-result-vo.ts`
+   - 禁止 remote apply 省略 `PlusApiResult` envelope export
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-generated-output-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `CP08-4 / app-sdk远程apply合同缺口审计 = L3`
+11. `CP08-4 / app-sdk远程apply目标合同冻结 = L3`
+12. `CP08-4 / app-sdk远程apply结果适配合同冻结 = L3`
+13. `CP08-4 / app-sdk远程apply共享包装服务合同冻结 = L3`
+14. `CP08-4 / app-sdk远程apply上游闭环输入合同冻结 = L3`
+15. `CP08-4 / app-sdk远程apply生成产物合同冻结 = L3`
+16. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：如果上游仓库进入可改状态，优先按 `controller -> OpenAPI -> generator -> generated output` 的闭环顺序验证真实产物；如果上游仍不可改，则继续停留在 `Step 08 / CP08-4`，只补 guardrail，不伪造 generated SDK 能力。
+
+## 2026-04-14 / 第六十一轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，没有跳到 `Step 09`。推进重点从“冻结 future `@sdkwork/notes-core` shared-wrapper public service surface”继续收敛到“冻结 future 上游 `legacy-java-plus-app-api / OpenAPI / generator` 应该从哪里闭环”。本轮新增的是一份可执行的 upstream closure input contract：在 `notes-remote-apply-app-sdk-upstream-closure.contract.json` 中，明确未来真实 `remoteApply` 必须沿着 `NotesAppApiController -> sdkwork-sdk-app/app-openapi-8080.json / upgrade -> sdkwork-app-sdk-typescript` 这条单一路径闭合，而不是在 app 侧继续追加 workaround。
+
+本轮真实增量：
+
+1. 新增 upstream closure contract spec，冻结：
+   - app-api repo：`legacy-java-plus-app-api`
+   - controller file：`src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/NotesAppApiController.java`
+   - OpenAPI / generator 入口：
+     - `sdkwork-sdk-app/README.md`
+     - `sdkwork-sdk-app/app-openapi-8080.json`
+     - `sdkwork-sdk-app/upgrade`
+     - `sdkwork-sdk-app/bin/prepare-openapi-source.mjs`
+     - `sdkwork-sdk-app/sdkwork-app-sdk-typescript`
+2. 新增 `workspace-sync-app-sdk-upstream-closure-contract.test.mjs`，把上述 closure path、预期缺失的 remote apply type 文件以及当前 upstream sources 中仍不存在 `remoteApply` 的事实绑定为根级 contract。
+3. `package.json` 与 `package-scripts-contract.test.mjs` 已把该测试纳入 `test:workspace:contracts`。
+4. 当前 closure contract 继续保持三条禁止项：
+   - 禁止 app-local handwritten remote apply HTTP client
+   - 禁止 shared-wrapper fake success fallback
+   - 禁止 direct-write API remapping as replay transport
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-upstream-closure-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `CP08-4 / app-sdk远程apply合同缺口审计 = L3`
+11. `CP08-4 / app-sdk远程apply目标合同冻结 = L3`
+12. `CP08-4 / app-sdk远程apply结果适配合同冻结 = L3`
+13. `CP08-4 / app-sdk远程apply共享包装服务合同冻结 = L3`
+14. `CP08-4 / app-sdk远程apply上游闭环输入合同冻结 = L3`
+15. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：如果上游仓库进入可改状态，优先按该 closure contract 在 `legacy-java-plus-app-api` 补 controller / OpenAPI / SDK regeneration；如果上游仍不可改，则继续停留在 `Step 08 / CP08-4`，只补“闭合准备度” guardrail，不伪造 runtime 能力。
+
+## 2026-04-14 / 第六十轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，没有跳到 `Step 09`。推进重点从“冻结 future result adapter contract”继续收敛到“冻结 future `@sdkwork/notes-core` shared-wrapper public service surface”。本轮新增的是一份可执行的 service contract freeze：在 `notes-remote-apply-app-sdk-service.contract.json` 中，明确 future shared-wrapper 应由 `@sdkwork/notes-core` 通过 `appNoteSyncService.remoteApply(request)` 消费本地 `NotesSyncRemoteApplyRequest`，内部再走 `getAppSdkClientWithSession -> unwrapAppSdkResponse -> client.note.remoteApply(request.entityId, request)`，并把结果继续收敛回本地 `NotesSyncTaskExecutionResult`。
+
+本轮真实增量：
+
+1. 新增 shared-wrapper service contract spec，冻结 `appNoteSyncService / IAppNoteSyncService / remoteApply` 这一层 public service surface。
+2. 明确 service 的本地输入输出边界：
+   - 输入：`NotesSyncRemoteApplyRequest`
+   - 输出：`NotesSyncTaskExecutionResult`
+3. 明确 service 的内部调用约束：
+   - `getAppSdkClientWithSession`
+   - `unwrapAppSdkResponse`
+   - `client.note.remoteApply(request.entityId, request)`
+4. 明确 service guardrail：
+   - `request.entityType` 必须保持 `note`
+   - path `noteId` 必须与 `request.entityId` 一致
+   - transport failure 继续 `throw`
+   - 禁止 direct-write fallback
+5. 新增 `workspace-sync-app-sdk-service-contract.test.mjs`，把 service spec、target contract、result adapter contract、`NotesSyncRemoteApplyRequest`、`NotesSyncTaskExecutionResult` 与现有 `notes-core` service pattern 绑定成根级 contract。
+6. `package.json` 与 `package-scripts-contract.test.mjs` 已把新测试纳入 `test:workspace:contracts`。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-service-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远程apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `CP08-4 / app-sdk远程apply合同缺口审计 = L3`
+11. `CP08-4 / app-sdk远程apply目标合同冻结 = L3`
+12. `CP08-4 / app-sdk远程apply结果适配合同冻结 = L3`
+13. `CP08-4 / app-sdk远程apply共享包装服务合同冻结 = L3`
+14. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：如果上游真实 `note.remoteApply(noteId, body)` 已生成，优先在 `@sdkwork/notes-core` 落最薄 `appNoteSyncService` 实现；如果上游真实方法仍不存在，则继续停留在 `Step 08 / CP08-4`，只补“闭合准备度” guardrail，不伪造 runtime 能力。
+
+## 2026-04-14 / 第五十九轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，没有跳到 `Step 09`。推进重点从“冻结 future `remoteApply(noteId, body)` target contract”继续收敛到“冻结 future app-sdk 语义响应如何适配回本地 `NotesSyncTaskExecutionResult`”。本轮新增的是一份可执行的 result adapter contract freeze：在 `notes-remote-apply-app-sdk-result-adapter.contract.json` 中，明确 future shared wrapper 应由 `@sdkwork/notes-core` 通过 `getAppSdkClientWithSession -> client.note.remoteApply` 消费上游语义方法，并把 `applied / conflict / transport failure` 三类结果分别落回现有 sync worker 的稳定语义。
+
+本轮真实增量：
+
+1. 新增 result adapter contract spec，冻结 `applied -> completed`、`conflict -> conflict`、`transport failure -> throw`。
+2. 冻结 conflict code 规则：`stale-base-version / deleted-remotely / folder-structure-changed` 允许透传，其余统一回退到 `unknown`。
+3. 新增 `workspace-sync-app-sdk-result-adapter-contract.test.mjs`，把该 spec 与 target contract、`NotesSyncTaskExecutionResult`、本地 conflict / failure 语义绑成根级 contract。
+4. `package.json` 与 `package-scripts-contract.test.mjs` 已把该测试纳入 `test:workspace:contracts`。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-result-adapter-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-target-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-remote-apply.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `CP08-4 / app-sdk远程apply合同缺口审计 = L3`
+11. `CP08-4 / app-sdk远程apply目标合同冻结 = L3`
+12. `CP08-4 / app-sdk远程apply结果适配合同冻结 = L3`
+13. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：如果上游真实 `note.remoteApply(noteId, body)` 已生成，优先在 `@sdkwork/notes-core` 落最薄 result adapter；如果上游真实方法仍不存在，则继续停留在 `Step 08 / CP08-4`，只补“闭合准备度” guardrail，不伪造 runtime 能力。
+
+## 2026-04-14 / 第五十八轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，推进重点已经从“确认上游真实合同缺失”进一步推进到“future `app-sdk / app-api` 应该长成什么样，才能和当前 `notes-sync` transport 假设稳定对接”。本轮新增的是真实可执行的 target contract freeze：在 [notes-remote-apply-app-sdk-target.contract.json](<workspace-root>/sdkwork-notes/sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-target.contract.json) 中冻结 future semantic method、controller route、request 字段和 typed response 语义，并用新的 Node contract 把它和本地 `NotesSyncRemoteApplyRequest` 对齐。
+
+本轮真实增量：
+
+1. 新增 target contract spec，明确 future semantic SDK surface 应为 `client.note.remoteApply(noteId, body)`。
+2. 新增 `workspace-sync-app-sdk-target-contract.test.mjs`，冻结 method、route、request、response 目标，并校验它与 `notes-sync` 当前 `NotesSyncRemoteApplyRequest` 字段映射保持一致。
+3. `package.json` 与 `package-scripts-contract.test.mjs` 已把该 contract 纳入根级 `test:workspace:contracts`。
+4. response 语义已明确收敛为 typed `outcome = applied | conflict`；transport failure 继续 `throw`，不把网络失败塞进语义 response。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-target-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-remote-apply.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `CP08-4 / app-sdk远程apply合同缺口审计 = L3`
+11. `CP08-4 / app-sdk远程apply目标合同冻结 = L3`
+12. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：按该 target contract 在 `legacy-java-plus-app-api` / OpenAPI / generator 闭合真实 `remoteApply(noteId, body)`，生成真实 SDK method 后，再让 shared wrapper 与 bootstrap `apply(request)` 接到该 method。
+
+## 2026-04-14 / 第五十七轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，推进重点已经从“顶层注入路径已经存在”进一步推进到“shared wrapper -> `@sdkwork/app-sdk` -> `legacy-java-plus-app-api` 是否真的具备 replay-safe remote apply 合同”。本轮新增的是一组合同审计守卫，而不是新的远端执行能力。新增 `workspace-sync-app-sdk-contract.test.mjs` 后，当前结论已经收敛为：现有 generated app-sdk note surface 与 `NotesAppApiController` 仍只覆盖 direct-write / text versioning，尚不存在可被如实接线的 semantic remote apply contract。
+
+本轮真实增量：
+
+1. `workspace-sync-app-sdk-contract.test.mjs` 已冻结 shared wrapper、generated note SDK、request/result DTO 与 `NotesAppApiController` 的当前事实，明确不存在 `remoteApply / syncApply / applyMutation` 一类语义入口。
+2. `package.json` 与 `package-scripts-contract.test.mjs` 已把这条新审计门禁纳入 `test:workspace:contracts`，防止后续在合同未闭合时误接真实 caller。
+3. 已明确审计结论：当前 note request 合同仍缺少 `idempotencyKey / localRevision / baseRemoteCursor / mutation`，结果合同仍缺少 ack `remoteCursor`；`batchUpdate` 仍是正文 versioning，不是 replay-safe sync transport。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-app-sdk-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-store-bootstrap.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-remote-apply.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `CP08-4 / app-sdk远程apply合同缺口审计 = L3`
+11. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：先在 `legacy-java-plus-app-api` / backend / OpenAPI generator 闭合真实 replay-safe contract，生成语义化 app-sdk 方法，再回接 shared wrapper 与 bootstrap `apply(request)`；在那之前，不要把当前 `createNote / updateNote / updateNoteContent / move / restore / deleteNote / batchUpdate` 这类 direct-write API 当作 replay handler。
+
+## 2026-04-14 / 第五十六轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，推进重点已经从“工作区层具备 remote-apply 装配边界”继续推进到“应用壳与桌面 bootstrap 顶层是否真的存在单一注入路径”。当前交付的是真实可用的顶层 caller wiring：`createDesktopApp({ appRootProps }) -> DesktopBootstrapApp({ appRootProps }) -> AppRoot({ notesWorkspaceBootstrapOptions }) -> AppProviders({ notesWorkspaceBootstrapOptions }) -> bootstrapNotesWorkspaceStore(notesWorkspaceBootstrapOptions ?? {})`。其中关键修正是 `AppProviders` 现在不再只是声明该 props，而是会真实透传到 `AppProvidersContent`。
+
+本轮真实增量：
+
+1. `workspace-store-bootstrap.contract.test.mjs` 已修正旧的 `bootstrapNotesWorkspaceStore()` 断言口径，并新增 `AppProviders -> AppProvidersContent` 真实透传 contract。
+2. `AppProviders.tsx` 已补齐 `notesWorkspaceBootstrapOptions` 的真实透传，使 shell 去重键与 bootstrap caller 边界在实现上真正闭环。
+3. `createDesktopApp.test.tsx` 与 `DesktopBootstrapApp.test.tsx` 已把 mock 签名收敛为显式接收 props，消除本轮断言引入的 `pnpm.cmd typecheck` 回退。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-store-bootstrap.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-remote-apply.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界 = L3`
+10. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：在 app/bootstrap 或 desktop/background 层提供真实 `apply(request)` 实现，并让它返回真实 ack / `remoteCursor`；在那之前，不要把当前 `direct-write` note 写接口直接暴露为 raw replay handler。
+
+## 2026-04-14 / 第五十五轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，但推进重点已经从“包内 request 合同冻结”继续推进到“工作区层如何消费这个合同”。当前交付的是工作区 remote-apply 装配边界：`notes-notes` 的 `createNotesWorkspaceSyncRuntime(...)` 现在既能接 `execute(task)`，也能接 `apply(request)`；`bootstrapNotesWorkspaceStore(...)` 也已经支持显式 `apply(request)` 注入。
+
+本轮真实增量：
+
+1. `noteWorkspaceSyncRuntime.ts` 已支持 `apply(request)` 注入，并复用 `createNotesSyncRemoteApplyExecutor({ apply })` 适配到 worker。
+2. `notesWorkspaceStoreBootstrap.ts` 已支持 `apply(request)`，可据此构建 workspace sync runtime。
+3. `workspace-sync-runtime-boundary.contract.test.mjs` 与 `workspace-store-bootstrap.contract.test.mjs` 已新增相应 contract 并通过。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-store-bootstrap.contract.test.mjs
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `CP08-4 / 工作区remote-apply装配边界 = L3`
+9. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：在 app/bootstrap 或 desktop/background 层提供真实 `apply(request)` 实现，并让它返回真实 ack / `remoteCursor`。
+
+## 2026-04-14 / 第五十四轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，但推进重点已经从“哪些任务能否自动回放”继续推进到“未来远端 replay 应该消费什么显式请求”。当前交付的是同步任务远端 apply 幂等边界：`notes-sync` 现已新增 `NotesSyncRemoteApplyRequest`、`createNotesSyncRemoteApplyRequest(task)` 和 `createNotesSyncRemoteApplyExecutor({ apply })`，把未来 transport 所需的最小输入冻结为带 `idempotencyKey` 的显式请求，而不是让 transport 直接读取原始 `NotesSyncTask` 对象。
+
+本轮真实增量：
+
+1. `@sdkwork/notes-sync` 已新增 `NotesSyncRemoteApplyRequest`，显式固定 `idempotencyKey / taskId / entityType / entityId / operation / localRevision / baseRemoteCursor / mutation`。
+2. `createNotesSyncRemoteApplyRequest(task)` 只允许把 `replayable: true` 的任务转换为远端 apply 请求；当前 `direct-write` 影子任务仍无法越过这条边界。
+3. `createNotesSyncRemoteApplyExecutor({ apply })` 已把 worker `execute(task)` 适配为 `apply(request)`，为后续真实 transport 留出稳定注入点。
+4. 新增 `workspace-sync-remote-apply.contract.test.mjs`，并将其纳入 `test:workspace:contracts` 与 `package-scripts-contract` 门禁。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-remote-apply.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `CP08-4 / 同步任务远端apply幂等边界 = L3`
+8. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：在 app/bootstrap 或 desktop/background 层把 `createNotesSyncRemoteApplyExecutor({ apply })` 接到真实 replay-safe transport / ack apply handler，但不要把当前 `direct-write` App SDK note 写接口直接当成 raw replay handler。
+
+## 2026-04-14 / 第五十三轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，但推进重点已经从“任务 payload 足够表达执行意图”继续推进到“当前哪些任务允许自动回放、哪些任务必须被明确拒绝”。当前交付的是同步任务回放安全边界：`NotesSyncTask` 现在显式带有 `replayable`，当前所有 `direct-write` note 主写入路径入队时都会显式写入 `replayable: false`，而 worker 在读取到这类任务时不会再伪装成可安全 replay，而是终态失败为 `replay-disabled`。
+
+本轮真实增量：
+
+1. `@sdkwork/notes-sync` 已为 `NotesSyncTask` 增加 `replayable`，并把创建输入缺省值与 legacy 队列读取统一收敛为 `false`。
+2. `@sdkwork/notes-sync` 已在 `executeNextNotesSyncTask()` 中加入不可回放保护：任务先持久化为 `running`，随后若 `replayable: false`，则直接回写 `failed(replay-disabled)`，不会调用 handler。
+3. `useNotesWorkspaceStore.ts` 已在 `createNote / persistActiveNote / toggleFavorite / moveNoteToTrash / restoreNoteFromTrash / moveNote / deleteNotePermanently / clearTrash` 路径显式写入 `replayable: false`。
+4. `workspace-sync-state-machine / queue / write-path / worker / worker-runtime / runtime-boundary / notes store` 相关测试均已对齐并通过。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-state-machine.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker-runtime.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `CP08-4 / 同步任务回放安全边界 = L3`
+7. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：不要把当前 App SDK note 写接口直接接成 replay handler；必须先定义 replay-safe transport / idempotency 边界，或者先把写路径演进为真正的 `local-submit -> queue -> remote apply`。
+
+## 2026-04-14 / 第五十二轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，但推进重点已经从“已有最小 worker/runtime”切到“任务本身必须携带足够的执行意图”。当前交付的是同步任务 payload 冻结闭环：`NotesSyncTask` 现在显式持有 `mutation`，同步队列 schema 升级到 `2`，并且所有已接入的 note 主写入路径都会把对应 payload 一起写入 queue snapshot。
+
+本轮真实增量：
+
+1. `@sdkwork/notes-sync` 已为 `NotesSyncTask` 增加 `mutation`，冻结 `upsert / move / delete / restore / permanent-delete` 的最小 payload 语义。
+2. `@sdkwork/notes-sync` 已把 queue schema 从 `1` 升级到 `2`，并显式把 schema 1 legacy envelope 降级为空队列。
+3. `useNotesWorkspaceStore.ts` 已在 `createNote / persistActiveNote / toggleFavorite / moveNoteToTrash / restoreNoteFromTrash / moveNote / deleteNotePermanently / clearTrash` 路径写入显式 `mutation`。
+4. `workspace-sync-state-machine / queue / write-path / worker / worker-runtime / runtime-boundary` 六组 Node contract 已全部对齐并通过。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-state-machine.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker-runtime.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / 同步任务 payload 冻结 = L3`
+6. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：不要直接把当前 App SDK note 写接口接成 replay handler；必须先定义 replay-safe transport / idempotency 边界，或者先把写路径演进为真正的 `local-submit -> queue -> remote apply`。
+
+## 2026-04-14 / 第四十九轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，但推进重点已经从“`notes-sync` 包内 runtime 已存在”切到“runtime 已进入 `notes-notes` 的真实 workspace 边界”。当前交付的是 `notes-notes` 的最小 runtime 接线闭环：store 在 note 队列写入后会触发 `requestDrain()`，工作区初始化后也会请求 replay，但默认实例仍不会在无真实 handler 时自动启动后台同步。
+
+本轮真实增量：
+
+1. 新增 `noteWorkspaceSyncRuntime.ts`，提供 `createNotesWorkspaceSyncRuntime(...)` 与 workspace-side `NotesWorkspaceSyncRuntime` 接口。
+2. `useNotesWorkspaceStore.ts` 现在支持可选 `syncRuntime`，并把 `saveQueue()` 成功后的 drain 请求与 `initialize()` 后的 replay 请求固定到真实 store 边界。
+3. 新增 `workspace-sync-runtime-boundary.contract.test.mjs`，冻结 runtime 工厂委托、`createNote` drain 和 `initialize` replay 三条合同。
+4. 根级 `test:workspace:contracts` 与 `package-scripts-contract.test.mjs` 已接入新的 runtime boundary contract。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / notes-notes 工作区 sync runtime 边界接线 = L3`
+6. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：继续停留在 `Step 08 / CP08-4`，先定义真实远端 handler 与回执应用，再决定把 runtime 实例化落到 app/bootstrap 还是 desktop/background 边界。
+
+## 2026-04-14 / 第四十八轮推进补记
+
+本轮继续停留在 `Step 08 / CP08-4`，但推进重点已经从“单次 executor”切到“可驱动的 worker runtime”。当前交付的是 `@sdkwork/notes-sync` 包内的最小运行时调度闭环：它可以串行 drain 队列、合并重叠 drain 请求、为最早到期的 `retrying` 任务挂起 timer，并在到期后自动回放。
+
+本轮真实增量：
+
+1. 新增 `workspace-sync-worker-runtime.contract.test.mjs`，冻结 4 条运行时调度合同。
+2. `notes-sync` 新增 `createNotesSyncWorkerRuntime(...)`，并补齐 `NotesSyncWorkerScheduler` 等运行时边界类型。
+3. 根级 `test:workspace:contracts` 与 `package-scripts-contract.test.mjs` 已接入新的 runtime contract。
+
+本轮验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker-runtime.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / notes-sync worker 运行时调度闭环 = L3`
+6. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：继续停留在 `Step 08 / CP08-4`，把 runtime 接到真实 handler、远端回执应用、冲突恢复入口和离在线切换验证。
+
+## 2026-04-14 / 第四十七轮推进补记
+
+本轮正式从 `CP08-3 / 主写入路径接入` 切换到 `CP08-4 / 冲突与失败恢复验证`，但仍保持“先闭环最小执行链，再扩到 UI 和 runtime”的收敛策略。当前交付的是 `@sdkwork/notes-sync` 包内的最小 worker 执行链：它可以释放到期 `retrying` 任务、选择 oldest queued task、在 handler 调用前持久化 `running`、并把结果回写为 `completed / retrying / failed / conflict`。
+
+本轮真实增量：
+
+1. `sdkwork-notes-pc-react/scripts/workspace-sync-worker.contract.test.mjs` 已新增 5 条 worker 合同，覆盖成功回执、自动重放、冲突回写、retryable failure 与 terminal failure。
+2. `sdkwork-notes-pc-react/packages/sdkwork-notes-sync/src/index.ts` 已新增 `executeNextNotesSyncTask(...)` executor API。
+3. `sdkwork-notes-pc-react/package.json` 与 `scripts/package-scripts-contract.test.mjs` 已把 worker contract 纳入根级 `test:workspace:contracts`，避免后续根级验收漏测。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-state-machine.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd --filter @sdkwork/notes-sync typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = L2`
+5. `CP08-4 / notes-sync worker 最小执行闭环 = L3`
+6. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：继续停留在 `Step 08 / CP08-4`，把 executor 接到真实 handler、远端回执应用、冲突恢复入口和离在线切换验证。
+
+## 2026-04-13 / 第四十六轮推进补记
+
+本轮继续停留在 `Step 08-同步队列与冲突恢复一期`，但已把 `CP08-3 / 主写入路径接入` 从“只差永久删除语义决策”的半收口状态，推进到“note 级主写入链完整闭合”的状态：`createNote + persistActiveNote + toggleFavorite + moveNoteToTrash + restoreNoteFromTrash + moveNote + deleteNotePermanently + clearTrash` 已全部进入真实 sync queue。
+
+本轮真实增量：
+
+1. `@sdkwork/notes-sync` 已新增独立 `permanent-delete` operation，正式拆开“移入废纸篓”和“永久删除”两类事实。
+2. `useNotesWorkspaceStore.ts` 已在 `deleteNotePermanently()` 成功路径接入 `note/permanent-delete/queued`。
+3. `toggleFavorite()` 的 clean-save 成功路径已接入 `note/upsert/queued`，补齐 Step 08 文档里“关键元数据变更”的 note 主链。
+4. `clearTrash()` 现已在一次 queue snapshot 中批量追加多条 `note/permanent-delete/queued` 任务，不再留下 bulk delete 的隐性缺口。
+5. `workspace-sync-write-path.contract.test.mjs` 现已覆盖 8 条 note 级真实写路径；`workspace-sync-state-machine.contract.test.mjs` 与 `workspace-sync-queue.contract.test.mjs` 也同步锁定了 `permanent-delete` 模型与持久化事实。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-state-machine.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-sync typecheck
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = L4`
+4. `CP08-4 / 冲突与失败恢复验证 = 未开始`
+5. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：从 `CP08-3` 切换到 `Step 08 / CP08-4`，开始 worker、远端回执、冲突恢复和离在线切换验证
+
+## 2026-04-13 / 第四十五轮推进补记
+
+本轮继续停留在 `Step 08-同步队列与冲突恢复一期`，并把 `CP08-3 / 主写入路径接入` 从“创建 + 正文保存 + 删除 + 恢复”推进到“创建 + 正文保存 + 删除 + 恢复 + 移动”五条真实主链：`createNote + persistActiveNote + moveNoteToTrash + restoreNoteFromTrash + moveNote`。
+
+本轮真实增量：
+
+1. `useNotesWorkspaceStore.ts` 已在 `moveNote()` 的 `apply` 成功路径把父文件夹变更结果写入 `@sdkwork/notes-sync` 队列。
+2. 队列写入逻辑继续复用 `enqueueNoteSyncTask(noteId, operation, atValue)`，供五条主写入路径共用。
+3. `workspace-sync-write-path.contract.test.mjs` 已新增 `moveNote -> note/move/queued` 的主写入合同。
+4. 本轮显式放弃了“直接接 deleteNotePermanently”的错误捷径，因为当前 `notes-sync` operation 模型没有单独 `permanent-delete` 语义。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = 进行中`
+4. `CP08-3 / createNote 增量 = L3`
+5. `CP08-3 / persistActiveNote 增量 = L3`
+6. `CP08-3 / moveNoteToTrash 增量 = L3`
+7. `CP08-3 / restoreNoteFromTrash 增量 = L3`
+8. `CP08-3 / moveNote 增量 = L3`
+9. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：先冻结 `deleteNotePermanently` 的同步语义，再决定是否继续留在 `CP08-3`
+
+## 2026-04-13 / 第四十四轮推进补记
+
+本轮继续停留在 `Step 08-同步队列与冲突恢复一期`，并把 `CP08-3 / 主写入路径接入` 从“创建 + 正文保存 + 删除”推进到“创建 + 正文保存 + 删除 + 恢复”四条真实主链：`createNote + persistActiveNote + moveNoteToTrash + restoreNoteFromTrash`。
+
+本轮真实增量：
+
+1. `useNotesWorkspaceStore.ts` 已在 `restoreNoteFromTrash()` 成功路径把恢复结果写入 `@sdkwork/notes-sync` 队列。
+2. 队列写入逻辑继续复用 `enqueueNoteSyncTask(noteId, operation, atValue)`，供四条主写入路径共用。
+3. `workspace-sync-write-path.contract.test.mjs` 已新增 `restoreNoteFromTrash -> note/restore/queued` 的主写入合同。
+4. 恢复任务时间戳已明确绑定到恢复结果 `updatedAt`。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = 进行中`
+4. `CP08-3 / createNote 增量 = L3`
+5. `CP08-3 / persistActiveNote 增量 = L3`
+6. `CP08-3 / moveNoteToTrash 增量 = L3`
+7. `CP08-3 / restoreNoteFromTrash 增量 = L3`
+8. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：继续留在 `Step 08 / CP08-3`，优先接入 `deleteNotePermanently`
+
+## 2026-04-13 / 第四十三轮推进补记
+
+本轮继续停留在 `Step 08-同步队列与冲突恢复一期`，并把 `CP08-3 / 主写入路径接入` 从“创建 + 正文保存”推进到“创建 + 正文保存 + 删除”三条真实主链：`createNote + persistActiveNote + moveNoteToTrash`。
+
+本轮真实增量：
+
+1. `useNotesWorkspaceStore.ts` 已在 `moveNoteToTrash()` 成功路径把删除结果写入 `@sdkwork/notes-sync` 队列。
+2. 队列写入逻辑已收敛为 `enqueueNoteSyncTask(noteId, operation, atValue)`，供 `createNote`、`persistActiveNote` 与 `moveNoteToTrash` 共用。
+3. `workspace-sync-write-path.contract.test.mjs` 已新增 `moveNoteToTrash -> note/delete/queued` 的主写入合同。
+4. 删除任务时间戳已明确优先绑定到删除事实 `deletedAt`，避免普通 `updatedAt` 混淆删除事件时间。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = 进行中`
+4. `CP08-3 / createNote 增量 = L3`
+5. `CP08-3 / persistActiveNote 增量 = L3`
+6. `CP08-3 / moveNoteToTrash 增量 = L3`
+7. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：继续留在 `Step 08 / CP08-3`，优先接入 `restoreNoteFromTrash`
+
+## 2026-04-13 / 第四十二轮推进补记
+
+本轮继续停留在 `Step 08-同步队列与冲突恢复一期`，并把 `CP08-3 / 主写入路径接入` 从“只有 createNote 接入”推进到“两条真实主链都已入队”：`createNote + persistActiveNote`。
+
+本轮真实增量：
+
+1. `useNotesWorkspaceStore.ts` 已在 `persistActiveNote()` 成功路径把提交草稿写入 `@sdkwork/notes-sync` 队列。
+2. 队列写入逻辑已收敛为 `enqueueNoteUpsertSyncTask(noteId, updatedAt)`，供 `createNote` 与 `persistActiveNote` 共用。
+3. `workspace-sync-write-path.contract.test.mjs` 已新增 `persistActiveNote -> note/upsert/queued` 的主写入合同。
+4. `persistActiveNote` 的同步任务时间戳已明确绑定到本地提交草稿 `requestedActiveNote.updatedAt`，避免远端响应时间污染本地提交顺序事实。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = 进行中`
+4. `CP08-3 / createNote 增量 = L3`
+5. `CP08-3 / persistActiveNote 增量 = L3`
+6. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：继续留在 `Step 08 / CP08-3`，优先接入 `moveNoteToTrash`
+
+## 2026-04-13 / 第四十一轮推进补记
+
+本轮继续停留在 `Step 08-同步队列与冲突恢复一期`，但已经把 `CP08-3 / 主写入路径接入` 从“待开始”推进为第一条真实主链：`createNote`。
+
+本轮真实增量：
+
+1. `useNotesWorkspaceStore.ts` 已在 `createNote()` 成功路径把创建结果写入 `@sdkwork/notes-sync` 队列。
+2. `workspace-sync-write-path.contract.test.mjs` 已冻结 `createNote -> note/upsert/queued` 的主写入合同。
+3. `test:workspace:contracts` 与 `package-scripts-contract.test.mjs` 已把这条合同纳入根级门禁。
+4. `tsconfig.base.json` 已新增 `@sdkwork/notes-sync` path alias，避免 monorepo 内部解析漂移。
+5. `workspace-startup-recovery-smoke.contract.test.mjs` 已同步适配 store 的新包依赖，确保既有启动恢复 smoke 不被打穿。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-startup-recovery-smoke.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `CP08-1 / 同步任务模型与状态机冻结 = L4`
+2. `CP08-2 / 待同步队列与重试机制落地 = L4`
+3. `CP08-3 / 主写入路径接入 = 进行中`
+4. `CP08-3 / createNote 增量 = L3`
+5. `Step 08` 总体仍为 `L2`
+
+下一轮执行入口：继续留在 `Step 08 / CP08-3`，优先接入 `persistActiveNote`
+
+## 2026-04-13 / 第三十二轮推进补记
+
+本轮继续停留在 `Step 06-本地存储层与离线草稿能力一期`，但推进重点已经从“恢复入口可见”切换到“本地 schema 与迁移策略冻结”。当前 `@sdkwork/notes-local` 不再只是一个能写草稿检查点的容器，而是拥有明确版本、兼容迁移读路径和只写新格式的本地 workspace 存储契约。
+
+本轮真实增量：
+
+1. `notes-local` 新增 `NOTES_LOCAL_WORKSPACE_SCHEMA_VERSION = 1`，正式冻结本地 workspace schema 版本。
+2. `loadWorkspace()` 现已兼容两种读取格式：
+   - 历史 raw snapshot：`{ notes, folders, drafts }`
+   - 当前 envelope：`{ version, workspace }`
+3. `saveDraft()` 与 `clearDraft()` 现统一只写版本化 envelope，不再继续扩散历史 raw 顶层结构。
+4. 未知版本或损坏 payload 会安全降级为空快照，避免脏数据污染恢复主链。
+5. `workspace-local-schema.contract.test.mjs` 已正式进入根级 `test:workspace:contracts`。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-local-schema.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-local-recovery.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-local typecheck
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `Step 03 = L4`
+2. `Step 04 = L4`
+3. `Step 05 = L4`
+4. `Step 06 = L3`
+5. `CP06-1 / 本地 schema 与迁移策略 = L4`
+6. `CP06-2 / 草稿日志与恢复入口 = L4`
+
+下一轮执行入口：继续留在 `Step 06-本地存储层与离线草稿能力一期`
+
+## 2026-04-13 / 第三十一轮推进补记
+
+本轮已经正式进入 `Step 06-本地存储层与离线草稿能力一期`，并完成第一条真实的恢复入口闭环：本地恢复草稿不再只是“退出前检查点”，而是已经能被启动链读取并在页面中被用户处理。
+
+本轮真实增量：
+
+1. 新增 `noteWorkspaceRecovery.ts`，冻结恢复候选过滤、选中、移除和回放规则。
+2. `useNotesWorkspaceStore.ts` 已开始在初始化时读取 `NotesLocalStore.loadWorkspace().drafts`，并暴露 `recoveredDrafts / activeRecoveredDraft`。
+3. 页面新增 `NotesWorkspaceRecoveryBanner`，支持“打开笔记 / 恢复草稿 / 放弃草稿”。
+4. 中英文文案已补齐恢复提示语义。
+5. `workspace-local-recovery.contract.test.mjs` 已正式进入根级 `test:workspace:contracts`。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-local-recovery.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `Step 03 = L4`
+2. `Step 04 = L4`
+3. `Step 05 = L4`
+4. `Step 06 = L2`
+5. `CP06-2 / 草稿日志与恢复入口 = L4`
+
+下一轮执行入口：继续留在 `Step 06-本地存储层与离线草稿能力一期`
+
+## 2026-04-13 / 第三十轮推进补记
+
+本轮完成了 `Step 05-编辑器与自动保存可靠性升级` 的最后一个主阻塞项：退出前保底恢复检查点已经正式并入当前保存主链。
+
+本轮真实增量：
+
+1. `@sdkwork/notes-local` 已具备本地恢复检查点存储实现。
+2. 草稿进入 `dirty` 时会立即生成 `draft-change` 恢复检查点。
+3. `pagehide` 与 `visibilitychange(hidden)` 现在会先 `captureRecoverySnapshot`，再执行共享 `flushDraft`。
+4. 远端确认保存成功后会清理对应 `noteId` 的恢复检查点。
+5. `workspace-exit-recovery.contract.test.mjs` 已正式进入根级 `test:workspace:contracts` 主门禁。
+
+本轮新增验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-exit-recovery.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮结论更新为：
+
+1. `Step 03 = L4`
+2. `Step 04 = L4`
+3. `Step 05 = L4`
+
+下一轮执行入口：`Step 06-本地草稿与恢复能力`
+
+## 2026-04-13 / 第二十九轮后续增量补记
+
+本轮继续停留在 `Step 05-编辑器与自动保存可靠性升级`，新增的真实增量不是 UI 层，而是保存主链内部的恢复策略收口：
+
+1. `save queue` 之上已经补齐自动退避。
+2. 最大自动重试次数已经冻结为 `2` 次。
+3. 保存链已经建立最小 telemetry sink 接口：
+   - `notes.workspace.save.retry.scheduled`
+   - `notes.workspace.save.retry.recovered`
+   - `notes.workspace.save.retry.exhausted`
+
+本轮新增验证基线：
+
+```powershell
+node .\scripts\workspace-save-retry-policy.contract.test.mjs
+node .\scripts\workspace-save-queue.contract.test.mjs
+node .\scripts\workspace-save-feedback.contract.test.mjs
+node .\scripts\workspace-save-flush-boundary.contract.test.mjs
+node .\scripts\workspace-high-risk-flush-boundary.contract.test.mjs
+node .\scripts\package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+1. `Step 03 = L4`
+2. `Step 04 = L4`
+3. `自动退避 / 重试上限 / 保存观测接口 = L4`
+4. `Step 05` 总体仍为 `L3`
+
+当前最大剩余缺口收敛为：
+
+1. 页面关闭 / 异常退出 / 崩溃恢复证据矩阵
+2. Step 06 本地草稿恢复对当前保存主链的接入约束
+
+## 当前结论（`2026-04-13`）
+
+- 当前波次：`Wave-C`
+- 当前 Step：`Step 08-同步队列与冲突恢复一期`
+- 当前等级：`L2`
+- 当前最大增量：`CP08-3 / 主写入路径接入已闭环，createNote + persistActiveNote + toggleFavorite + moveNoteToTrash + restoreNoteFromTrash + moveNote + deleteNotePermanently + clearTrash 已接入 sync queue`
+- 当前最大缺口：`后台 worker、远端回执、冲突恢复与离在线切换验证`
+- 下一执行入口：切换到 `Step 08 / CP08-4`
+
+当前有效验证基线：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-state-machine.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-local-schema.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-local-recovery.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-save-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-save-feedback.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-save-flush-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-high-risk-flush-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-exit-recovery.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-sync typecheck
+pnpm.cmd --filter @sdkwork/notes-local typecheck
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+补充说明：
+
+- 包内 Vitest 在当前环境仍受 `spawn EPERM` 限制，该现象没有变化。
+- 当前关于 `Step 05` 的唯一有效结论仍是：`L4`。
+- 当前关于 `Step 06` 的唯一有效结论是：`L3`，下一轮继续补齐标准化本地快照接口与启动恢复 smoke test。
+
+## 2026-04-13 / 第二十九轮推进补记
+
+本轮继续执行 `Step 05-编辑器与自动保存可靠性升级`，新增的真实增量是：为活跃笔记建立独立 `save queue` 串行编排层，并把高风险动作在保存中的语义正式冻结为“`dirty / error` 必须 flush、`saving / retrying` 必须 wait”。
+
+本轮完成内容：
+
+1. `noteWorkspaceSaveQueue.ts` 新增 `createNotesWorkspaceSaveQueue()` 与 `resolveNotesWorkspaceSaveCompletion()`。
+2. `useNotesWorkspaceStore.ts` 改为在已有 active request 时显式区分 `requestReplay()` 与 `waitForActiveRequest()`。
+3. 保存成功后若本地已有更新草稿，只更新 `persistedActiveNote`，不再回退 `activeNote`。
+4. `workspace-save-queue.contract.test.mjs` 新增保存编排 contract，并接入 `test:workspace:contracts`。
+5. `workspace-high-risk-flush-boundary.contract.test.mjs` 升级为冻结新的 wait/flush 边界。
+
+本轮验证结果：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-save-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-save-feedback.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-save-flush-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-high-risk-flush-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+当前结论更新为：
+
+- `Step 03 = L4`
+- `Step 04 = L4`
+- `Step 05 = L3`
+- `Wave-B` 仍未完成总验收
+
+下一轮继续优先补齐：
+
+1. 自动退避、重试上限与保存观测
+2. 页面关闭、异常退出与崩溃恢复证据矩阵
+3. Step 06 对当前保存主脊柱的接入约束
+
+## 2026-04-13 / 第二十八轮推进补记
+
+本轮没有继续扩张 `Step 05` 功能面，而是先执行止损修复：根级 `pnpm.cmd typecheck` 被过期的认证宿主边界合同阻断。
+
+本轮完成内容：
+
+1. `workspace-boundary-contract.test.mjs` 改为以 `@sdkwork/notes-auth` 作为 notes 仓库的唯一认证宿主边界。
+2. 合同新增 `sdkworkAuthBridge.ts` 必须桥接 `notes-core` 的运行时绑定。
+3. 根级 `pnpm.cmd typecheck` 已重新串起 `test:workspace:contracts -> prepare:shared-sdk -> turbo typecheck -> root tsc` 全链。
+
+本轮验证结果：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-boundary-contract.test.mjs
+pnpm.cmd typecheck
+```
+
+## 2026-04-07 / 第二十七轮推进补记
+
+本轮完成“失败反馈与重试状态机”收敛：
+
+1. `NoteSaveState` 扩展为 `idle / dirty / saving / saved / error / retrying / recovered`
+2. `noteWorkspaceSaveFeedback.ts` 统一承接保存反馈模型
+3. `NotesWorkspaceErrorBanner.tsx` 支持 retry CTA
+
+对应结论：
+
+- `CP05-3 / 失败反馈与重试策略 = L4`
+- `Step 05` 当时仍停留在 `L2`
+
+## 2026-04-07 / 第二十六轮推进补记
+
+本轮完成“统一刷盘入口”收敛：
+
+1. `noteWorkspaceAutosave.ts` 新增 `shouldFlush`
+2. `NoteEditorPane onSave`、页面命令 `persistActiveNote`、`pagehide / visibilitychange(hidden)` 统一共享 `flushDraft`
+
+对应结论：
+
+- `CP05-2 / 统一刷盘入口 = L4`
+- `Step 05` 当时仍停留在 `L2`
+
+## 2026-04-07 / 第二十五轮推进补记
+
+本轮完成“可见性刷盘边界”收敛：
+
+1. `noteWorkspaceAutosaveRuntime.ts` 新增 `bindNotesWorkspaceVisibilityAutosave()`
+2. `NotesWorkspacePage.tsx` 通过共享 runtime service 接入 `visibilitychange(hidden)`
+
+对应结论：
+
+- `Step 05` 正式启动并进入 `L2`
+- 下一执行入口切换为 `Step 05-编辑器与自动保存可靠性升级`
+## 2026-04-14 / 第五十轮推进补记
+
+本轮继续留在 `Step 08 / CP08-4`，没有提前跳到 Step 09。目标是把 `notes-notes` 工作区 store 从“模块加载即固定实例”推进到“可以在 bootstrap 期装配的运行时边界”，为后续 app shell 或 desktop/background 注入真实 runtime 预留安全入口。
+
+本轮完成了 `useNotesWorkspaceStore.ts` 的导出重构：
+
+1. `notesWorkspaceStore` 改为 live binding。
+2. 新增 `getNotesWorkspaceStore()`、`setNotesWorkspaceStore(store)`、`configureNotesWorkspaceStore(overrides?)`、`resetNotesWorkspaceStore()`。
+3. `useNotesWorkspaceStore(...)` 改为 wrapper hook，仍保持页面层 `useNotesWorkspaceStore((state) => ...)` 的既有写法。
+4. 新增 `workspace-store-bootstrap.contract.test.mjs`，并把相关 Node contract stub 的 `zustand/useStore` 适配补齐。
+
+验证命令：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-store-bootstrap.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-startup-recovery-smoke.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+状态保持保守：
+
+1. `Step 08 = L2`
+2. `CP08-4 / 冲突与失败恢复验证 = L2`
+3. `CP08-4 / notes-notes 工作区 store bootstrap 装配边界 = L3`
+
+当前仍未实现真实远端 handler、ack apply 与 `remoteCursor` 回写，也还没有把 bootstrap 装配正式接到 app shell 或 desktop/background。
+

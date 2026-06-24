@@ -1,0 +1,49 @@
+> Migrated from `docs/架构/10-实施进度-Step08队列worker最小执行闭环-2026-04-14.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10. 实施进度 - Step 08 队列 worker 最小执行闭环 - 2026-04-14
+
+## 本轮结论
+
+- `Step 08` 已从 `CP08-3 / 主写入路径接入` 切换到 `CP08-4 / 冲突与失败恢复验证`。
+- `@sdkwork/notes-sync` 已具备 package-local 的最小 worker 执行链。
+- `CP08-4` 整体仍未闭环，但“队列执行 -> 状态回写 -> 契约验证”这条最小主链已成立。
+
+## 本轮新增架构事实
+
+### 1. `notes-sync` 已从“静态状态机 + 队列模型”推进到“可执行 executor”
+
+- 新增 `executeNextNotesSyncTask(...)`。
+- executor 的职责只包含：
+  - 读取并规范化 queue snapshot
+  - 释放到期 `retrying` 任务
+  - 选择 oldest runnable queued task
+  - 持久化 `running`
+  - 执行注入 handler
+  - 回写 `completed / retrying / failed / conflict`
+
+### 2. Step 08 一期的执行语义已正式冻结到 `notes-sync`
+
+- 到期 `retrying` 任务会先 `requeue`，再参与 oldest queued 选择。
+- 可重试失败仍复用既有 retry policy，不额外引入第二套回退策略。
+- 成功回执允许写回 `remoteCursor`，为后续远端游标推进保留稳定入口。
+- conflict 与 terminal failure 都会留在队列快照中，而不是被静默吞掉。
+
+### 3. worker contract 已进入根级合同门禁
+
+- 新增 `workspace-sync-worker.contract.test.mjs`。
+- `test:workspace:contracts` 已纳入该合同，避免 executor 语义只靠人工单跑。
+
+## 对后续波次的影响
+
+- `CP08-4` 后续可以直接围绕真实 handler、远端回执应用、冲突 UI 和离在线切换 smoke 推进。
+- 不需要再回头重构 `notes-sync` 的 operation 集或队列状态机。
+- desktop runtime 或 `notes-notes` 的调度接入可以复用现有 executor，不必重写一套 queue 消费器。
+
+## 当前剩余阻塞
+
+- 缺少真实远端 transport handler。
+- 缺少 executor 与运行时调度边界的集成。
+- 缺少冲突提示、手动 replay 与失败恢复 UI。
+- 缺少离在线切换和冲突演练验证。
+

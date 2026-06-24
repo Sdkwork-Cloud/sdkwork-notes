@@ -1,0 +1,42 @@
+> Migrated from `docs/架构/10-实施进度-页面命令运行时增量-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10 补充 - Step 04 页面命令运行时增量 - 2026-04-07
+
+## 1. 增量说明
+
+本次增量对应 Step 04 的一轮继续执行，目标是将工作区页面命令运行时从 `NotesWorkspacePage.tsx` 内联逻辑中下沉到独立 service 层。
+
+## 2. 已完成事项
+
+- 新增 `noteWorkspacePageCommandRuntime.ts`
+- 抽离页面命令依赖组装与执行
+- 抽离命令面板 action 到页面命令的转换执行
+- 抽离对话框确认事件到页面命令的转换执行
+- 新增 `workspace-page-command-runtime.contract.test.mjs`
+- 将新合同接入 `test:workspace:contracts`
+
+## 3. 已完成验证
+
+```bash
+node --test --experimental-test-isolation=none scripts/workspace-page-command-runtime.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+## 4. 进度判断
+
+- Step 03：`L4`
+- Step 04：`L3`
+
+Step 04 仍未关闭，剩余关键阻塞项如下：
+
+1. `renameFolder / moveNote / createNote / createFolder` 的写路径即时状态协调仍未完全下沉。
+2. repository 仍未形成 `read-through / replica / queued-sync` 的策略抽象接缝。
+3. 页面容器仍残留少量 icon / layout / status 展示胶水。
+
+## 5. 执行建议
+
+下一轮建议优先继续清理 store 写路径协调，再建立 repository 策略接缝，最后压缩页面展示与装配胶水；只有三项都完成后，才重新判断 Step 04 是否满足 `L4` 关闭条件。
+

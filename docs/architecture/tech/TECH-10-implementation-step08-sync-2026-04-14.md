@@ -1,0 +1,60 @@
+> Migrated from `docs/架构/10-实施进度-Step08工作区同步阻塞问题恢复动作语义与受影响笔记定位-2026-04-14.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-Step08工作区同步阻塞问题恢复动作语义与受影响笔记定位-2026-04-14
+
+## 本轮目标
+
+把 Step 08 当前已经可见的同步阻塞状态，从“只有一个统一 drain 入口”推进到“能够区分继续重试和查看受影响笔记”的更诚实恢复动作语义。
+
+## 本轮完成
+
+1. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspaceSelectors.ts`
+   - `syncSummary` 现在新增：
+     - `primaryEntityId`
+     - `primaryMessage`
+2. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspacePagePresentationModel.ts`
+   - `syncCard` 现在新增：
+     - `actionKind`
+     - `actionTargetNoteId`
+   - 同步卡片已形成两类动作语义：
+     - `review-note`
+     - `retry-sync`
+3. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+   - 页面容器已按 `actionKind` 分流到：
+     - `requestSyncDrain()`
+     - `selectNote(noteId)`
+4. 国际化资源已补齐：
+   - `notes.actions.reviewSyncIssue`
+5. 合同测试已补齐并冻结：
+   - `workspace-view-model.contract.test.mjs`
+   - `workspace-page-presentation-model.contract.test.mjs`
+   - `workspace-page-container-boundary.contract.test.mjs`
+
+## 架构结论
+
+- 当前工作区同步卡片已不再把所有问题都抽象成“继续 drain”。
+- 当前页面层不直接解释同步任务，只消费：
+  - selector 输出的 `syncSummary`
+  - presentation 输出的 `syncCard`
+- 当前“恢复动作语义”已经形成更明确的边界：
+  - 可定位受影响笔记时，引导用户进入笔记
+  - 仍有可执行队列时，引导 runtime 继续 drain
+- 当前这层仍然只是“人工恢复入口与动作分流”，不是“真实冲突恢复闭环”。
+
+## 当前状态
+
+- `Step 08 = L2`
+- `CP08-4 / 冲突与失败恢复验证 = L2`
+- `CP08-4 / 工作区同步阻塞问题恢复动作语义与受影响笔记定位 = L3`
+
+## 证据
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-view-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+

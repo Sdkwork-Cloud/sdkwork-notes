@@ -296,8 +296,8 @@ test('OpenAPI authorities declare x-sdkwork-request-context and x-sdkwork-api-su
 
 test('declares topology and gateway deployment profiles', () => {
   assert.equal(exists('specs/topology.spec.json'), true);
-  assert.equal(exists('configs/topology/self-hosted.split-services.development.env'), true);
-  assert.equal(exists('configs/sdkwork-api-gateway.notes.development.toml'), true);
+  assert.equal(exists('configs/topology/standalone.split-services.development.env'), true);
+  assert.equal(exists('configs/sdkwork-api-cloud-gateway.notes.development.toml'), true);
 
   const topology = readJson('specs/topology.spec.json');
   assert.equal(topology.database?.appPrefix, 'SDKWORK_NOTES');

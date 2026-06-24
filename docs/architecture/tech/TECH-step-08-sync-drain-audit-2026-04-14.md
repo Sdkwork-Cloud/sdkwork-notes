@@ -1,0 +1,69 @@
+> Migrated from `docs/review/step-08-工作区同步队列状态可视化与手动drain入口审计-2026-04-14.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 08 工作区同步队列状态可视化与手动drain入口审计 - 2026-04-14
+
+## 审计范围
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-sync/src/index.ts`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspaceSelectors.ts`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspacePagePresentationModel.ts`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/components/NotesWorkspaceInsightsPanel.tsx`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-i18n/src/resources/en-US.ts`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-i18n/src/resources/zh-CN.ts`
+- `sdkwork-notes-pc-react/scripts/workspace-view-model.contract.test.mjs`
+- `sdkwork-notes-pc-react/scripts/workspace-page-presentation-model.contract.test.mjs`
+- `sdkwork-notes-pc-react/scripts/workspace-page-container-boundary.contract.test.mjs`
+- `sdkwork-notes-pc-react/scripts/workspace-sync-runtime-boundary.contract.test.mjs`
+
+## 审计结论
+
+- 本轮没有发现新的 P0 / P1 缺陷。
+- 先把本地同步队列状态变成工作区可见事实，而不是继续伪造“远端恢复已闭环”，这是正确增量。
+- 当前实现把 queue snapshot、selector summary、presentation model 与 UI 卡片串成了单一数据链，方向正确。
+- 当前手动 drain 入口保持在 `requestSyncDrain()` 这一层，避免页面直接重放 direct-write API，这一点正确。
+
+## 已确认成立的约束
+
+1. `syncQueueSnapshot` 现在有两条可信来源：
+   - `initialize()` 的初始 `loadQueue()`
+   - queue store 的可选 `subscribe(listener)` 增量通知
+2. `syncSummary` 只从本地 queue task 状态派生，不把本地状态包装成远端 ack 事实。
+3. `syncCard` 只展示：
+   - pending / blocked 数量
+   - 最新问题码
+   - 下一次重试时间
+   - `queued / retrying / failed / conflict` 徽章
+4. 页面 action 仍然只委托给 store 侧 `requestSyncDrain()`，没有把 direct-write note API 冒充成 replay handler。
+5. 当当前队列没有 pending task 时，`syncCard.actionLabel` 会收敛为 `null`，不会无意义展示“重试同步”入口。
+
+## 残余风险
+
+- 当前同步卡片只解决“看见问题”，没有解决“恢复问题”：
+  - `failed`
+  - `conflict`
+  - `replay-disabled`
+  仍然没有真实恢复语义。
+- 当前 `requestSyncDrain()` 是否真正执行，仍取决于 bootstrap 是否注入 `syncRuntime`；没有 runtime 时它只会返回 `false`。
+- `NotesSyncQueueStore.subscribe` 仍是可选能力。当前 browser queue store 已支持，但未来若替换为不支持订阅的实现，UI 将退回为“只在已知路径刷新”的模式。
+- 当前仍没有离线/在线切换 smoke，也没有真实 `remoteApply` transport，因此不能把这一轮当成 `CP08-4` 闭环。
+
+## 证据
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-view-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+## 审计建议
+
+1. 继续保持 `Step 08 / CP08-4 = L2`，不要把“同步状态可见”误写成“失败恢复可用”。
+2. 下一轮若继续做 UI，应优先补“failed / conflict 的真实处理语义”，而不是只继续增加展示字段。
+3. 真实 `remoteApply` 未闭合前，仍禁止把当前 direct-write note API 当作 replay handler。
+

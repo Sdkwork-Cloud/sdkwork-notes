@@ -1,0 +1,47 @@
+> Migrated from `docs/架构/10-实施进度-Step08同步任务回放安全边界-2026-04-14.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-Step08同步任务回放安全边界-2026-04-14
+
+- 日期：`2026-04-14`
+- 归属 Step：`Step 08 / CP08-4`
+
+## 1. 目标
+
+本轮不提前实现真实远端回放，而是先把“当前任务是否允许自动 replay”的边界显式化，防止 `direct-write` 模式下的同步影子任务被 worker 重复执行。
+
+## 2. 本轮落地事实
+
+1. `NotesSyncTask` 已新增 `replayable` 合同，缺省与 legacy 读取统一收敛为 `false`。
+2. `executeNextNotesSyncTask()` 已新增不可回放保护：
+   - 先持久化 `running`
+   - 不执行 `execute(task)`
+   - 终态回写 `failed(replay-disabled)`
+3. `useNotesWorkspaceStore.ts` 已把当前所有已接入 note 主写入路径显式标记为 `replayable: false`。
+4. `state-machine / queue / write-path / worker / worker-runtime / runtime-boundary / notes-store` 测试已全部对齐。
+
+## 3. 为什么这轮仍然只是 L3
+
+- 这轮只解决了“误回放保护”，没有解决“真实远端 apply”。
+- 当前上游仍然是 `direct-write`，队列任务不是本地唯一权威写事实。
+- 当前仍缺 replay-safe transport、ack apply、默认 runtime caller、冲突恢复 UI。
+
+因此状态保持为：
+
+- `Step 08 = L2`
+- `CP08-4 / 冲突与失败恢复验证 = L2`
+- `CP08-4 / 同步任务回放安全边界 = L3`
+
+## 4. 验证
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-state-machine.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker-runtime.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+

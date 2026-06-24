@@ -1,0 +1,73 @@
+> Migrated from `docs/review/step-04-错误提示适配边界收敛-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 04 错误提示适配边界收敛
+
+- 日期：`2026-04-07`
+- 阶段：`Step 04 / L3`
+- 波次：`Wave-B / 第二十三轮推进`
+- 结论：`error banner` 已退出 `NotesWorkspacePage.tsx` 本地渲染层，但 Step 04 仍未完成
+
+## 1. 本轮目标
+
+本轮不增加新功能，只继续压缩 `NotesWorkspacePage.tsx` 的页面容器职责，把顶部错误提示条从“页面本地 JSX 条件渲染”收敛为“页面只提供状态和关闭动作，组件边界负责最终 UI 绑定”。
+
+## 2. 实际完成
+
+1. 新增 `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/components/NotesWorkspaceErrorBanner.tsx`，建立错误提示适配边界。
+2. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx` 删除页面内的 `errorMessage ? (...) : null`，改为直接消费 `NotesWorkspaceErrorBanner`。
+3. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/components/index.ts` 已导出新组件，确保边界具备稳定入口。
+4. 新增 `sdkwork-notes-pc-react/scripts/workspace-page-error-banner-boundary.contract.test.mjs`，冻结“错误提示最终 UI 绑定不得回退到页面层”的 source contract。
+5. `sdkwork-notes-pc-react/package.json` 与 `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs` 已同步纳入新 contract，确保该边界进入总门禁。
+
+## 3. 契约先行与验证事实
+
+本轮严格按“先 contract、再实现、再复验”的顺序推进：
+
+1. 先新增 `workspace-page-error-banner-boundary.contract.test.mjs`。
+2. 先跑一次新 contract，失败原因准确指向“页面尚未引入 `NotesWorkspaceErrorBanner`，仍保留本地 `errorMessage ? (...) : null`”。
+3. 再完成最小实现。
+4. 最终重新执行以下验证并全部通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-error-banner-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-shortcut-hints-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-header-actions-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-command-palette-boundary.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+## 4. 架构判断
+
+本轮完成后，错误提示链路的职责分布更新为：
+
+1. `useNotesWorkspaceStore`
+   - 继续负责输出 `errorMessage` 状态与 `clearError()` 行为。
+2. `NotesWorkspaceErrorBanner.tsx`
+   - 负责 `message -> banner/dismiss button` 的最终视图绑定。
+   - 负责在 `message` 为空时返回 `null`。
+3. `NotesWorkspacePage.tsx`
+   - 只负责提供 `message`、`dismissLabel` 与 `onDismiss`，不再承担最终错误提示 JSX 渲染责任。
+
+因此，`error banner` 已不再属于当前页面层主阻塞。
+
+## 5. 当前未完成项
+
+以下页面本地渲染胶水仍然存在，不能提前宣告 `L4`：
+
+1. `Dialog` 的 `footer` JSX 仍在页面内本地装配。
+2. Step 04 仍需再次审视该残余页面胶水是否继续边界化或下沉到 dialog runtime。
+3. 在 `dialog footer` 完成收敛并通过 fresh verification 之前，不得宣告 `L4`。
+
+## 6. 结论
+
+- 当前真实状态：`Step 04 / L3`
+- 当前真实结论：`error banner` 边界收敛已完成
+- 当前真实约束：`不得推进 Step 05，不得宣告 L4`
+- 下一轮建议优先级：
+  1. `dialog footer` 适配边界或 runtime 收敛
+  2. 以 fresh verification 复核 Step 04 的最终退出条件
+

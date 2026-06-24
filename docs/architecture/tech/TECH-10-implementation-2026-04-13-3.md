@@ -1,0 +1,61 @@
+> Migrated from `docs/架构/10-实施进度-退出恢复检查点增量-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-退出恢复检查点增量
+
+- 日期：`2026-04-13`
+- 波次：`Wave-B / 第三十轮推进`
+- 所属 Step：`Step 05`
+- 增量能力：`退出恢复检查点主链 + Step 06 接口冻结`
+
+## 1. 本轮结论
+
+本轮已把 `Step 05` 最后缺失的“退出恢复保底层”并入保存主链，形成以下可验证事实：
+
+1. 草稿变更会立即落本地恢复检查点。
+2. `pagehide` 与 `visibilitychange(hidden)` 会先记录恢复检查点，再走共享 `flushDraft`。
+3. 远端确认保存成功后会清理本地恢复检查点。
+4. `Step 06` 已获得稳定接入边界：消费 `NotesLocalStore.loadWorkspace().drafts`。
+
+## 2. 代码落地
+
+1. `sdkwork-notes-pc-react/packages/sdkwork-notes-local/src/index.ts`
+   - 本地恢复检查点存储实现
+2. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspaceExitRecovery.ts`
+   - 退出恢复快照构建与 capture/clear service
+3. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+   - `draft-change capture` 与 `save-success clear`
+4. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspaceAutosaveRuntime.ts`
+   - `capture -> flush` 顺序冻结
+5. `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+   - 页面只装配退出触发器
+6. `sdkwork-notes-pc-react/scripts/workspace-exit-recovery.contract.test.mjs`
+   - 新增合同并接入主门禁
+
+## 3. 验证结果
+
+本轮 fresh verification：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-exit-recovery.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+验证结论：
+
+1. 新合同已进入 `test:workspace:contracts`。
+2. 包级 `notes-notes` typecheck 通过。
+3. 根级 `pnpm.cmd typecheck` 通过，说明增量已进入真实主门禁。
+
+## 4. 阶段状态变更
+
+1. 变更前：`Step 05 = L3`
+2. 变更后：`Step 05 = L4`
+3. `Wave-B` 当前可继续推进到下一 Step，而无需再停留在 `Step 05`
+
+## 5. 下一轮入口
+
+下一轮最优入口切换为：`Step 06-本地草稿与恢复能力`
+

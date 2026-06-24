@@ -1,0 +1,308 @@
+> Migrated from `docs/架构/05-数据模型与存储设计.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 05. 数据模型与存储设计
+
+## 5.1 当前数据模型
+
+当前仓库中可以直接确认的核心模型如下。
+
+### 5.1.1 笔记模型
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | `string` | 主键 |
+| `uuid` | `string` | 全局标识 |
+| `title` | `string` | 标题 |
+| `type` | `'doc' | 'article' | 'novel' | 'log' | 'news' | 'code'` | 内容类型 |
+| `parentId` | `string \| null` | 所属文件夹 |
+| `tags` | `string[]` | 标签 |
+| `isFavorite` | `boolean` | 收藏状态 |
+| `snippet` | `string` | 摘要 |
+| `publishStatus` | `'draft' | 'archived'` | 发布/归档状态 |
+| `createdAt / updatedAt` | `string \| number` | 时间戳 |
+| `deletedAt` | `string \| number \| undefined` | 删除状态 |
+| `content` | `string` | HTML 富文本正文，仅 `Note` 持有 |
+
+### 5.1.2 文件夹模型
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | `string` | 主键 |
+| `uuid` | `string` | 全局标识 |
+| `name` | `string` | 文件夹名 |
+| `parentId` | `string \| null` | 父文件夹 |
+| `createdAt / updatedAt` | `string \| number` | 时间戳 |
+
+### 5.1.3 其他本地配置模型
+
+| 模型 | 当前承载位置 | 内容 |
+|---|---|---|
+| 应用偏好副本 | `useAppStore` + `localStorage` | 主题模式、主题色、语言、侧栏折叠、检视器开关，其中 `themeMode / languagePreference` 登录后会被远端设置水合 |
+| 工作区布局 | `noteLayoutService` + `localStorage` | 侧栏宽度 |
+| 桌面配置 | `desktop-config.json` | 桌面语言偏好 |
+| 认证会话 | Web=`sessionStorage`；Desktop=`desktop-session.json` + `sessionStorage` 镜像 | authToken、accessToken、refreshToken 的受控会话快照；浏览器不再以 `localStorage` 为主持久层 |
+
+当前已确认的关键本地键如下：
+
+| 键 | 当前用途 |
+|---|---|
+| `sdkwork-notes-app-storage` | 应用偏好持久化快照 |
+| `sdkwork-notes-sidebar-width` | 侧栏宽度 |
+| `sdkwork-notes-local-workspace` | Step 06 本地 workspace 快照，当前使用版本化 envelope 存储 |
+| `sdkwork-notes-auth-session` | 当前 Web/桌面前端镜像使用的聚合会话快照 |
+| `sdkwork.core.pc-react.auth-token` | 历史兼容迁移键，启动时读取后立即清理 |
+| `sdkwork.core.pc-react.access-token` | 历史兼容迁移键，启动时读取后立即清理 |
+| `sdkwork.core.pc-react.refresh-token` | 历史兼容迁移键，启动时读取后立即清理 |
+
+需要额外说明：
+
+- Desktop 原生会话权威副本不在浏览器存储键中，而是位于 Tauri app data 目录下的 `desktop-session.json`。
+- `sdkwork-notes-auth-session` 在 Web 端是权威快照，在 Desktop 端只是前端镜像；桌面权威来源为 `read_session_state / write_session_state / clear_session_state` 命令对应的原生文件。
+
+---
+
+## 5.2 当前真实存储面
+
+### 5.2.1 当前并非本地优先
+
+必须明确：当前 SDKWork Notes **不是本地优先存储架构**。
+
+当前主数据存储面如下：
+
+| 数据类型 | 当前存储位置 | 当前读写方式 |
+|---|---|---|
+| 笔记元数据 | 远端服务 | `app-sdk.note.*` |
+| 笔记正文 | 远端服务 | `getNoteContent / updateNoteContent` |
+| 文件夹结构 | 远端服务 | `note.listFolders / filesystem.moveNode` |
+| 用户资料 | 远端服务 | `user.getUserProfile / updateUserProfile` |
+| 用户设置主记录 | 远端服务 | `user.getUserSettings / updateUserSettings` |
+| 主题色 | 本地 | `localStorage` |
+| 应用偏好副本 | 本地 | `localStorage` |
+| 桌面语言配置 | 本地桌面文件 | `desktop-config.json` |
+| 认证会话（Web） | 当前会话级浏览器存储 | `sessionStorage` 聚合快照 |
+| 认证会话（Desktop） | 本地桌面文件 + 会话镜像 | Tauri 原生 `desktop-session.json` + `sessionStorage` 镜像 |
+
+需要特别说明：
+
+- `themeMode / languagePreference` 当前属于“远端主记录 + 本地副本”模式。
+- `themeColor / sidebarCollapsed / inspectorOpen / sidebarWidth` 当前属于“本地主记录”模式。
+- `authToken / accessToken / refreshToken` 当前属于“运行时会话 + 受控会话副本”模式。
+- Web 端会优先读取 `sessionStorage`，若检测到历史 `localStorage` 会话键，则只做一次迁移并立即删除旧键。
+- Desktop 端会在启动时把原生会话文件水合到前端镜像，并将后续写入串行同步到 Tauri 原生命令，确保 Web/Desktop 消费面保持统一接口。
+- `useAppStore` 与 `useAppSdkClient` 在浏览器存储不可用时都内置 memory fallback，保证测试环境、SSR-like 环境或受限运行时不会因存储不可用直接崩溃；但这种 fallback 不构成持久化能力。
+
+### 5.2.3 Step 06 当前本地 workspace schema
+
+当前 `@sdkwork/notes-local` 已冻结以下 storage contract：
+
+1. 存储键：`sdkwork-notes-local-workspace`
+2. 当前 schema version：`1`
+3. 当前写入格式：
+
+```json
+{
+  "version": 1,
+  "workspace": {
+    "notes": [],
+    "folders": [],
+    "drafts": []
+  }
+}
+```
+
+4. 兼容与迁移策略：
+   - 读兼容历史 raw snapshot：`{ notes, folders, drafts }`
+   - 读兼容当前 envelope：`{ version, workspace }`
+   - 读到未知版本或损坏 payload 时安全降级为空快照
+   - 写路径只写当前 envelope，不再继续写历史 raw 顶层结构
+   - 当 `notes / folders / drafts` 全部为空时直接移除存储键
+5. 当前能力边界：
+   - `drafts` 已经进入恢复主链并被工作区真实消费
+   - `notes / folders` 目前先作为标准化本地快照字段冻结，为后续搜索与同步接口保留
+
+### 5.2.2 当前数据读写特征
+
+- 工作区初始化通过远端分页扫描聚合快照。
+- 搜索是对当前已加载快照的本地过滤，不是全文索引。
+- 自动保存通过 store 比较变更后调用远端 `save`。
+- 回收站、归档、收藏等状态也主要映射到远端能力。
+- 账户页和应用壳会在登录后分别拉取远端 `profile / settings`，并回灌到本地状态。
+- 应用壳中的远端设置 hydration 会按“登录邮箱小写值”去重执行；若拿不到邮箱，则退化使用固定键 `__authenticated__`，且远端设置拉取失败时保留本地默认值。
+- 提纲、任务进度、字数、字符数、阅读时长等信息当前是由正文 HTML 在客户端即时派生，并不是远端持久化字段。
+- 本地没有 SQLite、全文索引、同步游标、变更日志、附件缓存。
+
+---
+
+## 5.3 当前数据模型优点
+
+- 模型轻量清晰，适合快速构建笔记工作区。
+- `NoteSummary` / `Note` 区分列表态和详情态，方向合理。
+- 文件夹与笔记通过 `parentId` 组织，简单直接。
+- `publishStatus`、`deletedAt`、`isFavorite` 等业务状态具备基础治理能力。
+
+---
+
+## 5.4 当前数据模型短板
+
+如果目标是行业领先，当前模型还明显不够：
+
+| 缺口 | 影响 |
+|---|---|
+| 没有块级模型 | 难以支持高级块操作、协作、精细版本控制 |
+| 没有版本模型 | 无法提供历史回滚与审计 |
+| 没有同步模型 | 无法做增量同步、断点恢复、冲突处理 |
+| 没有索引模型 | 无法做本地全文搜索与智能发现 |
+| 没有附件模型 | 难以治理图片、文件、嵌入内容 |
+| 没有权限/共享模型 | 无法支撑团队和企业场景 |
+| 远端设置与本地偏好双轨治理 | 容易出现偏好来源分散、同步边界模糊的问题 |
+
+---
+
+## 5.5 目标数据模型
+
+建议未来将数据模型扩展为下面的层级。
+
+### 5.5.1 领域核心模型
+
+| 模型 | 说明 |
+|---|---|
+| `Workspace` | 顶层工作空间，承载用户或团队边界 |
+| `Space` / `Notebook` | 中层组织单元，用于分域管理 |
+| `Note` | 笔记文档实体 |
+| `Block` | 内容块，支持块级编辑和版本化 |
+| `Folder` | 兼容树状组织结构 |
+| `Tag` | 分类标签 |
+| `Relation` | 引用、反链、父子关系、跨文档关联 |
+| `Asset` | 附件、封面、嵌入媒体 |
+
+### 5.5.2 平台治理模型
+
+| 模型 | 说明 |
+|---|---|
+| `Revision` | 版本历史 |
+| `Snapshot` | 指定时点快照 |
+| `SyncCursor` | 增量同步游标 |
+| `SyncJob` | 同步任务和重试状态 |
+| `AuditEvent` | 审计和操作记录 |
+| `PermissionPolicy` | 共享和访问控制 |
+| `FeatureFlag` | 功能开关和灰度 |
+
+### 5.5.3 本地运行时模型
+
+| 模型 | 说明 |
+|---|---|
+| `SearchIndexDocument` | 全文索引文档 |
+| `PendingMutation` | 待同步写操作 |
+| `RecoveredDraft` | 崩溃恢复草稿 |
+| `AttachmentCacheEntry` | 本地附件缓存条目 |
+| `TelemetryEnvelope` | 运行时日志与观测事件 |
+
+---
+
+## 5.6 目标存储架构
+
+### 5.6.1 存储分层
+
+```text
+远端权威存储
+  - 笔记主数据
+  - 协作与权限
+  - 用户设置
+  - 审计与版本历史
+
+本地结构化存储
+  - 笔记快照
+  - 同步游标
+  - 待同步队列
+  - 版本缓存
+
+本地索引层
+  - 全文索引
+  - 标签索引
+  - 最近访问和命令索引
+
+本地文件缓存层
+  - 附件
+  - 缩略图
+  - 导出中间产物
+
+安全存储层
+  - 刷新令牌/设备凭证
+  - 本地加密密钥
+```
+
+### 5.6.2 数据一致性原则
+
+| 原则 | 说明 |
+|---|---|
+| 单一权威源 | 每类数据必须有明确的权威源 |
+| 本地可恢复 | 即使远端不可用，也必须保护最近编辑成果 |
+| 写操作幂等 | 同步重试不应造成脏写 |
+| 读写分离 | 列表查询、搜索查询和编辑写入可拆分优化 |
+| 可回放 | 同步、恢复和审计都应可重放关键变更 |
+
+---
+
+## 5.7 生命周期设计
+
+### 5.7.1 笔记生命周期
+
+```text
+创建 -> 草稿 -> 已保存 -> 已归档 -> 已删除 -> 清空回收站/恢复
+```
+
+### 5.7.2 版本生命周期
+
+```text
+编辑中 -> 本地草稿 -> 本地已提交 -> 远端已确认 -> 历史快照归档
+```
+
+### 5.7.3 同步生命周期
+
+```text
+待写入 -> 本地入队 -> 同步中 -> 已确认 / 冲突 / 失败待重试
+```
+
+### 5.7.4 当前前端保存运行时生命周期
+
+```text
+idle -> dirty -> saving -> saved
+saved -> dirty
+error -> retrying -> recovered
+dirty/error + in-flight request -> requestReplay -> 当前请求完成后继续下一次保存
+```
+
+当前实现约束如下：
+
+1. `NoteSaveState` 属于前端保存运行时状态，不是远端权威源本身。
+2. 活跃笔记的保存请求当前通过 `save queue` 串行化，同一时刻只允许一个远端保存请求在飞行。
+3. 若旧请求返回时本地已经出现更新编辑，当前 `activeNote` 必须继续保持为更新草稿且 `saveState = dirty`，只允许同步更新 `persistedActiveNote`。
+4. 真正的本地恢复、崩溃恢复与离线持久化仍属于 `Step 06` 的能力范围，不在本运行时状态机中直接实现。
+
+---
+
+## 5.8 数据模型评估标准
+
+| 标准项 | 达标要求 |
+|---|---|
+| 表达力 | 能覆盖当前和未来 3 年的核心业务对象 |
+| 一致性 | 同一业务状态不能在多处重复定义且相互矛盾 |
+| 可检索性 | 能支持列表、搜索、统计、审计等查询场景 |
+| 可恢复性 | 支持崩溃恢复、误删恢复、版本回滚 |
+| 可扩展性 | 新增协作、AI、附件、权限时不推倒重来 |
+| 安全性 | 敏感数据存储位置明确且可治理 |
+
+---
+
+## 5.9 当前成熟度评估
+
+| 维度 | 评分（10 分） | 说明 |
+|---|---:|---|
+| 当前模型清晰度 | 8.4 | 当前模型简单直接，适合现阶段 |
+| 存储完备性 | 6.5 | 缺少本地层、索引层、版本层 |
+| 可扩展性 | 7.2 | 具备演进基础，但还未具备领先架构 |
+| 安全存储成熟度 | 7.5 | 已移除 `localStorage` 作为会话主持久层，但 Desktop 仍未接入 OS Keychain，Web 会话仍可被同源脚本访问 |
+
+**结论：当前数据模型适合单人云端工作台，不足以支撑行业领先的本地优先、协作型笔记平台。**
+

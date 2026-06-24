@@ -1,0 +1,39 @@
+> Migrated from `docs/release/Step04-页面Chrome收敛-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step04-页面Chrome收敛-2026-04-07
+
+## 1. 变更摘要
+
+本轮继续执行 `Step 04-工作区边界收敛与数据访问抽象`，新增页面 chrome 收敛增量：将 `NotesWorkspacePage.tsx` 中残留的页面级 icon registry 与顶部动作区 descriptor 从页面本体中抽离，落到独立服务 `noteWorkspacePageChrome.ts`。
+
+## 2. 交付内容
+
+### Added
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/noteWorkspacePageChrome.ts`
+- `sdkwork-notes-pc-react/scripts/workspace-page-chrome.contract.test.mjs`
+
+### Changed
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/services/index.ts`
+- `sdkwork-notes-pc-react/package.json`
+- `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
+
+## 3. 验证记录
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-chrome.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+## 4. 风险与状态
+
+- 当前结论：`Step 04 = 进行中 / L3`
+- 当前收益：页面 chrome 规则不再散落在页面层，页面容器进一步瘦身。
+- 当前残留：页面仍保留少量 JSX 级视图适配胶水，尚不构成 `L4` 关闭证据。
+

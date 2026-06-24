@@ -1,0 +1,620 @@
+> Migrated from `docs/架构/07-性能-离线-搜索-同步设计.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 07. 性能-离线-搜索-同步设计
+
+## 7.1 当前性能现状
+
+当前性能特征必须如实描述：
+
+- 笔记工作区初始化依赖远端分页扫描。
+- Step 04 已新增 `noteWorkspaceOrchestrator.ts`，开始把初始化排序、默认选中和详情补充规则从 store 中下沉；但底层数据源仍是远端分页扫描。
+- `noteRepository.ts` 中存在 `MAX_SCAN_PAGES = 50`、`MAX_LIST_PAGE_SIZE = 100` 的扫描上限。
+- 搜索仅对当前快照中的标题、摘要、标签做本地过滤。
+- 最近视图基于当前已加载数据排序截取。
+- 最近视图当前还带有 `slice(0, 12)` 的上限，属于体验优化而非完整最近历史能力。
+- 侧栏和笔记列表未使用虚拟化。
+- 编辑器当前已具备 `debounce autosave + 统一 flush 入口 + 串行 save queue` 的基础保存编排。
+- `NotesWorkspacePage` 已使用 `startTransition` 处理部分视图切换和托盘路由切换。
+- 草稿保存当前使用 `useDeferredValue`、`visibilitychange(hidden)`、`pagehide`、`Cmd/Ctrl + Enter` 以及高风险动作前的 wait/flush 语义辅助保护。
+- 连续保存请求当前会被收敛为“一个 active request + 最多一次 replay”，旧响应不会覆盖更新草稿。
+- Notes 与 Account 页面使用了懒加载，启动路径有一定优化。
+- `QueryClient` 已设置 `staleTime = 5min`、`retry = 1`、`refetchOnWindowFocus = false`，避免部分不必要的前台抖动请求。
+
+**这说明当前架构适合小到中等规模数据，但不适合“行业领先笔记产品”的大数据和离线场景。**
+
+---
+
+## 7.2 当前性能瓶颈矩阵
+
+| 场景 | 当前瓶颈 | 影响 |
+|---|---|---|
+| 首次进入工作区 | 远端多页扫描 + 客户端聚合 | 数据量增大时首屏变慢 |
+| 搜索 | 仅对已加载快照做线性过滤 | 无法实现真正全文搜索 |
+| 命令面板 | 仍基于当前快照生成候选项 | 数据量增大时响应会退化 |
+| 大量笔记列表 | 无虚拟化 | DOM 与渲染压力上升 |
+| 大层级文件夹 | 树渲染与拖放复杂度上升 | 导航性能下降 |
+| 长文编辑 | HTML 全量内容更新和保存 | 大文档可能出现编辑/保存抖动 |
+| 断网场景 | 无本地权威缓存 | 可用性明显下降 |
+
+---
+
+## 7.3 行业领先性能目标
+
+建议统一采用如下目标。
+
+| 指标 | 目标值 |
+|---|---|
+| 冷启动到工作区可交互 | `P95 < 2.5s` |
+| 已登录工作区恢复 | `P95 < 1.8s` |
+| 笔记列表切换 | `P95 < 200ms` |
+| 搜索联想与命令面板响应 | `P95 < 100ms` |
+| 全文搜索结果返回 | `P95 < 150ms`（10k 笔记） |
+| 自动保存本地落盘 | `P95 < 300ms` |
+| 自动保存同步确认 | `P95 < 1s` |
+| 崩溃恢复 | 最近编辑恢复成功率 `> 99%` |
+
+---
+
+## 7.4 离线优先目标架构
+
+### 7.4.1 当前与目标差异
+
+| 项目 | 当前 | 目标 |
+|---|---|---|
+| 数据权威 | 远端主导 | 远端权威 + 本地可操作副本 |
+| 本地可读 | 有限 | 完整可读 |
+| 本地可写 | 几乎无 | 完整可写，断网可编辑 |
+| 冲突处理 | 无 | 有版本、游标和冲突策略 |
+| 恢复能力 | 依赖页面隐藏刷盘 + 串行 save queue，仍缺本地恢复 | 具备本地日志和草稿恢复 |
+
+### 7.4.2 目标离线架构
+
+```text
+远端主数据
+  <-> 同步引擎
+      <-> 本地数据库
+      <-> 待同步队列
+      <-> 全文索引
+      <-> UI 状态层
+```
+
+核心原则：
+
+- UI 默认读本地。
+- 写操作先进入本地事务和同步队列。
+- 同步引擎异步推送到远端。
+- 冲突由版本/时间戳/操作日志规则处理。
+
+### 7.4.3 Step 06 当前已冻结的本地快照契约
+
+`Step 06 / CP06-1` 当前已经把本地 workspace snapshot 冻结为统一 contract：
+
+1. 存储键：`sdkwork-notes-local-workspace`
+2. 当前 schema version：`1`
+3. 当前写入格式：`{ version, workspace }`
+4. 兼容读取格式：
+   - 历史 raw snapshot：`{ notes, folders, drafts }`
+   - 当前 envelope：`{ version, workspace }`
+5. 安全边界：
+   - 未知版本或损坏 payload 一律降级为空快照
+   - 搜索与同步不得直接解析底层 storage raw shape，而应消费标准化 `notes / folders / drafts` 快照接口
+6. 当前实施状态：
+   - `drafts` 已被恢复入口主链真实消费
+   - `notes / folders` 仍待 `CP06-3` 暴露为搜索与同步可消费接口
+
+---
+
+## 7.5 搜索架构设计
+
+### 7.5.1 当前搜索能力
+
+当前搜索范围：
+
+- 标题
+- 摘要
+- 标签
+
+当前搜索限制：
+
+- 不是全文搜索。
+- 不是增量索引。
+- 不能搜索正文内部更细粒度结构。
+- 不能跨设备缓存最近结果。
+
+### 7.5.2 目标搜索能力
+
+行业领先目标应包含：
+
+- 全文搜索
+- 标签与文件夹复合过滤
+- 最近访问、收藏、命令搜索统一入口
+- 结果高亮与相关性排序
+- 支持中文与英文分词
+- 支持本地离线搜索
+- 未来支持语义搜索和 AI 问答检索
+
+### 7.5.3 目标搜索实现建议
+
+| 层 | 建议 |
+|---|---|
+| 索引源 | 本地数据库中的标准化文档快照 |
+| 索引字段 | 标题、正文、标签、文件夹、更新时间、类型、收藏状态 |
+| 搜索引擎 | SQLite FTS5 或 Tantivy |
+| 结果排序 | 相关性 + 最近更新时间 + 用户行为权重 |
+| UI 入口 | 顶部搜索、命令面板、全局快捷键统一收口 |
+
+---
+
+## 7.6 同步架构设计
+
+### 7.6.1 当前同步现状
+
+当前已经具备最小同步骨架，但仍不是完整的后台同步体系。
+
+当前真实状态是：
+
+- `notes-sync` 已冻结同步任务模型、队列快照、重试策略与冲突分类。
+- note 级主写入路径已经全部接入 queue，`createNote / persistActiveNote / toggleFavorite / moveNoteToTrash / restoreNoteFromTrash / moveNote / deleteNotePermanently / clearTrash` 都会产出真实任务；但在当前 `direct-write` 模式下，这些任务仍然只是远端成功后的同步影子，并已显式标记 `replayable: false`。
+- `notes-sync` 已新增 package-local executor：可以释放到期 `retrying` 任务、选择 oldest queued task、持久化 `running`、执行注入 handler，并回写 `completed / retrying / failed / conflict`。
+- `notes-sync` 现已新增 package-local worker runtime：可串行 drain 队列、合并重叠 drain 请求、调度最早到期 retry，并在 `dispose()` 时清理挂起 timer。
+- `notes-pc-notes` 现已新增 `createNotesWorkspaceSyncRuntime(...)`，并允许 workspace store 在 note 队列写入后与 `initialize()` 成功后请求 runtime drain / replay。
+- `notes-sync` 现已把“可自动回放”从隐式假设改成显式合同：`NotesSyncTask` 新增 `replayable`，缺省与 legacy 读取统一回填为 `false`；worker 会拒绝自动执行不可回放任务，并以 `replay-disabled` 终态失败收敛。
+- `notes-sync` 现已新增 remote apply request / executor 边界：`createNotesSyncRemoteApplyRequest(task)` 会把 `replayable: true` 的任务转换为显式 `NotesSyncRemoteApplyRequest`，并把 `task.id` 提升为 `idempotencyKey`；`createNotesSyncRemoteApplyExecutor({ apply })` 则把 worker `execute(task)` 适配为 transport `apply(request)`。
+- 当前仍缺少真实远端 transport、回执应用链、冲突恢复 UI、离在线切换 smoke，以及默认 app/bootstrap 或 desktop/background runtime 实例化。
+- `notes-shell` 与 `notes-desktop` 当前已把 workspace bootstrap 选项抬升为单一顶层注入路径：`createDesktopApp({ appRootProps }) -> DesktopBootstrapApp({ appRootProps }) -> AppRoot({ notesWorkspaceBootstrapOptions }) -> AppProviders({ notesWorkspaceBootstrapOptions }) -> bootstrapNotesWorkspaceStore(...)`；但默认 caller 仍未提供真实 `apply(request)`。
+- shared app-sdk wrapper 当前仍缺少可被真实消费的 replay-safe remote apply 合同：generated note SDK 仍只有 direct-write / text versioning 接口，note DTO 仍缺 `idempotencyKey / localRevision / baseRemoteCursor / mutation / remoteCursor`，`NotesAppApiController.batchUpdate` 仍是正文版本控制。因此当前 note direct-write API 必须继续禁止作为 replay handler。
+- 本地现已新增 target contract spec：`contracts/notes-remote-apply-app-sdk-target.contract.json`。它冻结了 future semantic method、route aliases、request 字段与 typed response 语义，用于约束后续上游 `app-api / OpenAPI / generator` 实现，但它不代表上游能力已经存在。
+
+### 7.6.2 目标同步模型
+
+建议采用四段式同步模型：
+
+```text
+本地编辑
+  -> 本地事务提交
+  -> 同步任务入队
+  -> 后台同步到远端
+  -> 应用远端回执 / 处理冲突 / 更新游标
+```
+
+### 7.6.3 冲突策略建议
+
+| 场景 | 建议策略 |
+|---|---|
+| 同设备短时重复保存 | 幂等合并 |
+| 多设备无重叠编辑 | 自动合并 |
+| 同段落冲突 | 版本提示 + 人工选择 / CRDT 合并 |
+| 删除与修改冲突 | 保留恢复入口和冲突副本 |
+| 文件夹移动冲突 | 以结构版本为准并保留冲突日志 |
+
+### 7.6.4 Step 08 一期当前已冻结的 note operation 事实
+
+- `upsert`
+  - 对应 `createNote`、`persistActiveNote`、`toggleFavorite` 等“创建 / 内容保存 / 关键元数据更新”事实。
+- `delete`
+  - 当前专指“移入废纸篓”的软删除，不再与永久删除混用。
+- `restore`
+  - 对应从废纸篓恢复笔记。
+- `move`
+  - 对应笔记父文件夹变更。
+- `permanent-delete`
+  - 对应单笔记永久删除。
+  - `clearTrash` 在一期内不引入单独 batch operation，而是拆解为多条 `note / permanent-delete` 任务并在一次 queue snapshot 中持久化。
+
+这意味着 Step 08 一期当前已经把 note 级主写入链的“创建、保存、收藏、软删除、恢复、移动、永久删除、批量清空废纸篓”全部映射为可追踪的队列事实；后续 worker、回执、冲突恢复都必须基于这组 operation 语义继续推进。
+
+### 7.6.5 Step 08 / CP08-4 当前已冻结的 worker 执行语义
+
+- `@sdkwork/notes-sync` 当前暴露 `executeNextNotesSyncTask(...)` 作为最小 queue executor。
+- `@sdkwork/notes-sync` 当前暴露 `createNotesSyncWorkerRuntime(...)` 作为最小 package-local worker runtime。
+- executor 的固定执行顺序为：
+  - 释放 `nextRetryAt <= execution.at` 的 `retrying` 任务；
+  - 选择 oldest runnable `queued` task；
+  - 先把目标任务持久化为 `running`；
+  - 调用注入 handler；
+  - 按结果回写 `completed / retrying / failed / conflict`。
+- runtime 的固定调度语义为：
+  - `requestDrain()` 串行 drain 队列直到没有 runnable task；
+  - 重叠请求会合并到同一个 active run；
+  - 只为最早到期的 `retrying` 任务挂起 timer；
+  - `dispose()` 会取消未到期 timer。
+- `notes-pc-notes` 当前已把 runtime 向上收敛为 workspace-side `NotesWorkspaceSyncRuntime` 边界：
+  - note 队列写入成功后会立即请求 drain；
+  - `initialize()` 成功后会主动请求 queued/retrying replay；
+  - 默认 store 不自动创建 runtime，避免无真实 handler 时误启后台同步。
+- 成功回执允许更新 `remoteCursor`，为后续远端游标推进保留统一入口。
+- 当前执行边界刻意保持保守：
+  - 不负责真实远端 transport；
+  - 不负责默认 app/bootstrap 或 desktop/background 的 runtime 实例化；
+  - 不负责冲突 UI 与手动 replay 入口；
+  - 不负责离在线切换 smoke。
+- 因此 `CP08-4` 当前只能判定为“已启动并形成最小运行时调度闭环”，还不能宣称冲突恢复能力整体完成。
+
+---
+
+## 7.7 UI 性能优化建议
+
+### 当前已采取的优化
+
+- 路由级懒加载已经用于 `NotesWorkspacePage` 与 `AccountPage`。
+- 草稿自动保存已具备 debounce、页面隐藏刷盘、快捷键保存、统一 flush 入口与串行 save queue 等基本防护。
+- 部分视图切换和托盘路由切换已使用 `startTransition` 降低同步阻塞感。
+- `react-query` 已配置较克制的默认缓存策略，避免频繁前台重抓。
+
+### 当前就应执行的优化
+
+- 为笔记列表和文件夹树引入虚拟化。
+- 将工作区快照初始化改为“分页增量加载 + 首屏优先”。
+- 将命令面板与搜索结果数据源改为独立索引。
+- 长文编辑从全量 HTML 比较升级为结构化变更检测。
+- 为保存链补齐自动退避、重试上限与观测埋点。
+
+### 达到领先水平必须执行的优化
+
+- 本地全文索引。
+- 启动阶段预热最近工作区。
+- 附件和大内容按需加载。
+- 大型列表和树形结构的增量渲染。
+- 同步队列后台工作线程化。
+
+---
+
+## 7.8 性能与同步评估标准
+
+| 标准项 | 达标要求 |
+|---|---|
+| 启动性能 | 启动链路可测量、可优化、可回归 |
+| 数据规模能力 | 10k+ 笔记依然保持可交互体验 |
+| 搜索能力 | 全文、低延迟、离线可用，命令面板与搜索入口共享同一索引语义 |
+| 离线能力 | 断网可读、可写、可恢复 |
+| 同步能力 | 增量、可重试、可观测、可冲突处理 |
+| 编辑稳定性 | 长文、任务列表、代码块编辑不卡顿 |
+
+---
+
+## 7.9 当前成熟度评估
+
+| 维度 | 评分（10 分） | 说明 |
+|---|---:|---|
+| 当前小规模性能 | 8.0 | 对当前范围足够可用 |
+| 大规模性能准备度 | 6.3 | 缺少索引、虚拟化、本地缓存 |
+| 离线能力 | 4.8 | 仍未建立本地权威副本 |
+| 同步能力 | 5.8 | 已有队列状态机、主写入接线、executor 与 package-local worker runtime，但真实远端同步闭环仍未形成 |
+
+**结论：性能和离线/同步能力是当前距离行业领先差距最大的环节之一，应列为 P0 级改造方向。**
+## 7.10 Step 08 / CP08-4 / 工作区 store bootstrap 装配边界
+
+### 7.10.1 设计目的
+
+- `syncRuntime` 已经进入工作区 store 的写路径和 `initialize()` 路径，但 store 之前仍然在模块加载时固定实例化。
+- 如果不先打开 bootstrap 装配边界，后续真实 runtime 只能继续堆在页面层或全局副作用里。
+- 因为当前队列任务仍只保存 operation 事实，而不是可安全 replay 的完整载荷，所以这轮只做装配边界，不做真实远端执行。
+
+### 7.10.2 当前边界
+
+- `createNotesWorkspaceStore(...)` 继续作为底层工厂。
+- `notesWorkspaceStore` 改成 live binding，可在 bootstrap 期被替换。
+- `useNotesWorkspaceStore(...)` 改成 wrapper hook，始终指向当前导出的 store。
+- 新增：
+  - `getNotesWorkspaceStore()`
+  - `setNotesWorkspaceStore(store)`
+  - `configureNotesWorkspaceStore(overrides?)`
+  - `resetNotesWorkspaceStore()`
+
+### 7.10.3 装配约束
+
+- 真正的 store/runtime 替换时机应限制在页面消费之前。
+- 页面层继续只感知 selector hook，不直接感知 bootstrap 逻辑。
+- app shell、desktop/background 可以在后续显式调用 `configureNotesWorkspaceStore(...)` 注入不同运行时依赖。
+
+### 7.10.4 仍未完成
+
+- 未实现真实 `execute(task)` handler。
+- 未实现 ack apply 与 `remoteCursor` 回写。
+- 未完成 app shell 或 desktop/background 的正式 bootstrap 接线。
+
+### 7.10.5 Step 08 / CP08-4 / 同步任务 payload 冻结
+
+- `@sdkwork/notes-sync` 当前已把 `NotesSyncTask` 从“只记录 operation 元数据”推进为“显式携带最小执行意图”的任务合同。
+- 当前冻结的 payload 语义为：
+  - `upsert -> patch`
+  - `move -> targetParentId`
+  - `delete -> intent: move-to-trash`
+  - `restore -> intent: restore-from-trash`
+  - `permanent-delete -> intent: permanent-delete`
+- 同步队列 schema 已从 `1` 升级到 `2`。
+- legacy schema 1 envelope 在读取时会被降级为空队列。
+- 该降级在当前阶段是安全的，因为现有任务是在远端写成功后才入队，旧队列并不是未发送的本地权威写入事实。
+- `notes-pc-notes` 当前已在所有已接入的 note 主写入路径中写入显式 `mutation`，因此后续设计不再需要从 `entityId + operation + at` 猜测执行意图。
+- 这轮仍然明确不做默认 replay handler：
+  - 当前 App SDK note 写接口仍是 `direct-write`
+  - 若直接作为 replay handler，会重复远端写入
+  - 因而下一轮必须把已定义的 replay-safe request / idempotency 边界接入真实 transport，或先把写链改造成真正的 `local-submit -> queue -> remote apply`
+
+### 7.10.6 Step 08 / CP08-4 / 同步任务回放安全边界
+
+- `NotesSyncTask` 当前已显式区分 `replayable / non-replayable`。
+- `CreateNotesSyncTaskInput` 缺省值与 legacy queue 读取统一收敛为 `replayable: false`。
+- 当前所有已接入的 note 主写入路径都会显式写入 `replayable: false`，因为它们仍然是远端成功后的同步影子，而不是可安全重复发送的远端写指令。
+- `executeNextNotesSyncTask()` 只会对 `replayable: true` 的任务调用注入 handler。
+- 对 `replayable: false` 的 queued task，executor 会在持久化 `running` 后终态回写 `failed(replay-disabled)`，明确拒绝误回放。
+- 这一边界的意义不是“同步已完成”，而是“在真实 replay-safe transport 未定义前，系统不会伪造回放能力并重复写远端”。
+
+### 7.10.7 Step 08 / CP08-4 / 同步任务远端apply幂等边界
+
+- `notes-sync` 当前已冻结 `NotesSyncRemoteApplyRequest`，显式包含：
+  - `idempotencyKey`
+  - `taskId`
+  - `entityType / entityId / operation`
+  - `localRevision`
+  - `baseRemoteCursor`
+  - `mutation`
+- `idempotencyKey` 当前显式等于 `task.id`，作为未来远端去重 / 幂等语义的最小合同。
+- `createNotesSyncRemoteApplyRequest(task)` 只允许转换 `replayable: true` 的任务；对当前 `direct-write` 影子任务会直接拒绝转换。
+- 请求转换时会复制 `mutation` payload，避免 transport 层原地污染队列中的 task snapshot。
+- `createNotesSyncRemoteApplyExecutor({ apply })` 已提供 worker `execute(task)` 到 transport `apply(request)` 的适配层，但当前仍未接入真实 App SDK / HTTP handler。
+- 这一边界的意义不是“远端同步已打通”，而是“未来 transport 将消费显式、可审计、带幂等键的请求，而不是直接消费原始 task 对象”。
+
+### 7.10.8 Step 08 / CP08-4 / 工作区remote-apply装配边界
+
+- `notes-pc-notes` 的 `createNotesWorkspaceSyncRuntime(...)` 当前已支持 `execute(task)` 与 `apply(request)` 两类注入。
+- 当 workspace 层提供 `apply(request)` 时，会复用 `notes-sync` 的 `createNotesSyncRemoteApplyExecutor({ apply })` 完成 request -> execute 适配。
+- `bootstrapNotesWorkspaceStore(...)` 当前也已支持显式 `apply(request)` 注入，并能据此创建 workspace sync runtime。
+- 当前默认 app shell 仍未自动提供 `apply(request)`，因此这轮交付的是“可接入边界”，不是“默认已接入 transport”。
+
+### 7.10.9 Step 08 / CP08-4 / 应用壳与桌面bootstrap远程apply顶层注入边界
+
+- `notes-shell` 当前已把 `NotesWorkspaceStoreBootstrapOptions` 暴露到 `AppProvidersProps` 与 `AppRootProps`，并保持 shell 只负责 caller wiring，不直接承接 transport 细节。
+- `AppProviders` 当前已真实透传 `notesWorkspaceBootstrapOptions` 到 `AppProvidersContent`，不再只是类型层声明。
+- `notes-desktop` 当前已通过 `DesktopBootstrapAppProps.appRootProps` 与 `CreateDesktopAppOptions.appRootProps` 把该注入路径继续抬升到桌面 bootstrap 顶层。
+- 当前 contract 已冻结的单一路径为：
+  - `createDesktopApp({ appRootProps })`
+  - `DesktopBootstrapApp({ appRootProps })`
+  - `AppRoot({ notesWorkspaceBootstrapOptions })`
+  - `AppProviders({ notesWorkspaceBootstrapOptions })`
+  - `bootstrapNotesWorkspaceStore(notesWorkspaceBootstrapOptions ?? {})`
+- 这一边界的意义不是“桌面端已默认开启远端同步”，而是“未来真实 `apply(request)` 可以从最顶层注入，而不必把 transport 拼装逻辑下沉到页面层或 store 内部”。
+- 当前仍然刻意不做以下事情：
+  - 不默认注入真实 `apply(request)` 实现
+  - 不把现有 `direct-write` note 接口直接暴露为 raw replay handler
+  - 不宣称 ack apply、`remoteCursor` 合并与冲突恢复 UI 已完成
+
+### 7.10.10 Step 08 / CP08-4 / app-sdk远程apply合同缺口审计
+
+- 当前 app 侧远端能力路径仍必须保持为：
+  - `feature / store / service`
+  - `shared app-sdk wrapper`
+  - `@sdkwork/app-sdk`
+  - `legacy-java-plus-app-api`
+- `workspace-sync-app-sdk-contract.test.mjs` 当前已把以下事实冻结为根级 contract：
+  - generated note SDK 不存在 `remoteApply / syncApply / applyMutation / replayMutation` 一类语义入口；
+  - note request DTO 仍缺 `idempotencyKey / localRevision / baseRemoteCursor / mutation`；
+  - note result DTO 仍缺 ack `remoteCursor`；
+  - `NotesAppApiController.batchUpdate` 仍落到 `textBatchOperationService.applyBatch(...)`，README 也只把它定义为正文 versioning。
+- 这说明 `shell / desktop -> bootstrap -> apply(request)` 顶层 caller wiring 虽然已经真实存在，但当前仍没有可以被如实接线的 replay-safe transport 合同。
+- 因此当前仍必须继续禁止以下错误接法：
+  - 直接把 `createNote / updateNote / updateNoteContent / move / restore / deleteNote / batchUpdate` 接给 worker replay
+  - 在 app 本地伪造“默认已接入 remote apply”
+- 下一步必须先做上游合同闭环：
+  - `legacy-java-plus-app-api`
+  - backend capability
+  - OpenAPI 3.x
+  - SDK regeneration
+- 只有上游合同完成后，shared wrapper 与当前 bootstrap `apply(request)` 注入路径才具备真实接线价值。
+
+### 7.10.11 Step 08 / CP08-4 / app-sdk远程apply目标合同冻结
+
+- 在确认“当前 generated app-sdk 不存在 semantic remote apply”之后，本地现已把 future 目标合同冻结为单一 spec：
+  - file: `sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-target.contract.json`
+- 当前冻结的目标语义为：
+  - semantic SDK method：`client.note.remoteApply(noteId, body)`
+  - controller owner：`NotesAppApiController`
+  - route aliases：
+    - `POST /app/v3/api/notes/{noteId}:remoteApply`
+    - `POST /app/v3/api/notes/{noteId}/remote-apply`
+  - request：
+    - `idempotencyKey`
+    - `taskId`
+    - `entityType`
+    - `entityId`
+    - `operation`
+    - `mutation`
+    - `localRevision`
+    - `baseRemoteCursor`
+  - response：
+    - typed `outcome = applied | conflict`
+    - `applied` 至少回传 `taskId / remoteCursor / appliedAt`
+    - `conflict` 至少回传 `taskId / remoteCursor / conflict.code / conflict.message / conflict.occurredAt`
+    - transport failure 继续 `throw`
+- 选择 typed `outcome` 而不是依赖 HTTP 409 exception body 的原因是：
+  - generated SDK 更容易稳定暴露单一 typed response；
+  - worker/runtime 只需要把 typed outcome 映射为 `completed` 或 `conflict`；
+  - 网络失败仍可继续复用现有 retry / failed 路径，不与领域冲突混淆。
+- `workspace-sync-app-sdk-target-contract.test.mjs` 当前已把该 target contract 与 `NotesSyncRemoteApplyRequest` 的本地字段映射绑定为 guardrail。
+- 这一轮的意义不是“上游已经实现”，而是“后续上游实现不再缺少明确 target contract”。
+
+### 7.10.12 Step 08 / CP08-4 / app-sdk远程apply结果适配合同冻结
+
+- 在 target contract 已冻结之后，本地现已继续把 future result adapter 合同冻结为单一 spec：
+  - file: `sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-result-adapter.contract.json`
+- 当前冻结的适配 owner 与调用入口为：
+  - shared wrapper package：`@sdkwork/notes-pc-core`
+  - client accessor：`getAppSdkClientWithSession`
+  - semantic SDK method：`client.note.remoteApply`
+- 当前冻结的最小结果映射为：
+  - `applied -> completed`
+  - `conflict -> conflict`
+- 当前冻结的 conflict code 规则为：
+  - 透传：`stale-base-version / deleted-remotely / folder-structure-changed`
+  - fallback：`unknown`
+- 当前明确禁止两类错误适配：
+  - 禁止把 semantic response 扩展为本地 `failed` payload
+  - 禁止在 shared wrapper 内补 direct-write fallback
+- transport failure 当前继续要求 `throw`，原因是：
+  - 现有 `executeNextNotesSyncTask()` 已经有稳定的 unexpected failure 收敛路径
+  - 该路径会统一落到 `failed / unknown / retryable=true`
+  - 这样可以避免把网络失败与领域冲突混进同一个 typed response
+- `workspace-sync-app-sdk-result-adapter-contract.test.mjs` 当前已把 result adapter spec、target contract 与本地 sync worker 语义绑定为 guardrail。
+
+### 7.10.13 Step 08 / CP08-4 / app-sdk远程apply共享包装服务合同冻结
+
+- 在 target contract 与 result adapter contract 都已冻结之后，本地现已继续把 future shared-wrapper public service surface 冻结为单一 spec：
+  - file: `sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-service.contract.json`
+- 当前冻结的 service owner 与 public surface 为：
+  - shared wrapper package：`@sdkwork/notes-pc-core`
+  - service file：`packages/sdkwork-notes-pc-core/src/services/appNoteSyncService.ts`
+  - service export：`appNoteSyncService`
+  - service interface：`IAppNoteSyncService`
+  - service method：`remoteApply`
+- 当前冻结的 local input / output 为：
+  - 输入：`NotesSyncRemoteApplyRequest`
+  - 输出：`NotesSyncTaskExecutionResult`
+- 当前冻结的内部调用约束为：
+  - `getAppSdkClientWithSession`
+  - `unwrapAppSdkResponse`
+  - `client.note.remoteApply(request.entityId, request)`
+  - `request.entityType` 必须保持 `note`
+  - path `noteId` 必须与 `request.entityId` 一致
+- 选择 service contract 而不是直接落占位实现的原因是：
+  - 当前 generated SDK 仍不存在真实 `note.remoteApply(noteId, body)`
+  - 当前若强行落 runtime service，只能靠 `any` 绕类型或复用 direct-write API，二者都会破坏 replay-safe contract 的唯一性
+  - 先冻结 service surface，可以让后续真实实现只做最薄 adapter，而不再重做 service 命名和输入输出决策
+- transport failure 当前继续要求 `throw`，因为：
+  - worker 现有 unexpected failure 路径已经稳定收敛到 `failed / unknown / retryable=true`
+  - service contract 不应吞掉 transport exception 或改写为第二套本地失败语义
+- 当前仍明确禁止两类错误实现：
+  - 在 shared-wrapper service 内补 direct-write fallback
+  - 在 service 层吞掉 transport error
+- `workspace-sync-app-sdk-service-contract.test.mjs` 当前已把 service spec、target contract、result adapter contract、`NotesSyncRemoteApplyRequest`、`NotesSyncTaskExecutionResult` 与现有 notes-pc-core service pattern 绑定为 guardrail。
+
+### 7.10.14 Step 08 / CP08-4 / app-sdk远程apply上游闭环输入合同冻结
+
+- 在 target contract、result adapter contract 与 shared-wrapper service contract 都已冻结之后，本地现已继续把 future upstream closure path 冻结为单一 spec：
+  - file: `sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-upstream-closure.contract.json`
+- 当前冻结的上游闭环入口为：
+  - repo：`legacy-java-plus-app-api`
+  - controller file：`src/main/java/com/sdkwork/ai/gateway/api/app/v3/notes/NotesAppApiController.java`
+  - OpenAPI / generator 入口：
+    - `sdkwork-sdk-app/README.md`
+    - `sdkwork-sdk-app/app-openapi-8080.json`
+    - `sdkwork-sdk-app/upgrade`
+    - `sdkwork-sdk-app/bin/prepare-openapi-source.mjs`
+    - `sdkwork-sdk-app/sdkwork-app-sdk-typescript`
+- 当前冻结的 future generated outputs 为：
+  - `sdkwork-app-sdk-typescript/src/sdk.ts`
+  - `sdkwork-app-sdk-typescript/src/api/note.ts`
+  - `sdkwork-app-sdk-typescript/src/types/note-remote-apply-request.ts`
+  - `sdkwork-app-sdk-typescript/src/types/note-remote-apply-result-vo.ts`
+- 这一层 contract 的意义不是“上游已经开始实现”，而是“后续真实实现必须沿着 app-api / OpenAPI / generator 的唯一闭环路径推进，而不是在 app 本地发明 workaround”。
+- `workspace-sync-app-sdk-upstream-closure-contract.test.mjs` 当前已把以下事实绑定为 guardrail：
+  - upstream closure spec 与 target contract、service contract 保持一致；
+  - `NotesAppApiController`、`sdk.ts` 与 `api/note.ts` 当前仍不存在 `remoteApply`；
+  - future generated request / result type 文件当前仍不存在；
+  - `sdkwork-sdk-app/README.md` 中的 snapshot / prepare-openapi-source 流程保持可追踪。
+- 当前仍明确禁止三类错误闭环：
+  - app-local handwritten remote apply HTTP client
+  - shared-wrapper fake success fallback
+  - direct-write API remapping as replay transport
+- 这意味着下一阶段如果要真正推进 `remoteApply`，必须先补齐：
+  - `NotesAppApiController.remoteApply`
+  - OpenAPI snapshot / upgrade 输入
+  - `sdkwork-app-sdk-typescript` regen 产物
+  - 然后再回到 `@sdkwork/notes-pc-core` shared-wrapper 落最薄 adapter
+
+### 7.10.15 Step 08 / CP08-4 / app-sdk远程apply生成产物合同冻结
+
+- 在 upstream closure path 已冻结之后，本地现已继续把 future TypeScript generated SDK output 冻结为单一 spec：
+  - file: `sdkwork-notes-pc-react/contracts/notes-remote-apply-app-sdk-generated-output.contract.json`
+- 当前冻结的 future generated output 为：
+  - request file / export：
+    - `sdkwork-app-sdk-typescript/src/types/note-remote-apply-request.ts`
+    - `NoteRemoteApplyRequest`
+  - result file / export：
+    - `sdkwork-app-sdk-typescript/src/types/note-remote-apply-result-vo.ts`
+    - `NoteRemoteApplyResultVO`
+  - envelope file / export：
+    - `sdkwork-app-sdk-typescript/src/types/plus-api-result-note-remote-apply-result-vo.ts`
+    - `PlusApiResultNoteRemoteApplyResultVO`
+  - barrel exports：
+    - `sdkwork-app-sdk-typescript/src/types/index.ts`
+  - API binding：
+    - `remoteApply(noteId, body: NoteRemoteApplyRequest): Promise<PlusApiResultNoteRemoteApplyResultVO>`
+- 当前冻结的最小字段语义继续对齐 target contract：
+  - request：
+    - `idempotencyKey`
+    - `taskId`
+    - `entityType`
+    - `entityId`
+    - `operation`
+    - `mutation`
+    - `localRevision`
+    - `baseRemoteCursor`
+  - response：
+    - `outcome`
+    - `applied -> taskId / remoteCursor / appliedAt`
+    - `conflict -> taskId / remoteCursor / conflict.code / conflict.message / conflict.occurredAt`
+- `workspace-sync-app-sdk-generated-output-contract.test.mjs` 当前已把以下事实绑定为 guardrail：
+  - generated output spec 与 target contract、upstream closure contract 保持一致；
+  - 当前 `api/note.ts` 与 `types/index.ts` 仍不存在 `NoteRemoteApplyRequest / NoteRemoteApplyResultVO / PlusApiResultNoteRemoteApplyResultVO`；
+  - 当前 `note-batch-update-request.ts`、`note-batch-update-result-vo.ts` 与其 `PlusApiResult` envelope 仍只是 batchUpdate 产物，不能被误标为 remote apply generated output。
+- 当前仍明确禁止三类错误生成路径：
+  - remote apply 复用 batchUpdate request DTO
+  - remote apply 复用 batchUpdate result DTO
+  - remote apply 省略 `PlusApiResult` envelope export
+- 这意味着下一阶段如果要真正推进 `remoteApply` generated output，必须先让上游 controller / OpenAPI / generator 真实产出这些文件，再回到 shared-wrapper 落最薄 adapter；在那之前，不允许在 app 本地补 alias file 或假 export 掩盖产物缺口。
+
+### 7.10.16 Step 08 / CP08-4 / 工作区同步队列状态可视化与手动drain入口
+
+- `NotesSyncQueueStore` 当前已支持可选 `subscribe(listener)`；`createBrowserNotesSyncQueueStore()` 会在 `saveQueue()` 与 `clearQueue()` 后发布最新 queue snapshot。
+- `useNotesWorkspaceStore()` 当前已持有 `syncQueueSnapshot`，并在以下时机刷新：
+  - `initialize()` 初始加载
+  - 本地 enqueue 成功后
+  - 手动 drain / runtime drain 后
+  - queue store 订阅回调触发时
+- `useNotesWorkspaceStore()` 当前已暴露 `requestSyncDrain(): Promise<boolean>`；其真实语义是“请求当前 runtime drain 队列”：
+  - 若已有 `syncRuntime`，则委托给 runtime
+  - 若当前没有 `syncRuntime`，则直接返回 `false`
+  - 不会伪造成功
+- `noteWorkspaceSelectors.ts` 当前已把 queue task 汇总为单一 `syncSummary`：
+  - `pendingCount / blockingCount`
+  - `queued / retrying / failed / conflict / completed`
+  - `primaryStatus / primaryTaskId / primaryEntityId / primaryCode / primaryMessage`
+  - `nextRetryLabel`
+- `noteWorkspacePagePresentationModel.ts` 当前已把 `syncSummary` 收敛为 `syncCard`，并把动作语义冻结为：
+  - `failed / conflict + primaryEntityId -> review-note`
+  - 否则 `pendingCount > 0 -> retry-sync`
+  - “最新问题”明细优先展示 `primaryMessage`
+- `NotesWorkspaceInsightsPanel.tsx` 当前已新增 `workspace-sync-card`，`NotesWorkspacePage.tsx` 已将页面 action 绑定到：
+  - `retry-sync -> requestSyncDrain()`
+  - `review-note -> selectNote(noteId)`
+- 这一层的意义不是“同步失败恢复已闭环”，而是：
+  - 把本地同步状态显式暴露给用户
+  - 把问题码与下一次重试时间显式暴露给用户
+  - 为未来真实 conflict recovery UI 预留稳定卡片落点
+- 当前仍未完成：
+  - 真实 `remoteApply`
+  - ack apply / `remoteCursor` 合并闭环
+  - 真实 conflict recovery UI 语义
+  - 离线/在线切换 smoke
+
+### 7.10.17 Step 08 / CP08-4 / 工作区同步阻塞问题恢复动作语义与受影响笔记定位
+
+- 工作区同步摘要当前已不只暴露“有问题”，还会暴露主阻塞任务关联的受影响笔记身份：
+  - `primaryEntityId`
+  - `primaryMessage`
+- 当前同步卡片已不再把所有问题统一收敛为“继续 drain”，而是按问题类型分流为：
+  - `review-note`
+  - `retry-sync`
+- 这样做的目的不是“宣称冲突已恢复”，而是让当前 UI 至少具备诚实的人工恢复入口：
+  - 可以定位到笔记时，优先把用户带到受影响笔记
+  - 当前仍有待处理队列时，允许 runtime 继续 drain
+- 这层边界的价值在于：
+  - 避免把 `failed / conflict` 一律包装成“继续重试就能解决”
+  - 避免页面层直接猜测同步恢复策略
+  - 为未来真实 conflict recovery UI 预留稳定动作模型
+- 当前这一层仍然不是远端恢复闭环，因为：
+  - `review-note` 不会重放任务
+  - `review-note` 不会合并 `remoteCursor`
+  - `review-note` 也不会解决真实远端冲突
+

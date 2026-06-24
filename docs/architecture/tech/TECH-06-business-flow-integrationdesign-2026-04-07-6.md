@@ -1,0 +1,92 @@
+> Migrated from `docs/架构/06-业务流程-应用接口与集成设计-创建笔记流程补充-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 创建笔记流程补充设计
+
+- 日期: 2026-04-07
+- 所属 Step: 04
+- 主题: create note runtime coordinator
+
+## 1. 背景
+
+在此前实现中，`NotesWorkspacePage.tsx` 直接承担了创建笔记时的参数组装与成功态视图切换。这会带来三个问题：
+
+1. 页面同时处理展示逻辑和创建流程编排。
+2. 默认标题解析规则分散在页面层，难以复用。
+3. 后续新增快捷键、模板入口或命令面板入口时，容易重复拼装 `title / parentId / transition` 逻辑。
+
+## 2. 当前设计
+
+### 2.1 runtime 层
+
+文件: `packages/sdkwork-notes-notes/src/services/noteWorkspaceCreateNoteRuntime.ts`
+
+职责:
+
+- 根据 `noteType` 解析默认标题
+- 透传当前 `selectedFolderId`
+- 调用 store `createNote()`
+- 仅在创建成功后触发 `runTransition(() => setActiveView('all'))`
+
+### 2.2 页面层
+
+页面层仅保留依赖装配：
+
+1. 注入 `createNote`
+2. 注入 `selectedFolderId`
+3. 注入默认标题解析函数
+4. 注入 `startTransition` 与 `setActiveView`
+
+页面不再直接维护创建成功判断与视图回切分支。
+
+## 3. 流程说明
+
+```text
+Button / Sidebar / Editor / Command
+  -> handleCreateNote(noteType)
+  -> noteWorkspaceCreateNoteRuntime.createNote(noteType)
+      -> resolveDefaultTitle(noteType)
+      -> store.createNote({ type, title, parentId })
+      -> if createdId exists
+          -> startTransition(() => setActiveView('all'))
+```
+
+## 4. 架构价值
+
+### 4.1 高内聚
+
+创建笔记的页面级编排职责集中在单一 runtime service 中，降低了页面对业务细节的感知。
+
+### 4.2 低耦合
+
+按钮、侧边栏、编辑器等入口只关心“触发创建某种类型的笔记”，不再关心默认标题和成功后的视图回切。
+
+### 4.3 易扩展
+
+后续要扩展以下能力时，可继续沿 runtime 边界推进：
+
+- 模板化创建
+- 创建后自动选中或定位
+- 埋点与审计日志
+- 创建失败后的统一交互反馈
+
+## 5. 评估标准
+
+| 维度 | 标准 | 当前状态 |
+| --- | --- | --- |
+| 流程收口 | 创建笔记页面级流程必须有独立 runtime 边界 | 达成 |
+| 参数一致性 | 默认标题与父目录上下文必须统一生成 | 达成 |
+| 成功态切换 | 只有返回有效 note id 才允许切换视图 | 达成 |
+| 可测试性 | 创建流程必须可通过 Node contract 独立验证 | 达成 |
+| 剩余工作 | 热键和侧边栏 resize runtime 仍待下沉 | 未完成 |
+
+## 6. 对标行业先进标准
+
+领先的笔记应用通常要求“创建动作”具备稳定的一致性：
+
+1. 无论入口来自按钮、命令面板还是快捷键，创建参数必须统一。
+2. 创建结果必须具备可预期的落点和上下文切换。
+3. 创建流程的后续增强不应回流污染页面层。
+
+当前 runtime 化后的设计已经在本项目内形成这一基础，但仍需继续完成 hotkey 与 layout runtime 的同等级收敛，才能使页面层真正退化为纯装配容器。
+

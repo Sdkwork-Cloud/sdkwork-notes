@@ -1,0 +1,33 @@
+> Migrated from `docs/release/Step08-待同步队列与重试机制落地-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step08 待同步队列与重试机制落地
+
+- 日期：`2026-04-13`
+- 波次：`第四十轮推进`
+- 检查点：`CP08-2 / 待同步队列与重试机制落地`
+
+## 本轮发布内容
+
+- 为 `@sdkwork/notes-sync` 增加版本化 queue snapshot、queue envelope 与 browser queue store。
+- 为同步失败路径增加 retry policy、自动重试调度和到点回放 helper。
+- 将新的 CP08-2 合同测试接入根级 `test:workspace:contracts`。
+
+## 本轮影响
+
+- 同步能力从“只有任务状态机”推进到“状态机 + 队列持久化 + 重试机制”。
+- 后续写路径接入不再需要重新发明 queue 存储格式和 retry ladder。
+- 本轮仍不包含真实写路径接入、冲突 UI 或断网恢复 UI。
+
+## 验证结果
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-state-machine.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-sync typecheck
+pnpm.cmd typecheck
+```
+
+以上命令均已通过。
+

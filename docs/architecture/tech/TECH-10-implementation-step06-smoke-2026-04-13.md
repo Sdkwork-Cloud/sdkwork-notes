@@ -1,0 +1,55 @@
+> Migrated from `docs/架构/10-实施进度-Step06启动恢复smoke补齐-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10-实施进度-Step06启动恢复smoke补齐-2026-04-13
+
+## 背景
+
+在 `CP06-1`、`CP06-2`、`CP06-3` 已完成的前提下，`Step 06` 剩余唯一未闭环项为：
+
+- `CP06-4 / 启动恢复 smoke test`
+
+本轮不新增本地存储 schema、不扩展恢复产品范围、不引入新的离线同步逻辑，只补齐启动恢复链路的最终可验证证据。
+
+## 实施内容
+
+1. 新增 `workspace-startup-recovery-smoke.contract.test.mjs`
+2. 通过真实 store 初始化链路执行 smoke matrix
+3. 将新 contract 接入 `test:workspace:contracts`
+
+## 覆盖目标
+
+### 启动成功且带恢复结果
+
+- 当前 envelope
+- legacy raw snapshot
+
+### 启动成功但恢复为空
+
+- unknown version
+- corrupted payload
+- `localStore.loadWorkspace()` rejection
+
+### 启动时恢复过滤
+
+- draft 命中 trash note
+- draft 命中 missing note
+
+## 当前状态
+
+1. `CP06-1 / 本地 schema 与迁移策略 = L4`
+2. `CP06-2 / 草稿日志与恢复入口 = L4`
+3. `CP06-3 / 标准化本地快照接口 = L4`
+4. `CP06-4 / 启动恢复 smoke test = L4`
+5. `Step 06 = L4`
+
+## 对后续 Step 的价值
+
+完成本轮后，`Step 06` 已具备：
+
+- 本地 snapshot 读取协议
+- 草稿恢复入口与过滤规则
+- 启动阶段 smoke 回归门禁
+
+这意味着后续 `Step 07 / Step 08` 可以直接把 `notes-local` 作为稳定输入边界继续扩展，而不需要回头补启动恢复证据。
+

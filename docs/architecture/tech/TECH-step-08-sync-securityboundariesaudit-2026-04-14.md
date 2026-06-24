@@ -1,0 +1,59 @@
+> Migrated from `docs/review/step-08-同步任务回放安全边界审计-2026-04-14.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 08 同步任务回放安全边界审计 - 2026-04-14
+
+## 审计范围
+
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-sync/src/index.ts`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+- `sdkwork-notes-pc-react/scripts/workspace-sync-state-machine.contract.test.mjs`
+- `sdkwork-notes-pc-react/scripts/workspace-sync-queue.contract.test.mjs`
+- `sdkwork-notes-pc-react/scripts/workspace-sync-write-path.contract.test.mjs`
+- `sdkwork-notes-pc-react/scripts/workspace-sync-worker.contract.test.mjs`
+- `sdkwork-notes-pc-react/scripts/workspace-sync-worker-runtime.contract.test.mjs`
+- `sdkwork-notes-pc-react/scripts/workspace-sync-runtime-boundary.contract.test.mjs`
+- `sdkwork-notes-pc-react/packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.test.ts`
+
+## 审计结论
+
+- 本轮未发现新的 P0 / P1 级问题。
+- 把当前任务显式区分为“可回放”和“不可回放”是正确的风险控制，而不是能力缺失。
+- 当前 note 主写入链路仍是 `direct-write`，队列任务是远端成功后的同步影子；若自动 replay，会重复写远端。
+- 因此本轮选择“worker 明确拒绝不可回放任务”，是比“伪造 replay handler”更正确的工程决策。
+
+## 已确认成立的约束
+
+1. `NotesSyncTask.replayable` 缺省值是 `false`。
+2. legacy queue 中缺失 `replayable` 的任务会在读取时统一回填为 `false`。
+3. `executeNextNotesSyncTask()` 仅会对 `replayable: true` 的任务调用 `execute(task)`。
+4. `replayable: false` 的 queued task 会在持久化 `running` 后终态回写为 `failed(replay-disabled)`。
+5. `replay-disabled` 是终态、非重试型失败，不会进入 `retrying`。
+6. 当前所有已接入的 note 主写入路径都显式写入 `replayable: false`。
+
+## 残余风险
+
+- 当前系统仍然没有真正的“可自动回放任务生产者”。
+- `remoteCursor` 仍然只有字段与成功回写入口，没有形成真实 ack apply 合并闭环。
+- 仍然没有默认 runtime caller、冲突恢复 UI 和手动 replay 入口。
+- 当前 queue schema 虽然已能防止旧任务被误回放，但也意味着旧任务不会自动补齐为真实远端写指令。
+
+## 证据
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-sync-state-machine.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-write-path.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-worker-runtime.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-sync-runtime-boundary.contract.test.mjs
+pnpm.cmd test:workspace:contracts
+pnpm.cmd typecheck
+```
+
+## 审计建议
+
+1. 不要跳到 `Step 09`。
+2. 下一轮应先定义 replay-safe transport / idempotency 边界，或者先把写语义改成真正的 `local-submit -> queue -> remote apply`。
+3. 在这两个前提成立之前，不要把当前 App SDK note 写接口直接接成默认 replay handler。
+

@@ -1,0 +1,46 @@
+> Migrated from `docs/release/Step07-性能与验证基线-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step07-性能与验证基线-2026-04-13
+
+## 发布摘要
+
+`Step 07` 已完成最后一个缺口 `CP07-4 / 性能与验证基线`。本轮为搜索一期建立了固定 10k 数据集、固定 P95 阈值和固定根脚本门禁，`Step 07` 至此正式闭环。
+
+## 本轮新增
+
+1. `sdkwork-notes-pc-react/scripts/workspace-search-performance.contract.test.mjs`
+2. `sdkwork-notes-pc-react/package.json` 中的新性能 contract 门禁接线
+3. `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs` 中的新脚本冻结
+
+## 已冻结基线
+
+1. `10,000` notes + `1,000` trash notes + `200` folders 数据集
+2. `buildNotesSearchDocuments(...) P95 < 250ms`
+3. `searchNotesSearchDocuments(...) P95 < 150ms`
+4. `getVisibleNotes(...) P95 < 150ms`
+5. `buildNoteWorkspaceCommandPaletteItems(...) + getCommandPaletteMatches(...) P95 < 100ms`
+
+## 本轮测量
+
+1. `buildMsP95 = 19.90ms`
+2. `queryMsP95 = 11.18ms`
+3. `visibleMsP95 = 20.72ms`
+4. `commandPaletteMsP95 = 31.03ms`
+
+## 当前完成度
+
+1. `CP07-1 / 索引文档模型冻结 = L4`
+2. `CP07-2 / 统一查询 API = L4`
+3. `CP07-3 / 顶部搜索与命令面板接入 = L4`
+4. `CP07-4 / 性能与验证基线 = L4`
+5. `Step 07 = L4`
+
+## 验证命令
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-search-performance.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd typecheck
+```
+

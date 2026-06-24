@@ -1,0 +1,75 @@
+> Migrated from `docs/review/step-04-质量审计-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 04 质量审计
+
+- 日期：`2026-04-07`
+- 审计对象：`Step 04 / 工作区页面边界收敛`
+- 当前轮次：`Wave-B / 第二十四轮推进`
+- 当前结论：`dialog footer` 边界达标，Step 04 升级为 `L4`
+
+## 0. 审计结论
+
+本轮质量结论是：
+
+1. 对话框底部最终视图绑定已成功退出页面容器层。
+2. 新 contract 具备先失败后通过的有效证明链。
+3. 全量 `test:workspace:contracts` 与根级 typecheck 已 fresh pass。
+4. Step 04 的历史页面阻塞项已全部解除，当前达到 `L4` 退出条件。
+
+## 1. 评估矩阵
+
+| 评估项 | 满分 | 得分 | 结论 |
+| --- | --- | --- | --- |
+| 边界完整性 | 20 | 20 | `Dialog footer` 的最终 `Button` JSX 已退出页面层，独立组件与 source contract 已建立。 |
+| 页面容器纯化 | 20 | 20 | `header actions`、`command palette`、`shortcut hints`、`error banner`、`dialog footer` 均已完成收敛。 |
+| 契约有效性 | 15 | 15 | 新 contract 先失败后通过，能精确定位边界未收敛原因。 |
+| 脚本门禁一致性 | 15 | 15 | `package.json` 与 `package-scripts-contract.test.mjs` 已同步冻结新链路。 |
+| 类型与集成验证 | 15 | 15 | 包级 typecheck、根级 typecheck、全量 workspace contracts 均为 fresh pass。 |
+| Step 退出准备度 | 15 | 15 | 当前页面层已无上一轮审计定义下的高优先级本地视图胶水，Step 04 可作为 `L4` 放行。 |
+
+**总分：100 / 100**
+
+## 2. 证据
+
+已通过以下 fresh verification：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-dialog-footer-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-error-banner-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-shortcut-hints-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-header-actions-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-command-palette-boundary.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+补充说明：
+
+- `pnpm.cmd typecheck` 已重跑 `test:workspace:contracts` 总链，证明新边界已经进入统一门禁。
+- 包内 Vitest 在当前环境仍受 `spawn EPERM` 限制，属于环境噪音而非本轮功能回归依据。
+
+## 3. 剩余风险
+
+当前已无阻塞 Step 04 放行的页面残项，剩余关注点已转为后续 Step 的演进约束：
+
+1. 后续 Step 不得回退到页面层重建最终 UI 绑定胶水。
+2. `Dialog footer` 若后续出现样式变体，应优先扩展现有边界组件，而非重新内联 JSX。
+3. 本地优先、副本、索引与同步能力仍是后续 Step 的目标，但不属于 Step 04 阻塞。
+
+## 4. 审计结论与执行建议
+
+### 4.1 Go / No-Go
+
+- `Step 04 -> L4`：`Go`
+- `继续 Step 04`：`No-Go`
+- `推进 Step 05`：`Go`
+
+### 4.2 下一轮建议
+
+1. 将执行入口切换到 `Step 05-编辑器与自动保存可靠性升级`。
+2. 在 Step 05 及后续 Step 中保持 Step 04 既有 contract 链与页面边界不回退。
+3. 若工作区页面再次出现最终 UI 绑定回流，必须先补 source contract 再做实现。
+

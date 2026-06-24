@@ -1,0 +1,73 @@
+> Migrated from `docs/review/step-07-检索性能基线审计-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 07 检索性能基线审计 - 2026-04-13
+
+## 结论
+
+- `CP07-4 / 性能与验证基线 = L4`
+- `Step 07 = L4`
+
+## 审计范围
+
+本轮只审计 `Step 07` 的最后一个缺口 `CP07-4`，目标不是继续做结构重构，而是确认搜索一期已经形成可重复的性能与验证基线：
+
+1. 固定数据集
+2. 固定测量口径
+3. 固定阈值
+4. 固定根脚本门禁
+
+## 本次交付
+
+### 新增性能 contract
+
+- `sdkwork-notes-pc-react/scripts/workspace-search-performance.contract.test.mjs`
+
+该 contract 冻结以下事实：
+
+1. `notes-search` 在 `10k + 1k + 200` 数据集下仍能稳定构建索引文档。
+2. 统一查询 API 在同口径数据集下具备明确 P95 门限。
+3. 顶部搜索 service model 与命令面板 service model 已纳入同一性能回归门禁。
+4. 性能验证不再依赖人工临时脚本。
+
+### 根脚本门禁
+
+- `sdkwork-notes-pc-react/package.json`
+- `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs`
+
+新基线已被接入 `test:workspace:contracts`，后续性能 contract 缺失或脚本回退都会在根级门禁直接暴露。
+
+## 审计判断
+
+### 通过项
+
+1. 搜索一期的 schema、query、UI 接线和性能基线已经形成完整闭环。
+2. 10k 级数据集已进入可重复 Node contract，而不是只保留在文档目标值中。
+3. 当前测量结果显著低于既定阈值，说明本轮门限具有实际冗余而非“贴线通过”。
+4. `Step 07` 结束时已经能够同时回答“怎么搜”“谁来搜”“搜得多快”三个问题。
+
+### 剩余风险
+
+1. 当前基线仍是 Node 纯函数层面，不等于浏览器完整渲染链路的最终 UI 性能画像。
+2. 10k 级门限已冻结，但更高规模和热路径可视化仍应在后续 Step 11 持续深化。
+3. 当前没有引入高亮片段、语义检索或离线全文索引，这些不在一期范围内。
+
+## 审计结论
+
+`Step 07` 的四个 CP 均已具备冻结的证据链：
+
+1. `CP07-1 / 索引文档模型冻结 = L4`
+2. `CP07-2 / 统一查询 API = L4`
+3. `CP07-3 / 顶部搜索与命令面板接入 = L4`
+4. `CP07-4 / 性能与验证基线 = L4`
+
+因此本轮审计将 `Step 07` 正式收口到 `L4`。
+
+## 验证记录
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-search-performance.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd typecheck
+```
+

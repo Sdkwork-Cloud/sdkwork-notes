@@ -1,0 +1,94 @@
+> Migrated from `docs/架构/06-业务流程-应用接口与集成设计-保存重试退避与观测补充-2026-04-13.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 06-业务流程-应用接口与集成设计-保存重试退避与观测补充
+
+- 日期：`2026-04-13`
+- 所属 Step：`Step 05`
+- 所属波次：`Wave-B / 第二十九轮后续增量`
+- 本轮主题：`save queue 之上的自动退避、重试上限与保存观测`
+
+## 1. 设计目标
+
+在不引入第二套并发控制器的前提下，把“保存失败后的自动退避、最大重试次数与最小观测事件”收敛到 `save queue` 主链上，保证后续 Step 06 本地草稿恢复与 Step 10/11 观测平台接入都建立在同一条保存主脊柱之上。
+
+## 2. 边界划分
+
+### 2.1 `noteWorkspaceSaveRetryPolicy.ts`
+
+职责：
+
+1. 提供稳定的默认退避节奏。
+2. 提供显式最大重试次数。
+3. 提供最小 telemetry sink 事件写入接口。
+
+本轮冻结的默认策略：
+
+1. 第一次失败后：等待 `500ms`
+2. 第二次失败后：等待 `1500ms`
+3. 第三次失败：不再自动重试，回落到 `saveState = error`
+
+### 2.2 `useNotesWorkspaceStore.ts`
+
+职责：
+
+1. 继续作为真实持久化调用与状态落地层。
+2. 在既有 `activeNoteSaveQueue` 之上消费 `activeNoteSaveRetryPolicy`。
+3. 保持“只有一条真实保存主链”，而不是在 store 外再并行调度一套 retry runtime。
+
+store 中的执行顺序被固定为：
+
+1. 进入 `save queue`
+2. 发起保存请求
+3. 若失败：
+   - 读取下一次退避时长
+   - 记录 `scheduled`
+   - 切换 `retrying`
+   - 等待后重试
+4. 若恢复成功：
+   - 记录 `recovered`
+   - 按既有保存完成逻辑落地
+5. 若退避耗尽：
+   - 记录 `exhausted`
+   - 回落 `error`
+
+## 3. 观测接口约束
+
+本轮只冻结接口，不引入真实平台实现。
+
+事件名称与语义如下：
+
+1. `notes.workspace.save.retry.scheduled`
+   - 级别：`warn`
+   - 语义：一次失败后的自动重试已被安排
+2. `notes.workspace.save.retry.recovered`
+   - 级别：`info`
+   - 语义：经过自动重试后保存恢复成功
+3. `notes.workspace.save.retry.exhausted`
+   - 级别：`error`
+   - 语义：自动退避次数已耗尽，进入终态失败
+
+接口边界说明：
+
+1. `notes-notes` 只依赖 `@sdkwork/notes-observability` 的类型。
+2. 真实 sink 实现仍由后续观测能力 step 提供。
+3. `tsconfig.base.json` 已增加 `@sdkwork/notes-observability` workspace alias，确保当前工作区 `tsc` 可解析。
+
+## 4. 为什么必须建立在 `save queue` 之上
+
+如果自动重试脱离当前 `save queue` 单独实现，会重新引入以下风险：
+
+1. 与 replay 合并语义冲突。
+2. 高风险动作前的 `waitForActiveRequest()` 语义被绕开。
+3. 旧响应与新草稿保护逻辑被复制到多条链路中，导致一致性退化。
+
+因此本轮明确冻结一条规则：
+
+`自动退避必须是 save queue 主链的一部分，而不是并行控制器。`
+
+## 5. 当前结论
+
+1. `save queue + retry policy + save feedback` 已形成稳定的保存主脊柱。
+2. `Step 05` 当前仍保持 `L3`，但“自动退避 / 重试上限 / 保存观测接口”这一子能力已完成闭环。
+3. 下一轮重点应转向页面关闭、异常退出与崩溃恢复证据矩阵，而不是继续改造保存主链并发语义。
+

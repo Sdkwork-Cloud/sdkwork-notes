@@ -1,0 +1,488 @@
+> Migrated from `docs/架构/10-实施进度-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 10. 实施进度 - 2026-04-07
+## 10.0 第二十九轮推进补记
+
+本轮继续执行 `Step 05-编辑器与自动保存可靠性升级`，新增的真实增量为“串行保存编排”：
+
+1. `noteWorkspaceSaveQueue.ts` 新增 `createNotesWorkspaceSaveQueue()` 与 `resolveNotesWorkspaceSaveCompletion()`，把活跃笔记的串行保存、replay 合并与旧响应保护从 store 中抽离为独立服务。
+2. `useNotesWorkspaceStore.ts` 改为通过 `activeNoteSaveQueue` 统一处理：
+   - 有 in-flight save 时的 `requestReplay() / waitForActiveRequest()`
+   - 高风险动作前的 `dirty/error -> flush`、`saving/retrying -> wait`
+   - 保存成功后的“只更新 `persistedActiveNote`、不覆盖更新草稿”语义
+3. `workspace-save-queue.contract.test.mjs` 接入 Node contract 门禁，并冻结 save queue API、replay 合并与 stale response protection。
+4. `workspace-high-risk-flush-boundary.contract.test.mjs` 升级为冻结“`dirty / error` 必须 flush、`saving / retrying` 必须 wait”的高风险边界。
+5. `package.json` 与 `package-scripts-contract.test.mjs` 已同步纳入新的 contract 链。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-save-queue.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-save-feedback.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-save-flush-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-high-risk-flush-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后，`save queue / 串行保存编排` 已形成真实闭环，`Step 05` 总体从 `L2` 推进到 `L3`；下一轮仍继续停留在 `Step 05`，优先补齐自动退避、重试上限、保存观测与异常退出证据矩阵。
+
+## 10.0 第二十七轮推进补记
+
+本轮继续执行 `Step 05-编辑器与自动保存可靠性升级`，新增的真实增量为“保存失败反馈与重试状态机”：
+
+1. `noteWorkspaceSaveFeedback.ts` 新增统一保存反馈模型，并提供请求态与成功态状态迁移 helper。
+2. `NoteSaveState` 正式扩展为 `idle / dirty / saving / saved / error / retrying / recovered`，明确表达失败后的重试中与恢复态。
+3. `useNotesWorkspaceStore.ts` 改为显式执行 `dirty -> saving`、`error -> retrying`、`saving -> saved`、`retrying/error -> recovered`。
+4. `NoteEditorPane.tsx`、`NotesWorkspacePage.tsx` 与 `NotesWorkspaceErrorBanner.tsx` 共同消费统一 save feedback 模型，失败横幅已支持 retry CTA。
+5. `workspace-save-feedback.contract.test.mjs` 接入 Node contract 门禁，并同步冻结到 `test:workspace:contracts`。
+6. `zh-CN.ts` 与 `en-US.ts` 已同步补齐新增保存反馈文案。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-save-feedback.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-error-banner-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后，`CP05-3 / 失败反馈与重试策略` 已形成真实闭环，但 Step 05 整体仍保持在 `L2`，后续继续补齐高风险场景 flush 证据、save queue 与退避策略。
+
+## 10.0 第二十六轮推进补记
+
+本轮继续执行 `Step 05-编辑器与自动保存可靠性升级`，新增的真实增量为“统一刷盘入口收敛”：
+
+1. `noteWorkspaceAutosave.ts` 新增 `shouldFlush`，把“允许调度 autosave”和“允许立即 flush”明确拆分。
+2. `saveState === 'error'` 现在允许立即 flush，但不再触发新的延迟 autosave 调度。
+3. `NotesWorkspacePage.tsx` 中的 `NoteEditorPane onSave`、页面命令 `persistActiveNote`、`pagehide/visibilitychange(hidden)` 统一共享 `flushDraft`。
+4. `workspace-save-flush-boundary.contract.test.mjs` 接入 Node contract 门禁，并同步冻结到 `test:workspace:contracts`。
+5. `package.json` 与 `package-scripts-contract.test.mjs` 已同步纳入新的 contract 链。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-autosave.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-save-flush-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-autosave-visibility-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-autosave-runtime.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后，`CP05-2 / 统一刷盘入口` 已形成真实闭环，但 Step 05 整体仍保持在 `L2`，后续继续补齐 save queue、失败恢复和高风险场景 flush 证据矩阵。
+
+## 10.0 第二十五轮推进补记
+
+本轮切换执行 `Step 05-编辑器与自动保存可靠性升级`，新增的真实增量为“可见性刷盘边界收敛”：
+
+1. 在 `noteWorkspaceAutosaveRuntime.ts` 中新增 `bindNotesWorkspaceVisibilityAutosave()`，把 `visibilitychange(hidden)` 的 flush 语义收敛到共享 autosave runtime 边界。
+2. `NotesWorkspacePage.tsx` 通过共享 runtime service 接入 `document.visibilitychange`，仅在 `document.visibilityState === 'hidden'` 时执行 `flushDraft`。
+3. `workspace-autosave-visibility-boundary.contract.test.mjs` 接入 Node contract 门禁，并同步冻结到 `test:workspace:contracts`。
+4. `package.json` 与 `package-scripts-contract.test.mjs` 已同步纳入新的 contract 链。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-autosave-visibility-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-autosave-runtime.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后，Step 05 已建立第一条“页面隐藏前稳定刷盘”的共享 runtime 边界，当前执行入口保持在 `Step 05`，后续继续补齐 save queue、失败恢复与切换前 flush 的主链证据。
+
+## 10.0 第二十四轮推进补记
+
+本轮继续执行 `Step 04`，新增的真实增量为“对话框底部适配边界收敛”，并由此推动 Step 04 达成 `L4`：
+
+1. 在 `NotesWorkspaceDialogFooter.tsx` 中新增对话框底部组件，统一渲染 cancel/confirm 按钮。
+2. `NotesWorkspacePage.tsx` 删除本地 `footer={(<>...</>)}` 与 `Button` 装配，改为直接消费对话框底部边界组件。
+3. `workspace-page-dialog-footer-boundary.contract.test.mjs` 接入 Node contract 门禁，并同步冻结到 `test:workspace:contracts`。
+4. `package.json` 与 `package-scripts-contract.test.mjs` 已同步纳入新的 contract 链。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-dialog-footer-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-error-banner-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-shortcut-hints-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-header-actions-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-command-palette-boundary.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的历史页面主阻塞全部解除，`NotesWorkspacePage.tsx` 已无高优先级本地视图胶水，下一执行入口切换为 `Step 05-编辑器与自动保存可靠性升级`。
+
+## 10.0 第二十三轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“错误提示适配边界收敛”：
+
+1. 在 `NotesWorkspaceErrorBanner.tsx` 中新增错误提示组件，统一渲染错误提示条与关闭按钮。
+2. `NotesWorkspacePage.tsx` 删除本地 `errorMessage ? (...) : null`，改为直接消费错误提示边界组件。
+3. `workspace-page-error-banner-boundary.contract.test.mjs` 接入 Node contract 门禁，并同步冻结到 `test:workspace:contracts`。
+4. `package.json` 与 `package-scripts-contract.test.mjs` 已同步纳入新的 contract 链。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-error-banner-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-shortcut-hints-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-header-actions-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-command-palette-boundary.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的页面主阻塞进一步收敛为 `Dialog footer` JSX，本地错误提示条已不再属于当前主阻塞。
+
+## 10.0 第十九轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“页面洞察区组件收敛”：
+
+1. 在 `NotesWorkspaceInsightsPanel.tsx` 中新增洞察区组件，统一渲染指标卡与焦点卡。
+2. `NotesWorkspacePage.tsx` 删除本地 `WorkspaceMetricCard` 和洞察区内联映射。
+3. `workspace-page-container-boundary.contract.test.mjs` 接入 Node contract 门禁，并同步冻结到 `test:workspace:contracts`。
+4. `package.json` 与 `package-scripts-contract.test.mjs` 已同步纳入新的 contract 链。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-chrome.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的页面主阻塞继续收敛为 header action 和 command palette 的最终视图绑定胶水，页面洞察区已不再属于当前主阻塞。
+
+## 10.0 第十八轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“页面Chrome收敛”：
+
+1. 在 `noteWorkspacePageChrome.ts` 中新增 `resolveNotesWorkspaceChromeIcon()`，统一页面级 icon 解析。
+2. 在 `noteWorkspacePageChrome.ts` 中新增 `buildNotesWorkspacePageHeaderActions()`，统一顶部动作区 descriptor。
+3. `NotesWorkspacePage.tsx` 删除页面内联 icon map 与 header button 定义，改为消费页面 chrome 服务。
+4. `workspace-page-chrome.contract.test.mjs` 接入 Node contract 门禁，并同步冻结到 `test:workspace:contracts`。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-chrome.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的唯一主阻塞继续收敛为页面局部视图适配胶水，仓储未来读策略接缝已不再属于当前主阻塞。
+
+## 10.0 第十七轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“读策略注册表收敛”：
+
+1. 在 `noteWorkspaceReadStrategyRegistry.ts` 中新增 registry，统一提供 `defaultKey / listKeys / resolve`。
+2. `noteRepository.ts` 接入 `workspaceReadStrategies + workspaceReadStrategyKey`，按 key 解析真实工作区读取策略。
+3. `notesWorkspace.ts` 新增 `NoteWorkspaceReadStrategyKey`，显式定义 `workspace-snapshot / read-through-cache / replica-snapshot / queued-sync-snapshot`。
+4. `workspace-read-strategy-registry.contract.test.mjs` 接入 Node contract 门禁。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-read-strategy-registry.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-read-strategy.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-data-source.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的剩余主阻塞收敛为：
+
+1. 页面容器中的 command palette icon 映射
+2. 页面容器中的少量 header action/layout 胶水
+
+## 10.0 第十六轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“页面展示模型收敛”：
+
+1. 在 `noteWorkspacePagePresentationModel.ts` 中新增 `buildNotesWorkspacePagePresentationModel()`，统一输出 `modifierKey / shortcutHints / metricCards / focusCard`。
+2. `NotesWorkspacePage.tsx` 改为消费 `pagePresentation`，不再在页面层内联拼装快捷键提示、统计卡片与焦点卡片 badge/detail。
+3. `workspace-page-presentation-model.contract.test.mjs` 接入 Node contract 门禁。
+4. `package.json` 与 `package-scripts-contract.test.mjs` 已同步纳入该 contract。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-presentation-model.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的剩余阻塞进一步收敛为：
+
+1. 页面容器中剩余的 command palette icon 映射与部分 header action/layout 胶水。
+2. repository 面向 read-through / replica / queued-sync 的未来策略接缝。
+
+## 10.0 第十五轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“移动笔记写路径编排下沉”：
+
+1. 在 `noteWorkspaceWriteCoordinator.ts` 中新增 `moveNoteState()`、`NoteWorkspaceMoveNoteStateResult` 与 `moveNote` 依赖。
+2. `useNotesWorkspaceStore.ts` 的 `moveNote()` 改为消费 coordinator。
+3. `workspace-write-path.contract.test.mjs` 新增 move note 协作 contract。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的剩余阻塞进一步收敛为：
+
+1. repository 策略边界继续补强。
+2. 页面容器胶水继续压缩。
+
+## 10.0 第十四轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“重命名文件夹写路径编排下沉”：
+
+1. 在 `noteWorkspaceWriteCoordinator.ts` 中新增 `renameFolderState()`、`NoteWorkspaceRenameFolderStateResult` 与 `renameFolder` 依赖。
+2. `useNotesWorkspaceStore.ts` 的 `renameFolder()` 改为消费 coordinator。
+3. `workspace-write-path.contract.test.mjs` 新增 rename folder 协作 contract。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的剩余阻塞进一步收敛为：
+
+1. `moveNote` 写路径继续下沉。
+2. repository 策略边界继续补强。
+3. 页面容器胶水继续压缩。
+
+## 10.0 第十三轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“创建文件夹写路径编排下沉”：
+
+1. 在 `noteWorkspaceWriteCoordinator.ts` 中新增 `createFolderState()`。
+2. `useNotesWorkspaceStore.ts` 的 `createFolder()` 改为消费 coordinator。
+3. `workspace-write-path.contract.test.mjs` 新增 create folder 协作 contract。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后的 Step 04 剩余阻塞进一步收敛为：
+
+1. `renameFolder / moveNote` 写路径继续下沉。
+2. repository 策略边界继续补强。
+3. 页面容器胶水继续压缩。
+
+## 10.0 第十二轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“创建笔记写路径编排下沉”：
+
+1. 在 `noteWorkspaceWriteCoordinator.ts` 中新增 `createNotesWorkspaceWriteCoordinator()`。
+2. 通过 `createNoteState()` 统一编排创建持久化、详情回填与状态计划生成。
+3. `useNotesWorkspaceStore.ts` 的 `createNote()` 改为消费 coordinator。
+4. `workspace-write-path.contract.test.mjs` 新增相应 Node contract。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-write-path.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后的 Step 04 剩余阻塞调整为：
+
+1. `createFolder / renameFolder / moveNote` 写路径继续下沉。
+2. repository 策略边界继续补强。
+3. 页面容器胶水继续压缩。
+
+## 10.1 当前总览
+
+- 当前阶段：`Wave-B`
+- 以下 `10.1 / 10.2` 为当前唯一有效口径，旧小节仅保留历史过程。
+- 已关闭 Step：`00 / 01 / 02 / 03 / 04`
+- 当前进行中 Step：`05-编辑器与自动保存可靠性升级`
+- 当前结论：`Step 05 = 进行中 / L3`
+
+## 10.2 Step 状态表
+
+| Step | 状态 | 等级 | 说明 |
+| --- | --- | --- | --- |
+| `00` | 已完成 | `L4` | 架构基线、目录、文档与标准建立完成。 |
+| `01` | 已完成 | `L4` | 依赖边界、锁文件与 workspace 图谱收敛完成。 |
+| `02` | 已完成 | `L4` | 内部能力包与工程脚本门禁收敛完成。 |
+| `03` | 已完成 | `L4` | 会话、环境、桌面桥接与安全边界收敛完成。 |
+| `04` | 已完成 | `L4` | 工作区边界、页面运行时与主链 contract 已完成收口。 |
+| `05` | 进行中 | `L3` | 已落地 `visibilitychange(hidden)` 刷盘边界、统一 flush 入口、失败反馈状态机与串行 save queue；当前主阻塞收敛到自动退避、重试上限、保存观测与异常退出证据。 |
+| `06` | 未开始 | `L0` | 本地副本与缓存能力。 |
+| `07` | 未开始 | `L0` | 搜索、索引与发现能力。 |
+| `08` | 未开始 | `L0` | 同步、冲突处理与后台编排。 |
+| `09` | 未开始 | `L0` | 运行时、更新与桌面打包。 |
+| `10` | 未开始 | `L0` | 测试体系与 E2E。 |
+| `11` | 未开始 | `L0` | 高规模性能与稳定性。 |
+| `12` | 未开始 | `L0` | 版本、修订与差异能力。 |
+| `13` | 未开始 | `L0` | 发布收口与商业化交付检查。 |
+
+## 10.3 Step 04 已完成收敛项
+
+### 已完成
+
+- `orchestrator` 初始化与选中态装载边界收敛
+- `selector` 视图模型收敛
+- `command palette model` 收敛
+- `NoteWorkspaceSnapshot` 显式数据源能力契约落地
+- `repository -> service -> orchestrator -> store` 的 `dataSource` 主链路贯通
+- `workspace-data-source.contract.test.mjs` 纳入 `test:workspace:contracts`
+- `trash` 视图刷新后的列表源与选中回退进入 `orchestrator` 契约
+- 初始化链中的 `selectedFolderId` 回退进入 `orchestrator` 契约
+- 文件夹 delete / move 的即时状态协调进入独立 service 契约
+- create note 的页面级运行时协调进入独立 service 契约
+- workspace hotkey 的页面级运行时协调进入独立 service 契约
+- workspace sidebar resize 的页面级运行时协调进入独立 service 契约
+
+### 本轮新增
+
+- `packages/sdkwork-notes-notes/src/types/notesWorkspace.ts`
+  - 增加 `NoteWorkspaceDataSource`
+  - 增加 `NoteWorkspaceDataSourceCapabilities`
+  - 增加 `createRemoteAppSdkNoteWorkspaceDataSource()`
+  - 增加 `createEmptyNoteWorkspaceSnapshot()`
+- `packages/sdkwork-notes-notes/src/repository/noteRepository.ts`
+  - 快照结果显式返回 `dataSource`
+- `packages/sdkwork-notes-notes/src/services/noteWorkspaceOrchestrator.ts`
+  - 初始化结果携带 `dataSource`
+- `packages/sdkwork-notes-notes/src/services/noteWorkspaceOrchestrator.ts`
+  - `initializeWorkspace()` 显式接收 `currentActiveView`
+  - 按当前视图决定刷新后的默认选中列表源
+- `packages/sdkwork-notes-notes/src/services/noteWorkspaceOrchestrator.ts`
+  - `initializeWorkspace()` 显式接收 `currentSelectedFolderId`
+  - 初始化结果显式返回 `selectedFolderId`
+  - 缺失文件夹或 `trash` 视图时统一回退为 `null`
+- `packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+  - store 保存 `dataSource`
+- `packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+  - `initialize()` 透传 `currentActiveView` 给 orchestrator
+- `packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+  - `initialize()` 透传 `currentSelectedFolderId` 并消费 orchestrator 返回的 `selectedFolderId`
+- `packages/sdkwork-notes-notes/src/services/noteWorkspaceFolderMutationCoordinator.ts`
+  - 新增 `planDeletedFolderState()`
+  - 新增 `planMovedFolderState()`
+  - 新增 `INVALID_FOLDER_MOVE_MESSAGE`
+- `packages/sdkwork-notes-notes/src/store/useNotesWorkspaceStore.ts`
+  - `deleteFolder()` 改为消费 `planDeletedFolderState()`
+  - `moveFolder()` 改为消费 `planMovedFolderState()`
+- `sdkwork-notes-pc-react/scripts/workspace-data-source.contract.test.mjs`
+  - 新增数据源能力契约门禁
+- `sdkwork-notes-pc-react/scripts/workspace-orchestrator.contract.test.mjs`
+  - 新增 `trash` 视图刷新时必须从 `trashedNotes` 回退选中的契约门禁
+  - 新增文件夹选择只在当前视图仍适用且文件夹仍存在时才允许保留的契约门禁
+- `sdkwork-notes-pc-react/scripts/workspace-folder-mutation.contract.test.mjs`
+  - 新增文件夹 delete / move 即时状态协调的契约门禁
+- `packages/sdkwork-notes-notes/src/services/noteWorkspaceCreateNoteRuntime.ts`
+  - 新增 `createNotesWorkspaceCreateNoteRuntime()`
+  - 统一 create note 的默认标题解析、当前文件夹透传与成功态视图回切
+- `packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+  - 改为消费 create note runtime，而不是页面内联异步流程
+- `sdkwork-notes-pc-react/scripts/workspace-create-note-runtime.contract.test.mjs`
+  - 新增 create note 页面级运行时的 Node 契约门禁
+- `packages/sdkwork-notes-notes/src/services/noteWorkspaceHotkeyRuntime.ts`
+  - 新增 `bindNotesWorkspaceHotkeys()`
+  - 统一 keydown 绑定、搜索焦点透传、preventDefault 与页面命令分发
+- `packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+  - 改为消费 hotkey runtime，而不是页面内联 keydown effect
+- `sdkwork-notes-pc-react/scripts/workspace-hotkey-runtime.contract.test.mjs`
+  - 新增 workspace hotkey runtime 的 Node 契约门禁
+- `packages/sdkwork-notes-notes/src/services/noteWorkspaceSidebarResizeRuntime.ts`
+  - 新增 `startNotesWorkspaceSidebarResize()`
+  - 统一 `pointermove/pointerup` 生命周期、`220..420` 宽度钳制与一次性 cleanup
+- `packages/sdkwork-notes-notes/src/pages/NotesWorkspacePage.tsx`
+  - 改为消费 sidebar resize runtime，而不是页面内联 pointer 生命周期
+- `sdkwork-notes-pc-react/scripts/workspace-sidebar-resize-runtime.contract.test.mjs`
+  - 新增 workspace sidebar resize runtime 的 Node 契约门禁
+
+## 10.4 Step 04 尚未关闭的退出条件
+
+以下三项仍未完成，因此 Step 04 不能从 `L3` 升为 `L4`：
+
+1. 初始化链与文件夹 delete / move 协调已完成主要收口，但 `renameFolder / moveNote / createNote / createFolder` 的即时状态协调仍有一部分业务决策留在 store。
+2. 页面层的主要 runtime 热点虽已完成 create note flow / `workspace hotkey` / `sidebar resize` / `command palette binding` 收敛，但 header action 到最终 button/link 节点的装配胶水仍停留在页面容器中。
+3. repository 只完成能力契约显式化，尚未进入 read-through / replica / sync 策略抽象。
+
+## 10.5 最新验证结果
+
+已通过：
+
+- `node --test --experimental-test-isolation=none scripts/workspace-data-source.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/workspace-orchestrator.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/workspace-folder-mutation.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/workspace-create-note-runtime.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/workspace-hotkey-runtime.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/workspace-sidebar-resize-runtime.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/workspace-page-command-palette-boundary.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs`
+- `pnpm.cmd test:workspace:contracts`
+- `pnpm.cmd --filter @sdkwork/notes-notes typecheck`
+- `pnpm.cmd typecheck`
+
+补充说明：
+
+- 尝试执行包内 Vitest 用例时，当前环境的 Vite 配置装载触发 `spawn EPERM`
+- 该问题属于当前执行环境限制，不影响已通过的 Node 契约测试与 TypeScript 编译结论
+
+## 10.6 下一轮执行建议
+
+建议继续停留在 Step 04，执行顺序如下：
+
+1. 将 `renameFolder / moveNote / createNote / createFolder` 的即时状态协调继续从 store 下沉到专用 service。
+2. 为 Step 06/08 预埋 repository 读写策略接口，但不提前实现本地副本。
+3. 继续压缩页面容器中的 header action button / link 装配胶水，并在完成后再复核 Step 04 是否具备冲击 `L4` 的条件。
+## 10.0 第二十轮推进补记
+
+本轮继续停留在 `Step 04 / L3`，新增的真实增量为“命令面板适配边界收敛”：
+
+1. 在 `NotesWorkspaceCommandPalette.tsx` 中新增独立命令面板适配边界组件，统一完成 descriptor 到最终 `NoteCommandPaletteItem` 的 UI 绑定。
+2. `NotesWorkspacePage.tsx` 删除本地 `NoteCommandPaletteItem[]` 组装与 `commandPaletteDescriptors.map(...)`。
+3. `workspace-page-command-palette-boundary.contract.test.mjs` 接入 Node contract 门禁，并同步冻结到 `test:workspace:contracts`。
+4. `package.json` 与 `package-scripts-contract.test.mjs` 已同步纳入新的 contract 链。
+
+本轮验证通过：
+
+```powershell
+node --test --experimental-test-isolation=none scripts/workspace-page-command-palette-boundary.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-command-palette.contract.test.mjs
+node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs
+node --test --experimental-test-isolation=none scripts/workspace-page-container-boundary.contract.test.mjs
+pnpm.cmd --filter @sdkwork/notes-notes typecheck
+pnpm.cmd typecheck
+```
+
+本轮后 Step 04 的页面主阻塞继续收敛为 header action 到最终 button/link 节点的视图绑定胶水，command palette 已不再属于当前主阻塞。
+

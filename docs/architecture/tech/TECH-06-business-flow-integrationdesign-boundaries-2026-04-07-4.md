@@ -1,0 +1,54 @@
+> Migrated from `docs/架构/06-业务流程-应用接口与集成设计-快捷键提示适配边界补充-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# 06. 业务流程 / 应用接口与集成设计补充
+## 快捷键提示适配边界补充 - 2026-04-07
+
+## 1. 补充目的
+
+补充工作区页面在快捷键提示链路上的最终适配边界设计，明确以下职责不再停留在 `NotesWorkspacePage.tsx` 页面容器中：
+
+1. `shortcutHints` 列表的最终 `map` 渲染。
+2. 快捷键键帽 chip 与说明文本的最终视图绑定。
+3. 顶部快捷键提示区的最终 UI 适配责任。
+
+## 2. 收敛后的职责链路
+
+### 2.1 展示模型层
+
+- `noteWorkspacePagePresentationModel.ts`
+  - 继续负责生成 `shortcutHints` 纯数据。
+  - 只描述键位与文案，不承担 React 视图渲染责任。
+
+### 2.2 组件适配边界
+
+- `NotesWorkspaceShortcutHints.tsx`
+  - 负责消费 `shortcutHints`。
+  - 负责把 `shortcut.id / keys / label` 适配为最终 chip 与文本节点。
+  - 负责保证快捷键提示区的最终 DOM 结构稳定。
+
+### 2.3 页面容器
+
+- `NotesWorkspacePage.tsx`
+  - 只负责提供 `label={t('notes.shortcuts.label')}` 与 `shortcutHints={pagePresentation.shortcutHints}`。
+  - 不再本地执行 `pagePresentation.shortcutHints.map(...)`。
+
+## 3. 评估标准
+
+满足以下条件，才视为快捷键提示适配边界达标：
+
+1. 页面容器中不再出现 `pagePresentation.shortcutHints.map(...)`。
+2. `NotesWorkspaceShortcutHints.tsx` 必须存在并作为唯一适配边界承担最终渲染职责。
+3. `components/index.ts` 必须导出 `NotesWorkspaceShortcutHints`，确保边界入口稳定。
+4. `workspace-page-shortcut-hints-boundary.contract.test.mjs` 必须纳入 `test:workspace:contracts` 总门禁。
+5. 包级与根级 TypeScript 校验必须通过，避免边界抽离后出现类型回退。
+
+## 4. 当前结论
+
+本次补充完成后：
+
+1. 快捷键提示区已经从页面本地渲染清单中移除。
+2. `NotesWorkspacePage.tsx` 进一步接近“模型输入 + 命令绑定 + 容器装配”的目标形态。
+3. Step 04 仍保持 `L3`，因为顶部错误提示条与对话框 footer 等页面胶水仍需继续复核。
+
+

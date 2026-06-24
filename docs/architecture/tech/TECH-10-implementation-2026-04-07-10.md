@@ -1,0 +1,55 @@
+> Migrated from `docs/架构/10-实施进度-快捷键运行时增量-2026-04-07.md` on 2026-06-24.
+> Owner: SDKWork maintainers
+
+# Step 04 快捷键运行时增量
+
+- 日期: 2026-04-07
+- Step: 04
+- 当前等级: L3
+- 增量主题: workspace hotkey runtime extraction
+
+## 1. 本次完成项
+
+### 1.1 新增服务
+
+- 新增 `packages/sdkwork-notes-notes/src/services/noteWorkspaceHotkeyRuntime.ts`
+- 新增 `bindNotesWorkspaceHotkeys()`
+
+### 1.2 页面改造
+
+- `NotesWorkspacePage.tsx` 不再内联维护 `keydown` 监听
+- 页面改为通过 hotkey runtime service 统一协调事件绑定、焦点状态透传、preventDefault 与命令分发
+
+### 1.3 合约接入
+
+- 新增 `sdkwork-notes-pc-react/scripts/workspace-hotkey-runtime.contract.test.mjs`
+- `sdkwork-notes-pc-react/package.json` 已将该 contract 纳入 `test:workspace:contracts`
+- `sdkwork-notes-pc-react/scripts/package-scripts-contract.test.mjs` 已同步更新
+
+## 2. 已验证结果
+
+- `node --test --experimental-test-isolation=none scripts/workspace-hotkey-runtime.contract.test.mjs`
+- `node --test --experimental-test-isolation=none scripts/package-scripts-contract.test.mjs`
+- `pnpm.cmd --filter @sdkwork/notes-notes typecheck`
+- `pnpm.cmd typecheck`
+
+结果: 全部通过。
+
+## 3. 进度判断
+
+本轮使 Step 04 在“页面运行时收敛”维度继续推进，但仍不足以升级为 `L4`。
+
+## 4. 阶段收益
+
+- workspace hotkey 拥有独立 runtime 边界
+- keydown 绑定与页面命令分发拥有稳定 contract
+- 页面层进一步向装配容器收缩
+
+## 5. 后续建议
+
+下一轮建议优先处理：
+
+1. sidebar resize runtime coordinator
+2. store 内剩余写路径协同逻辑收敛
+3. repository 策略抽象预埋
+
