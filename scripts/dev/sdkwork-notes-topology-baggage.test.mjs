@@ -25,6 +25,7 @@ const skipPathFragments = [
   'sdkwork-notes-topology-baggage.test.mjs',
   'docs/topology-standard.md',
   'verify-notes-topology.test.mjs',
+  'docs/archive/',
 ];
 
 const allowlistPathFragments = [

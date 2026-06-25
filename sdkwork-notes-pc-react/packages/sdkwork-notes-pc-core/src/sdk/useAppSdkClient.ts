@@ -376,8 +376,9 @@ function writeStorageValue(storage: Storage | null | undefined, key: string, val
   }
 
   try {
-    if (value && value.trim()) {
-      storage.setItem(key, value.trim());
+    const normalized = trim(value ?? '');
+    if (!isBlank(normalized)) {
+      storage.setItem(key, normalized);
       return;
     }
 

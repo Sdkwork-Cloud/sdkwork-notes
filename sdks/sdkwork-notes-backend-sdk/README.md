@@ -14,7 +14,7 @@ Status:
 
 Dependencies:
 
-- `sdkwork-appbase-backend-sdk` for backend-admin context and appbase management capabilities.
+- `sdkwork-iam-backend-sdk` for backend-admin context and appbase management capabilities.
 - `sdkwork-drive-backend-sdk` for Drive file governance, diagnostics, version retention, quota, provider, and repair capabilities.
 
 Rules:

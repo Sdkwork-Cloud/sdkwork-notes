@@ -74,7 +74,7 @@
     ],
     "sdkDependencies": [
       {
-        "sdkFamily": "sdkwork-appbase-app-sdk",
+        "sdkFamily": "sdkwork-iam-app-sdk",
         "surface": "app-api",
         "owner": "sdkwork-appbase"
       },
@@ -87,7 +87,7 @@
     "dependencyApiExports": [],
     "dependencyApiSurfaces": [
       {
-        "sdkFamily": "sdkwork-appbase-app-sdk",
+        "sdkFamily": "sdkwork-iam-app-sdk",
         "surface": "app-api",
         "runtimeMode": "embedded-or-split"
       },
@@ -107,7 +107,8 @@
     "webFramework": "Rust HTTP runtimes integrate sdkwork-web-framework through sdkwork-web-axum and sdkwork-iam-web-adapter.",
     "database": "Notes API server resolves SDKWORK_NOTES database config through sdkwork-database-config; repository crate declares sdkwork-database-repository entities aligned with database/contract/table-registry.json.",
     "utils": "Rust HTTP route crates and pages-service use sdkwork-utils-rust; PC commons re-exports @sdkwork/utils text helpers.",
-    "discovery": "Not required until RPC services are introduced."
+    "discovery": "Not required until RPC services are introduced.",
+    "drive": "Notes API server routes page content through SdkDriveAppFacadePageContentPort (sdkwork-drive-app-sdk-generated-rust). Production profiles disable memory Drive and require SDKWORK_DRIVE_FACADE_URL."
   },
   "verification": {
     "commands": [

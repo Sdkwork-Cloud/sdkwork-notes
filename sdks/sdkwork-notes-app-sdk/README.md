@@ -14,7 +14,7 @@ Status:
 
 Dependencies:
 
-- `sdkwork-appbase-app-sdk` for appbase IAM/session capabilities.
+- `sdkwork-iam-app-sdk` for appbase IAM/session capabilities.
 - `sdkwork-drive-app-sdk` for Drive-backed content, folders, assets, uploader, and version facades.
 
 Rules:

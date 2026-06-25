@@ -26,7 +26,7 @@
     "ownerMode": "tenant",
     "grantMode": "current",
     "platform": "WEB",
-    "appId": "10001",
+    "appId": "sdkwork-notes-pc-react",
     "tenantId": "100001",
     "organizationId": "0",
     "accessTokenPermissionScope": [

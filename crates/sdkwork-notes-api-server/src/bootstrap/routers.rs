@@ -10,7 +10,14 @@ pub async fn build_router() -> Result<Router, Box<dyn std::error::Error + Send +
         .await
         .map_err(|error| -> Box<dyn std::error::Error + Send + Sync> { error.into() })?;
 
-    let iam_router = sdkwork_router_iam_app_api::build_sdkwork_appbase_app_api_router()
+    sdkwork_iam_database_host::bootstrap_iam_database_from_env()
+        .await
+        .map_err(|error| -> Box<dyn std::error::Error + Send + Sync> { error.into() })?;
+    crate::bootstrap::iam_application_bootstrap::ensure_notes_tenant_application_bootstrap()
+        .await
+        .map_err(|error| -> Box<dyn std::error::Error + Send + Sync> { error.into() })?;
+
+    let iam_router = sdkwork_router_iam_app_api::build_sdkwork_iam_app_api_router()
         .await
         .map_err(|error| -> Box<dyn std::error::Error + Send + Sync> { error.into() })?;
 

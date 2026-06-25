@@ -151,7 +151,7 @@
     "sdkClients": [],
     "sdkDependencies": [
       {
-        "sdkFamily": "sdkwork-appbase-app-sdk",
+        "sdkFamily": "sdkwork-iam-app-sdk",
         "surface": "app-api",
         "owner": "sdkwork-appbase"
       },

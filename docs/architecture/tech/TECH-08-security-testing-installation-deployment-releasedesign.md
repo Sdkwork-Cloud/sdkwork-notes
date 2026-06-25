@@ -176,7 +176,9 @@
 |---|---|
 | `VITE_APP_ENV` | 环境标识 |
 | `VITE_APP_OWNER_MODE` | 显式冻结 `root / tenant / organization` 运行时作用域 |
-| `VITE_APP_API_BASE_URL` / `VITE_API_BASE_URL` | API 基地址 |
+| `VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL` | Notes App API 基地址（topology profile） |
+| `VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL` | 平台 / IAM API 网关基地址 |
+| `VITE_SDKWORK_APPBASE_APP_API_BASE_URL` | Appbase IAM App API 基地址 |
 | `SDKWORK_ACCESS_TOKEN` | 开发 bootstrap overlay 访问令牌（运行时身份 scope 来自双 token JWT claims） |
 | `VITE_APP_PLATFORM` | 平台覆盖，默认 Web / Desktop 自动推断 |
 

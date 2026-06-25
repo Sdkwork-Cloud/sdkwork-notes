@@ -39,7 +39,7 @@ test('shared auth Tailwind sources compile into the classes required by the note
     [
       '@source "../../../../";',
       '@source "../../../../../../sdkwork-ui/sdkwork-ui-pc-react/src";',
-      '@source "../../../../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-pc-react/src";',
+      '@source "../../../../../../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-auth-pc-react/src";',
     ],
     'Expected notes shell stylesheet to register the workspace root plus shared UI/auth Tailwind scan roots.',
   );
@@ -68,7 +68,7 @@ test('shared auth Tailwind sources compile into the classes required by the note
       },
       {
         base: path.resolve(workspaceRoot, 'packages', 'sdkwork-notes-pc-shell', 'src', 'styles'),
-        pattern: '../../../../../../sdkwork-appbase/packages/pc-react/iam/sdkwork-auth-pc-react/src',
+        pattern: '../../../../../../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-auth-pc-react/src',
         negated: false,
       },
     ],

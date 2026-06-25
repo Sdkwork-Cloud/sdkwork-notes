@@ -3,14 +3,12 @@ use axum::http::{Request, StatusCode};
 use axum::routing::get;
 use axum::Router;
 use sdkwork_iam_web_adapter::IamDatabaseWebRequestContextResolver;
-use sdkwork_router_notes_app_api::{app_route_manifest, wrap_router_with_web_framework};
+use sdkwork_router_notes_app_api::{app_route_manifest, wrap_router_with_dev_web_framework, wrap_router_with_web_framework};
+use sdkwork_router_notes_http_auth::test_support::{
+    default_test_access_claim_token, default_test_auth_claim_token,
+};
 use sdkwork_web_core::RouteAuth;
 use tower::util::ServiceExt;
-
-const DEV_AUTH_TOKEN: &str =
-    "Bearer tenant_id=100001;user_id=30001;session_id=s-1;app_id=notes;auth_level=password";
-const DEV_ACCESS_TOKEN: &str =
-    "tenant_id=100001;user_id=30001;session_id=s-1;app_id=notes;environment=dev;deployment_mode=saas";
 
 #[test]
 fn app_http_route_manifest_declares_dual_token_for_json_routes() {
@@ -56,18 +54,18 @@ async fn app_router_web_framework_rejects_unauthenticated_requests() {
 
 #[tokio::test]
 async fn app_router_web_framework_accepts_dev_inline_dual_tokens() {
-    let app = wrap_router_with_web_framework(
-        IamDatabaseWebRequestContextResolver::new(None),
-        sample_router(),
-    );
+    let app = wrap_router_with_dev_web_framework(sample_router());
 
     let response = app
         .oneshot(
             Request::builder()
                 .method("GET")
                 .uri("/app/v3/api/notes/workspaces")
-                .header("authorization", DEV_AUTH_TOKEN)
-                .header("access-token", DEV_ACCESS_TOKEN)
+                .header(
+                    "authorization",
+                    format!("Bearer {}", default_test_auth_claim_token()),
+                )
+                .header("access-token", default_test_access_claim_token())
                 .body(Body::empty())
                 .unwrap(),
         )

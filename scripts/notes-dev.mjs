@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   API_GATEWAY_REPO,
   DEFAULT_DEV_PROFILE_ID,
+  IAM_APPLICATION_BOOTSTRAP_ENV,
   listHealthSurfaces,
   listOrchestrationProcesses,
   loadProfile,
@@ -23,6 +24,7 @@ import {
   shouldAutostartGateway,
   waitForHttpHealthy,
 } from './lib/notes-topology.mjs';
+import { mergeRepoDevBootstrapAccessTokenEnv } from '../../sdkwork-iam/scripts/dev/create-dev-bootstrap-access-token-env.mjs';
 
 const HEALTH_PATH = '/healthz';
 const HEALTH_TIMEOUT_MS = 2000;
@@ -242,16 +244,21 @@ async function main() {
   const profileId = resolveDevProfileId(settings.deploymentProfile, settings.serviceLayout)
     || DEFAULT_DEV_PROFILE_ID;
   const profileEnv = loadProfile(profileId);
-  const runtimeEnv = mergeRuntimeEnv(
-    process.env,
-    profileEnv,
-    resolveIamDevEnv(process.env),
-    {
-      SDKWORK_NOTES_PROFILE_ID: profileId,
-      SDKWORK_NOTES_DEV_MODE: '1',
-      SDKWORK_NOTES_DATABASE_ENGINE: settings.database,
-    },
-  );
+  const runtimeEnv = mergeRepoDevBootstrapAccessTokenEnv({
+    repoRoot: REPO_ROOT,
+    manifestPath: 'sdkwork-notes-pc-react/sdkwork.app.config.json',
+    env: mergeRuntimeEnv(
+      process.env,
+      profileEnv,
+      resolveIamDevEnv(process.env),
+      {
+        SDKWORK_NOTES_PROFILE_ID: profileId,
+        SDKWORK_NOTES_DEV_MODE: '1',
+        SDKWORK_NOTES_DATABASE_ENGINE: settings.database,
+        ...IAM_APPLICATION_BOOTSTRAP_ENV,
+      },
+    ),
+  });
 
   const processes = buildProcessesFromOrchestration(profileId, runtimeEnv, settings.runtimeTarget);
 

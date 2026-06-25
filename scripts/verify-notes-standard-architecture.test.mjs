@@ -379,3 +379,44 @@ test('schema registry documents Notes-owned tables', () => {
   assert.equal(exists('docs/schema-registry/README.md'), true);
   assert.equal(exists('docs/schema-registry/tables/001-notes-core.yaml'), true);
 });
+
+test('declares SDKWORK_DEPLOY_SPEC deployments/deploy.yaml', () => {
+  assert.equal(exists('deployments/deploy.yaml'), true);
+  const deploy = read('deployments/deploy.yaml');
+  assert.match(deploy, /^version:\s*1/m);
+  assert.match(deploy, /defaultProfile:\s*cloud\.split-services\.production/);
+  assert.match(deploy, /domain:\s*notes\.sdkwork\.com/);
+});
+
+test('wires deploy validation into pnpm check', () => {
+  const packageJson = readJson('package.json');
+  assert.match(packageJson.scripts.check, /check:deploy-standard/);
+  assert.match(packageJson.scripts['deploy:validate'], /check-deploy-standard\.mjs/);
+});
+
+test('integrates sdkwork-drive through generated Rust app SDK facade', () => {
+  const rootCargo = read('Cargo.toml');
+  assert.match(rootCargo, /sdkwork_drive_app_sdk_generated_rust/);
+
+  const facade = read('crates/sdkwork-notes-api-server/src/bootstrap/drive_app_sdk_facade.rs');
+  assert.match(facade, /sdkwork_drive_app_sdk_generated_rust/);
+  assert.match(facade, /uploader_uploads_prepare/);
+  assert.match(facade, /upload_sessions_complete/);
+
+  const appAssembly = readJson('sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json');
+  const driveDependency = appAssembly.sdkDependencies?.find(
+    (item) => item.workspace === 'sdkwork-drive-app-sdk',
+  );
+  assert.ok(driveDependency, 'app SDK assembly must declare sdkwork-drive-app-sdk');
+});
+
+test('production topology profiles configure Drive facade instead of memory drive', () => {
+  for (const profilePath of [
+    'configs/topology/cloud.split-services.production.env',
+    'configs/topology/standalone.unified-process.production.env',
+  ]) {
+    const profileEnv = read(profilePath);
+    assert.match(profileEnv, /SDKWORK_NOTES_USE_MEMORY_DRIVE=0/);
+    assert.match(profileEnv, /SDKWORK_DRIVE_FACADE_URL=https:\/\//);
+  }
+});
