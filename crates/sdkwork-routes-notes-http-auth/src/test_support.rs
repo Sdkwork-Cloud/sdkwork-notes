@@ -1,9 +1,9 @@
 use sdkwork_web_core::encode_unsigned_test_jwt;
 use serde_json::json;
 
-pub const TEST_TENANT_ID: &str = "tenant-001";
-pub const TEST_ORGANIZATION_ID: &str = "org-001";
-pub const TEST_OPERATOR_ID: &str = "user-001";
+pub const TEST_TENANT_ID: &str = "100001";
+pub const TEST_ORGANIZATION_ID: &str = "0";
+pub const TEST_OPERATOR_ID: &str = "30";
 
 pub fn test_auth_claim_token(tenant_id: &str, organization_id: &str, user_id: &str) -> String {
     encode_unsigned_test_jwt(json!({

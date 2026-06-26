@@ -1890,6 +1890,7 @@ dependencies = [
  "rand_core 0.6.4",
  "sdkwork-iam-context-service",
  "sdkwork-iam-module-registry",
+ "sdkwork-id-core",
  "sha2",
  "sqlx",
  "uuid",
@@ -1999,6 +2000,7 @@ dependencies = [
  "sdkwork-iam-database-host",
  "sdkwork-iam-embedded-application-bootstrap",
  "sdkwork-iam-web-adapter",
+ "sdkwork-notes-gateway-assembly",
  "sdkwork-notes-pages-repository-sqlx",
  "sdkwork-notes-pages-service",
  "sdkwork-routes-iam-app-api",
@@ -2026,6 +2028,17 @@ dependencies = [
  "sdkwork-database-lifecycle",
  "sdkwork-database-spi",
  "sdkwork-database-sqlx",
+]
+
+[[package]]
+name = "sdkwork-notes-gateway-assembly"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "sdkwork-routes-notes-app-api",
+ "sdkwork-routes-notes-backend-api",
+ "sdkwork-routes-notes-http-auth",
+ "tokio",
 ]
 
 [[package]]

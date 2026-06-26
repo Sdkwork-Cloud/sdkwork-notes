@@ -69,8 +69,8 @@ function createTestAccessToken(claims: Record<string, unknown>): string {
 describe('createAppSdkClientConfig', () => {
   it('prefers injected desktop env values when tauri forwards an app mode outside vite runtime mode', () => {
     const accessToken = createTestAccessToken({
-      tenant_id: 'tenant-test',
-      organization_id: 'org-test',
+      tenant_id: '100001',
+      organization_id: '0',
       user_id: 'user-test',
     });
     globalThis.__SDKWORK_NOTES_ENV__ = {
@@ -86,14 +86,14 @@ describe('createAppSdkClientConfig', () => {
     expect(config.baseUrl).toBe('https://api-test.sdkwork.com');
     expect(config.platform).toBe('desktop');
     expect(config.accessToken).toBe(accessToken);
-    expect(config.tenantId).toBe('tenant-test');
-    expect(config.organizationId).toBe('org-test');
+    expect(config.tenantId).toBe('100001');
+    expect(config.organizationId).toBe('0');
   });
 
   it('supports owner-scoped organization base urls with unified deployment access token', () => {
     const organizationAccessToken = createTestAccessToken({
-      tenant_id: 'tenant-org',
-      organization_id: 'org-1',
+      tenant_id: '100001',
+      organization_id: '300001',
     });
     globalThis.__SDKWORK_NOTES_ENV__ = {
       VITE_APP_ENV: 'development',

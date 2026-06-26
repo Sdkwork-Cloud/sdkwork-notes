@@ -48,11 +48,11 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces",
             json!({
                 "id": "workspace-001",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "ownerSubjectType": "user",
-                "ownerSubjectId": "user-001",
+                "ownerSubjectId": "30",
                 "name": "Product Lab",
                 "description": "AI notes workspace",
                 "driveSpaceId": "drive-space-001"
@@ -69,11 +69,11 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces",
             json!({
                 "id": "workspace-002",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "ownerSubjectType": "user",
-                "ownerSubjectId": "user-001",
+                "ownerSubjectId": "30",
                 "name": "Research Lab",
                 "driveSpaceId": "drive-space-002"
             }),
@@ -88,7 +88,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/workspaces?tenantId=tenant-001&organizationId=org-001&page=1&page_size=1",
+                    "/app/v3/api/notes/workspaces?tenantId=100001&organizationId=0&page=1&page_size=1",
                 )
                 .body(Body::empty())
                 .expect("workspace list request should be built"),
@@ -110,9 +110,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces/workspace-001/pages",
             json!({
                 "id": "page-001",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "title": "Roadmap",
                 "initialContent": { "blocks": [{ "type": "paragraph", "text": "hello" }] },
                 "contentType": "application/vnd.sdkwork.notes.page+json"
@@ -142,9 +142,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces/workspace-001/pages",
             json!({
                 "id": "page-002",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "title": "Release notes",
                 "initialContent": { "blocks": [] },
                 "contentType": "application/vnd.sdkwork.notes.page+json"
@@ -161,9 +161,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces/workspace-001/pages",
             json!({
                 "id": "page-child",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "title": "Roadmap child",
                 "parentPageId": "page-001",
                 "initialContent": { "blocks": [] },
@@ -180,7 +180,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/workspaces/workspace-001/bootstrap?tenantId=tenant-001&organizationId=org-001",
+                    "/app/v3/api/notes/workspaces/workspace-001/bootstrap?tenantId=100001&organizationId=0",
                 )
                 .body(Body::empty())
                 .expect("bootstrap request should be built"),
@@ -207,7 +207,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/workspaces/workspace-001/pages?tenantId=tenant-001&organizationId=org-001&page=1&page_size=20&q=release",
+                    "/app/v3/api/notes/workspaces/workspace-001/pages?tenantId=100001&organizationId=0&page=1&page_size=20&q=release",
                 )
                 .body(Body::empty())
                 .expect("page list request should be built"),
@@ -220,7 +220,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     assert_eq!(page_list_payload["items"][0]["id"], "page-002");
 
     let oversized_page_query_uri = format!(
-        "/app/v3/api/notes/workspaces/workspace-001/pages?tenantId=tenant-001&organizationId=org-001&page=1&page_size=20&q={}",
+        "/app/v3/api/notes/workspaces/workspace-001/pages?tenantId=100001&organizationId=0&page=1&page_size=20&q={}",
         "x".repeat(201)
     );
     let oversized_page_query_response = app
@@ -245,9 +245,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             Method::PATCH,
             "/app/v3/api/notes/pages/page-001",
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "title": "Roadmap v2",
                 "favorite": true,
                 "archiveStatus": "archived",
@@ -272,9 +272,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             Method::PATCH,
             "/app/v3/api/notes/pages/page-001",
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "title": "stale title",
                 "expectedVersion": "1"
             }),
@@ -292,9 +292,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             Method::PUT,
             "/app/v3/api/notes/pages/page-001/content",
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "content": { "blocks": [{ "type": "paragraph", "text": "hello v2" }] },
                 "contentType": "application/vnd.sdkwork.notes.page+json",
                 "expectedDriveVersionId": "drive-version-page-001-v1"
@@ -316,7 +316,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/content?tenantId=tenant-001&organizationId=org-001",
+                    "/app/v3/api/notes/pages/page-001/content?tenantId=100001&organizationId=0",
                 )
                 .body(Body::empty())
                 .expect("content request should be built"),
@@ -333,7 +333,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/versions?tenantId=tenant-001&organizationId=org-001&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/versions?tenantId=100001&organizationId=0&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("versions request should be built"),
@@ -362,9 +362,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             Method::POST,
             "/app/v3/api/notes/pages/page-001/versions/drive-version-page-001-v1/restore",
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "expectedCurrentDriveVersionId": "drive-version-page-001-v2"
             }),
         ))
@@ -385,7 +385,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/search?tenantId=tenant-001&organizationId=org-001&workspace_id=workspace-001&q=v2&page=1&page_size=20",
+                    "/app/v3/api/notes/search?tenantId=100001&organizationId=0&workspace_id=workspace-001&q=v2&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("search request should be built"),
@@ -406,7 +406,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     assert_eq!(search_payload["items"][0]["highlights"][0], "Roadmap v2");
 
     let oversized_search_query_uri = format!(
-        "/app/v3/api/notes/search?tenantId=tenant-001&organizationId=org-001&workspace_id=workspace-001&q={}&page=1&page_size=20",
+        "/app/v3/api/notes/search?tenantId=100001&organizationId=0&workspace_id=workspace-001&q={}&page=1&page_size=20",
         "x".repeat(201)
     );
     let oversized_search_query_response = app
@@ -435,9 +435,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
                 .header("Idempotency-Key", "ai-job-create-001")
                 .body(Body::from(
                     json!({
-                        "tenantId": "tenant-001",
-                        "organizationId": "org-001",
-                        "operatorId": "user-001",
+                        "tenantId": "100001",
+                        "organizationId": "0",
+                        "operatorId": "30",
                         "workspaceId": "workspace-001",
                         "jobType": "summarize",
                         "targetType": "page",
@@ -473,9 +473,9 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
                 .header("Idempotency-Key", "ai-job-create-001")
                 .body(Body::from(
                     json!({
-                        "tenantId": "tenant-001",
-                        "organizationId": "org-001",
-                        "operatorId": "user-001",
+                        "tenantId": "100001",
+                        "organizationId": "0",
+                        "operatorId": "30",
                         "workspaceId": "workspace-001",
                         "jobType": "summarize",
                         "targetType": "page",
@@ -530,11 +530,11 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             "/app/v3/api/notes/workspaces",
             json!({
                 "id": "workspace-remote-apply",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "ownerSubjectType": "user",
-                "ownerSubjectId": "user-001",
+                "ownerSubjectId": "30",
                 "name": "Remote Apply Lab",
                 "driveSpaceId": "drive-space-remote-apply"
             }),
@@ -549,9 +549,9 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             "/app/v3/api/notes/workspaces/workspace-remote-apply/pages",
             json!({
                 "id": "page-remote-apply",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "title": "Before remote apply",
                 "initialContent": { "blocks": [] },
                 "contentType": "application/vnd.sdkwork.notes.page+json"
@@ -572,9 +572,9 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             Method::POST,
             "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "idempotencyKey": "remote-apply-upsert-001",
                 "taskId": "sync-task-upsert-001",
                 "entityType": "note",
@@ -601,7 +601,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .oneshot(
             auth_request_builder()
                 .method(Method::GET)
-                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=tenant-001&organizationId=org-001")
+                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=100001&organizationId=0")
                 .body(Body::empty())
                 .expect("page request should be built"),
         )
@@ -617,9 +617,9 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             Method::POST,
             "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "idempotencyKey": "remote-apply-delete-001",
                 "taskId": "sync-task-delete-001",
                 "entityType": "note",
@@ -641,7 +641,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .oneshot(
             auth_request_builder()
                 .method(Method::GET)
-                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=tenant-001&organizationId=org-001")
+                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=100001&organizationId=0")
                 .body(Body::empty())
                 .expect("archived page request should be built"),
         )
@@ -657,9 +657,9 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             Method::POST,
             "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "idempotencyKey": "remote-apply-permanent-delete-001",
                 "taskId": "sync-task-permanent-delete-001",
                 "entityType": "note",
@@ -681,7 +681,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .oneshot(
             auth_request_builder()
                 .method(Method::GET)
-                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=tenant-001&organizationId=org-001")
+                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=100001&organizationId=0")
                 .body(Body::empty())
                 .expect("deleted page request should be built"),
         )
@@ -715,11 +715,11 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
             "/app/v3/api/notes/workspaces",
             json!({
                 "id": "workspace-custom-metadata",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "ownerSubjectType": "user",
-                "ownerSubjectId": "user-001",
+                "ownerSubjectId": "30",
                 "name": "Canvas Lab",
                 "driveSpaceId": "drive-space-custom-metadata"
             }),
@@ -735,9 +735,9 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
             "/app/v3/api/notes/workspaces/workspace-custom-metadata/pages",
             json!({
                 "id": "page-canvas-001",
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "title": "Canvas",
                 "initialContent": { "nodes": [{ "id": "node-1", "type": "text" }] },
                 "contentType": "application/vnd.sdkwork.notes.canvas+json",
@@ -763,9 +763,9 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
             Method::PUT,
             "/app/v3/api/notes/pages/page-canvas-001/content",
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "content": { "nodes": [{ "id": "node-1", "type": "text", "text": "updated" }] },
                 "expectedDriveVersionId": "drive-version-page-canvas-001-v1"
             }),
@@ -785,7 +785,7 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-canvas-001?tenantId=tenant-001&organizationId=org-001",
+                    "/app/v3/api/notes/pages/page-canvas-001?tenantId=100001&organizationId=0",
                 )
                 .body(Body::empty())
                 .expect("page request should be built"),
@@ -825,7 +825,7 @@ async fn app_api_routes_list_page_ai_suggestions() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("page AI suggestions request should be built"),
@@ -878,7 +878,7 @@ async fn app_api_routes_create_ai_suggestion_feedback() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("page AI suggestions request should be built"),
@@ -897,9 +897,9 @@ async fn app_api_routes_create_ai_suggestion_feedback() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{suggestion_id}/feedback"),
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "feedbackType": "helpful",
                 "feedbackText": "Useful summary"
             }),
@@ -938,7 +938,7 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("page AI suggestions request should be built"),
@@ -969,9 +969,9 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{summary_id}/accept"),
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001"
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30"
             }),
         ))
         .await
@@ -987,9 +987,9 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{tag_id}/reject"),
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001"
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30"
             }),
         ))
         .await
@@ -1004,9 +1004,9 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{summary_id}/reject"),
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001"
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30"
             }),
         ))
         .await
@@ -1039,7 +1039,7 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=tenant-001&organizationId=org-001&operatorId=user-001&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("page AI suggestions request should be built"),
@@ -1059,9 +1059,9 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{suggestion_id}/accept"),
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001"
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30"
             }),
         ))
         .await
@@ -1073,9 +1073,9 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{suggestion_id}/apply"),
             json!({
-                "tenantId": "tenant-001",
-                "organizationId": "org-001",
-                "operatorId": "user-001",
+                "tenantId": "100001",
+                "organizationId": "0",
+                "operatorId": "30",
                 "expectedDriveVersionId": "drive-version-page-001-v1",
                 "createCheckpoint": true
             }),
@@ -1098,16 +1098,16 @@ async fn seed_completed_ai_suggestion(
     service: &NotesService<SqlNotesStore, FakeDrivePageContentPort>,
 ) {
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     let workspace = service
         .create_workspace(CreateWorkspaceCommand {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1171,16 +1171,16 @@ async fn seed_applicable_ai_suggestion(
     service: &NotesService<SqlNotesStore, FakeDrivePageContentPort>,
 ) {
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     let workspace = service
         .create_workspace(CreateWorkspaceCommand {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1253,16 +1253,16 @@ async fn seed_two_completed_ai_suggestions(
     service: &NotesService<SqlNotesStore, FakeDrivePageContentPort>,
 ) {
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     let workspace = service
         .create_workspace(CreateWorkspaceCommand {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),

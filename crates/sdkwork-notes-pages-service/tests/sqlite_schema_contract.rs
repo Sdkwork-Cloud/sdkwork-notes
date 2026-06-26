@@ -277,16 +277,16 @@ async fn sql_repository_rejects_stale_metadata_and_drive_pointer_writes_atomical
 
     let repository = SqlNotesStore::new(pool);
     let context = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     repository
         .insert_workspace(NewWorkspace {
             id: "workspace-001".to_string(),
             context: context.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -389,16 +389,16 @@ async fn sql_repository_search_uses_current_indexed_projection_and_ignores_stale
 
     let repository = SqlNotesStore::new(pool.clone());
     let context = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     repository
         .insert_workspace(NewWorkspace {
             id: "workspace-001".to_string(),
             context: context.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -476,16 +476,16 @@ async fn sql_repository_search_treats_like_wildcards_as_literal_query_text() {
 
     let repository = SqlNotesStore::new(pool);
     let context = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     repository
         .insert_workspace(NewWorkspace {
             id: "workspace-001".to_string(),
             context: context.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -565,16 +565,16 @@ async fn sql_repository_apply_ai_suggestion_updates_page_pointer_and_suggestion_
 
     let repository = SqlNotesStore::new(pool.clone());
     let context = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     repository
         .insert_workspace(NewWorkspace {
             id: "workspace-001".to_string(),
             context: context.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -653,9 +653,9 @@ async fn sql_repository_cancel_ai_job_rejects_concurrent_terminal_state_change()
 
     let repository = SqlNotesStore::new(pool.clone());
     let context = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     seed_workspace_page_and_ai_job(&repository, &context, "ai-job-concurrent-cancel").await;
 
@@ -707,9 +707,9 @@ async fn sql_repository_complete_ai_job_rolls_back_suggestions_when_final_update
 
     let repository = SqlNotesStore::new(pool.clone());
     let context = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     seed_workspace_page_and_ai_job(&repository, &context, "ai-job-concurrent-complete").await;
     repository
@@ -916,7 +916,7 @@ async fn insert_search_projection(
             source_drive_version_id, source_drive_version_no, title_snapshot,
             plain_text, snippet, index_status, indexed_at, rebuild_version
          ) VALUES (
-            $1, 'tenant-001', 'org-001', 'workspace-001', $2, 'drive-node-page-001',
+            $1, '100001', '0', 'workspace-001', $2, 'drive-node-page-001',
             $3, $4, 'Roadmap', $5, $5, 'indexed', CURRENT_TIMESTAMP, 1
          )
          ON CONFLICT(tenant_id, organization_id, page_id, source_drive_version_id) DO UPDATE SET
@@ -943,9 +943,9 @@ async fn insert_ai_suggestion(pool: &sqlx::AnyPool, id: &str, status: &str) {
             target_id, context_policy_snapshot, status, idempotency_key,
             request_payload_hash, lifecycle_status, version, created_by, updated_by
          ) VALUES (
-            'ai-job-001', 'tenant-001', 'org-001', 'workspace-001',
+            'ai-job-001', '100001', '0', 'workspace-001',
             'rewrite', 'page', 'page-001', '{}', 'succeeded',
-            'ai-job-001', 'hash-001', 'active', 1, 'user-001', 'user-001'
+            'ai-job-001', 'hash-001', 'active', 1, '30', '30'
          )",
     )
     .execute(pool)
@@ -959,11 +959,11 @@ async fn insert_ai_suggestion(pool: &sqlx::AnyPool, id: &str, status: &str) {
             source_drive_version_no, payload_json, lifecycle_status, version,
             created_by, updated_by
          ) VALUES (
-            $1, 'tenant-001', 'org-001', 'workspace-001', 'page-001',
+            $1, '100001', '0', 'workspace-001', 'page-001',
             'ai-job-001', 'rewrite', $2, 'drive-node-page-001',
             'drive-version-page-001-v1', 1,
             '{\"content\":{\"blocks\":[{\"type\":\"paragraph\",\"text\":\"AI rewrite\"}]}}',
-            'active', 1, 'user-001', 'user-001'
+            'active', 1, '30', '30'
          )",
     )
     .bind(id)
@@ -983,7 +983,7 @@ async fn seed_workspace_page_and_ai_job(
             id: "workspace-001".to_string(),
             context: context.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),

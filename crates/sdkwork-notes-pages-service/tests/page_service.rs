@@ -42,9 +42,9 @@ async fn page_content_lifecycle_stores_drive_refs_and_updates_current_version() 
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool.clone()), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -52,7 +52,7 @@ async fn page_content_lifecycle_stores_drive_refs_and_updates_current_version() 
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: Some("AI notes workspace".to_string()),
             drive_space_id: "drive-space-001".to_string(),
@@ -142,14 +142,14 @@ async fn page_workflows_normalize_context_and_resource_ids_before_repository_and
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     let padded_actor = NotesActorContext {
-        tenant_id: " tenant-001 ".to_string(),
-        organization_id: " org-001 ".to_string(),
-        operator_id: " user-001 ".to_string(),
+        tenant_id: " 100001 ".to_string(),
+        organization_id: " 0 ".to_string(),
+        operator_id: " 30 ".to_string(),
     };
 
     service
@@ -157,7 +157,7 @@ async fn page_workflows_normalize_context_and_resource_ids_before_repository_and
             id: " workspace-001 ".to_string(),
             context: actor.clone(),
             owner_subject_type: " user ".to_string(),
-            owner_subject_id: " user-001 ".to_string(),
+            owner_subject_id: " 30 ".to_string(),
             name: " Product Lab ".to_string(),
             description: None,
             drive_space_id: " drive-space-001 ".to_string(),
@@ -185,9 +185,9 @@ async fn page_workflows_normalize_context_and_resource_ids_before_repository_and
         .await
         .expect("page creation should use normalized context and ids");
     assert_eq!(page.id, "page-001");
-    assert_eq!(page.tenant_id, "tenant-001");
-    assert_eq!(page.organization_id, "org-001");
-    assert_eq!(page.created_by, "user-001");
+    assert_eq!(page.tenant_id, "100001");
+    assert_eq!(page.organization_id, "0");
+    assert_eq!(page.created_by, "30");
     assert_eq!(page.title, "Roadmap");
 
     let listed = service
@@ -257,8 +257,8 @@ async fn page_workflows_normalize_context_and_resource_ids_before_repository_and
         .last_version_list_request()
         .await
         .expect("Drive version list request should be recorded");
-    assert_eq!(request.tenant_id, "tenant-001");
-    assert_eq!(request.organization_id, "org-001");
+    assert_eq!(request.tenant_id, "100001");
+    assert_eq!(request.organization_id, "0");
     assert_eq!(request.page_id, "page-001");
 }
 
@@ -277,9 +277,9 @@ async fn update_page_content_validates_payload_before_drive_content_is_written()
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -287,7 +287,7 @@ async fn update_page_content_validates_payload_before_drive_content_is_written()
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -349,9 +349,9 @@ async fn update_page_content_rejects_oversized_content_metadata_before_drive_con
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -359,7 +359,7 @@ async fn update_page_content_rejects_oversized_content_metadata_before_drive_con
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -440,9 +440,9 @@ async fn create_page_rejects_invalid_drive_snapshot_before_notes_page_is_persist
     drive.invalidate_next_create_drive_version_id().await;
     let service = NotesService::new(SqlNotesStore::new(pool.clone()), drive);
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -450,7 +450,7 @@ async fn create_page_rejects_invalid_drive_snapshot_before_notes_page_is_persist
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -501,9 +501,9 @@ async fn create_page_rejects_drive_snapshot_with_unexpected_content_metadata_bef
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool.clone()), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -511,7 +511,7 @@ async fn create_page_rejects_drive_snapshot_with_unexpected_content_metadata_bef
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -557,9 +557,9 @@ async fn create_page_reports_reconciliation_when_notes_insert_fails_after_drive_
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(ConcurrentPageInsertRepository, drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let result = service
@@ -597,9 +597,9 @@ async fn update_page_content_rejects_invalid_drive_snapshot_before_notes_page_is
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -607,7 +607,7 @@ async fn update_page_content_rejects_invalid_drive_snapshot_before_notes_page_is
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -679,9 +679,9 @@ async fn update_page_content_rejects_drive_snapshot_with_unexpected_content_meta
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -689,7 +689,7 @@ async fn update_page_content_rejects_drive_snapshot_with_unexpected_content_meta
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -767,9 +767,9 @@ async fn update_page_content_rejects_drive_snapshot_that_does_not_advance_versio
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -777,7 +777,7 @@ async fn update_page_content_rejects_drive_snapshot_that_does_not_advance_versio
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -851,9 +851,9 @@ async fn update_page_content_rejects_drive_snapshot_for_wrong_node_before_notes_
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -861,7 +861,7 @@ async fn update_page_content_rejects_drive_snapshot_for_wrong_node_before_notes_
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -933,9 +933,9 @@ async fn update_page_content_rejects_non_object_drive_content_before_notes_page_
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -943,7 +943,7 @@ async fn update_page_content_rejects_non_object_drive_content_before_notes_page_
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1016,9 +1016,9 @@ async fn get_page_content_rejects_drive_snapshot_that_does_not_match_current_not
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -1026,7 +1026,7 @@ async fn get_page_content_rejects_drive_snapshot_that_does_not_match_current_not
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1075,9 +1075,9 @@ async fn update_page_content_preserves_existing_content_metadata_when_request_om
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -1085,7 +1085,7 @@ async fn update_page_content_preserves_existing_content_metadata_when_request_om
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1157,9 +1157,9 @@ async fn update_page_content_defaults_drive_expected_version_to_current_notes_po
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -1167,7 +1167,7 @@ async fn update_page_content_defaults_drive_expected_version_to_current_notes_po
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1233,9 +1233,9 @@ async fn update_page_content_rejects_stale_expected_drive_version_before_drive_w
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -1243,7 +1243,7 @@ async fn update_page_content_rejects_stale_expected_drive_version_before_drive_w
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1318,9 +1318,9 @@ async fn create_page_rejects_duplicate_page_id_before_drive_content_is_written()
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -1328,7 +1328,7 @@ async fn create_page_rejects_duplicate_page_id_before_drive_content_is_written()
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1392,13 +1392,13 @@ async fn create_page_rejects_globally_reserved_page_id_before_drive_content_is_w
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let first_actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     let second_actor = NotesActorContext {
-        tenant_id: "tenant-002".to_string(),
-        organization_id: "org-002".to_string(),
+        tenant_id: "100002".to_string(),
+        organization_id: "300002".to_string(),
         operator_id: "user-002".to_string(),
     };
 
@@ -1407,7 +1407,7 @@ async fn create_page_rejects_globally_reserved_page_id_before_drive_content_is_w
             id: "workspace-001".to_string(),
             context: first_actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1489,9 +1489,9 @@ async fn create_page_validates_metadata_before_drive_content_is_written() {
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -1499,7 +1499,7 @@ async fn create_page_validates_metadata_before_drive_content_is_written() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1568,9 +1568,9 @@ async fn create_page_rejects_oversized_content_metadata_before_drive_content_is_
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -1578,7 +1578,7 @@ async fn create_page_rejects_oversized_content_metadata_before_drive_content_is_
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -1647,9 +1647,9 @@ async fn create_workspace_normalizes_and_validates_metadata_before_sql_constrain
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -1657,7 +1657,7 @@ async fn create_workspace_normalizes_and_validates_metadata_before_sql_constrain
             id: " workspace-trimmed ".to_string(),
             context: actor.clone(),
             owner_subject_type: " user ".to_string(),
-            owner_subject_id: " user-001 ".to_string(),
+            owner_subject_id: " 30 ".to_string(),
             name: " Product Lab ".to_string(),
             description: Some(" AI notes workspace ".to_string()),
             drive_space_id: " drive-space-trimmed ".to_string(),
@@ -1669,7 +1669,7 @@ async fn create_workspace_normalizes_and_validates_metadata_before_sql_constrain
         .expect("workspace metadata should be normalized before insert");
     assert_eq!(workspace.id, "workspace-trimmed");
     assert_eq!(workspace.owner_subject_type, "user");
-    assert_eq!(workspace.owner_subject_id, "user-001");
+    assert_eq!(workspace.owner_subject_id, "30");
     assert_eq!(workspace.name, "Product Lab");
     assert_eq!(workspace.description.as_deref(), Some("AI notes workspace"));
     assert_eq!(workspace.drive_space_id, "drive-space-trimmed");
@@ -1685,7 +1685,7 @@ async fn create_workspace_normalizes_and_validates_metadata_before_sql_constrain
             id: "workspace-invalid-owner".to_string(),
             context: actor.clone(),
             owner_subject_type: "team".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Invalid Owner".to_string(),
             description: None,
             drive_space_id: "drive-space-invalid-owner".to_string(),
@@ -1704,7 +1704,7 @@ async fn create_workspace_normalizes_and_validates_metadata_before_sql_constrain
             id: "workspace-name-too-long".to_string(),
             context: actor,
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "W".repeat(121),
             description: None,
             drive_space_id: "drive-space-name-too-long".to_string(),
@@ -1734,9 +1734,9 @@ async fn read_models_list_bootstrap_and_update_page_metadata_without_drive_conte
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -1744,7 +1744,7 @@ async fn read_models_list_bootstrap_and_update_page_metadata_without_drive_conte
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: Some("AI notes workspace".to_string()),
             drive_space_id: "drive-space-001".to_string(),
@@ -1760,7 +1760,7 @@ async fn read_models_list_bootstrap_and_update_page_metadata_without_drive_conte
             id: "workspace-002".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Research Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-002".to_string(),
@@ -1935,9 +1935,9 @@ async fn page_versions_are_listed_from_drive_without_notes_revision_rows() {
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -1945,7 +1945,7 @@ async fn page_versions_are_listed_from_drive_without_notes_revision_rows() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2039,9 +2039,9 @@ async fn page_versions_reject_invalid_drive_version_summaries() {
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -2049,7 +2049,7 @@ async fn page_versions_reject_invalid_drive_version_summaries() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2104,9 +2104,9 @@ async fn page_versions_reject_unbounded_drive_version_pages() {
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -2114,7 +2114,7 @@ async fn page_versions_reject_unbounded_drive_version_pages() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2169,9 +2169,9 @@ async fn page_versions_reject_drive_page_info_mismatches() {
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -2179,7 +2179,7 @@ async fn page_versions_reject_drive_page_info_mismatches() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2234,9 +2234,9 @@ async fn restore_page_version_creates_drive_owned_restore_version_and_advances_n
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -2244,7 +2244,7 @@ async fn restore_page_version_creates_drive_owned_restore_version_and_advances_n
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2340,9 +2340,9 @@ async fn restore_page_version_defaults_expected_current_drive_version_to_notes_p
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -2350,7 +2350,7 @@ async fn restore_page_version_defaults_expected_current_drive_version_to_notes_p
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2416,9 +2416,9 @@ async fn restore_page_version_reports_reconciliation_when_notes_pointer_changes_
 ) {
     let drive = FakeDrivePageContentPort::default();
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     drive
         .create_page_content(CreateDrivePageContentCommand {
@@ -2472,9 +2472,9 @@ async fn restore_page_version_rejects_drive_snapshot_that_does_not_advance_versi
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -2482,7 +2482,7 @@ async fn restore_page_version_rejects_drive_snapshot_that_does_not_advance_versi
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2562,9 +2562,9 @@ async fn restore_page_version_rejects_drive_snapshot_with_oversized_content_meta
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -2572,7 +2572,7 @@ async fn restore_page_version_rejects_drive_snapshot_with_oversized_content_meta
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2651,9 +2651,9 @@ async fn update_page_metadata_rejects_when_repository_version_changed_after_serv
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let stale_result = service
@@ -2677,9 +2677,9 @@ async fn update_page_content_rejects_when_notes_current_drive_version_changed_be
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(ConcurrentDriveSnapshotRepository, drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let result = service
@@ -2714,9 +2714,9 @@ async fn search_query_returns_page_summaries_with_drive_version_provenance() {
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -2724,7 +2724,7 @@ async fn search_query_returns_page_summaries_with_drive_version_provenance() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2740,7 +2740,7 @@ async fn search_query_returns_page_summaries_with_drive_version_provenance() {
             id: "workspace-002".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Research Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-002".to_string(),
@@ -2841,9 +2841,9 @@ async fn search_query_highlights_current_projection_snippet_when_match_comes_fro
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -2851,7 +2851,7 @@ async fn search_query_highlights_current_projection_snippet_when_match_comes_fro
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -2884,8 +2884,8 @@ async fn search_query_highlights_current_projection_snippet_when_match_comes_fro
              snippet='Atlas projection snippet',
              index_status='indexed',
              indexed_at=CURRENT_TIMESTAMP
-         WHERE tenant_id='tenant-001'
-           AND organization_id='org-001'
+         WHERE tenant_id='100001'
+           AND organization_id='0'
            AND page_id=$1",
     )
     .bind(&page.id)
@@ -2930,9 +2930,9 @@ async fn ai_job_creation_records_page_source_drive_version_provenance_and_idempo
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -2940,7 +2940,7 @@ async fn ai_job_creation_records_page_source_drive_version_provenance_and_idempo
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -3050,9 +3050,9 @@ async fn ai_job_creation_replays_existing_job_when_concurrent_idempotent_insert_
     let repository = ConcurrentAiJobIdempotencyRepository::default();
     let service = NotesService::new(repository.clone(), FakeDrivePageContentPort::default());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let job = service
@@ -3081,9 +3081,9 @@ async fn page_ai_job_creation_rejects_missing_target_id_before_repository_reads(
     let repository = PanicOnAiJobTargetRepository;
     let service = NotesService::new(repository, FakeDrivePageContentPort::default());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let result = service
@@ -3119,9 +3119,9 @@ async fn ai_job_creation_hashes_and_resolves_normalized_request_values() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -3129,7 +3129,7 @@ async fn ai_job_creation_hashes_and_resolves_normalized_request_values() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -3204,14 +3204,14 @@ async fn ai_workflows_normalize_context_and_resource_ids_before_repository_and_d
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     let padded_actor = NotesActorContext {
-        tenant_id: " tenant-001 ".to_string(),
-        organization_id: " org-001 ".to_string(),
-        operator_id: " user-001 ".to_string(),
+        tenant_id: " 100001 ".to_string(),
+        organization_id: " 0 ".to_string(),
+        operator_id: " 30 ".to_string(),
     };
 
     service
@@ -3219,7 +3219,7 @@ async fn ai_workflows_normalize_context_and_resource_ids_before_repository_and_d
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -3375,8 +3375,8 @@ async fn backend_ai_job_admin_lists_retrieves_and_cancels_jobs() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
         operator_id: "admin-001".to_string(),
     };
 
@@ -3481,18 +3481,18 @@ async fn ai_job_claim_is_exclusive_and_rejects_second_worker_claim() {
         FakeDrivePageContentPort::default(),
     );
     let creator = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
         operator_id: "worker-creator".to_string(),
     };
     let first_worker = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
         operator_id: "worker-001".to_string(),
     };
     let second_worker = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
         operator_id: "worker-002".to_string(),
     };
 
@@ -3582,8 +3582,8 @@ async fn ai_job_worker_claims_completes_and_lists_page_suggestions() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
         operator_id: "worker-001".to_string(),
     };
 
@@ -3736,9 +3736,9 @@ async fn page_target_ai_job_rejects_suggestions_for_unscoped_pages() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -3746,7 +3746,7 @@ async fn page_target_ai_job_rejects_suggestions_for_unscoped_pages() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -3855,9 +3855,9 @@ async fn ai_suggestion_decisions_accept_reject_and_conflict() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -3865,7 +3865,7 @@ async fn ai_suggestion_decisions_accept_reject_and_conflict() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -4014,16 +4014,16 @@ async fn ai_suggestion_accept_rejects_when_concurrent_decision_wins_race() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
     let workspace = service
         .create_workspace(CreateWorkspaceCommand {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -4140,9 +4140,9 @@ async fn accepted_ai_suggestion_applies_drive_backed_page_content() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -4150,7 +4150,7 @@ async fn accepted_ai_suggestion_applies_drive_backed_page_content() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -4300,9 +4300,9 @@ async fn ai_suggestion_apply_rejects_oversized_content_metadata_before_drive_con
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -4310,7 +4310,7 @@ async fn ai_suggestion_apply_rejects_oversized_content_metadata_before_drive_con
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -4424,9 +4424,9 @@ async fn stale_ai_suggestion_apply_requires_current_drive_version() {
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -4434,7 +4434,7 @@ async fn stale_ai_suggestion_apply_requires_current_drive_version() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -4577,9 +4577,9 @@ async fn ai_suggestion_apply_does_not_advance_notes_pointer_when_suggestion_stat
     let drive = RejectSuggestionDuringDriveUpdatePort::default();
     let service = NotesService::new(SqlNotesStore::new(pool.clone()), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -4587,7 +4587,7 @@ async fn ai_suggestion_apply_does_not_advance_notes_pointer_when_suggestion_stat
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -4707,9 +4707,9 @@ async fn ai_suggestion_apply_rejects_drive_snapshot_that_does_not_advance_versio
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -4717,7 +4717,7 @@ async fn ai_suggestion_apply_rejects_drive_snapshot_that_does_not_advance_versio
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -4849,9 +4849,9 @@ async fn ai_suggestion_apply_rejects_drive_snapshot_with_unexpected_content_meta
     let drive = FakeDrivePageContentPort::default();
     let service = NotesService::new(SqlNotesStore::new(pool), drive.clone());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -4859,7 +4859,7 @@ async fn ai_suggestion_apply_rejects_drive_snapshot_with_unexpected_content_meta
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -4997,9 +4997,9 @@ async fn proposed_ai_suggestion_cannot_be_applied() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -5007,7 +5007,7 @@ async fn proposed_ai_suggestion_cannot_be_applied() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -5107,9 +5107,9 @@ async fn ai_suggestion_feedback_is_recorded_for_quality_loop() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let workspace = service
@@ -5117,7 +5117,7 @@ async fn ai_suggestion_feedback_is_recorded_for_quality_loop() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
@@ -5240,9 +5240,9 @@ async fn ai_suggestion_feedback_replays_when_concurrent_insert_wins_race() {
     let repository = ConcurrentAiFeedbackIdempotencyRepository::default();
     let service = NotesService::new(repository.clone(), FakeDrivePageContentPort::default());
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     let feedback = service
@@ -5285,9 +5285,9 @@ async fn invalid_ai_suggestion_feedback_type_is_rejected() {
         FakeDrivePageContentPort::default(),
     );
     let actor = NotesActorContext {
-        tenant_id: "tenant-001".to_string(),
-        organization_id: "org-001".to_string(),
-        operator_id: "user-001".to_string(),
+        tenant_id: "100001".to_string(),
+        organization_id: "0".to_string(),
+        operator_id: "30".to_string(),
     };
 
     service
@@ -5295,7 +5295,7 @@ async fn invalid_ai_suggestion_feedback_type_is_rejected() {
             id: "workspace-001".to_string(),
             context: actor.clone(),
             owner_subject_type: "user".to_string(),
-            owner_subject_id: "user-001".to_string(),
+            owner_subject_id: "30".to_string(),
             name: "Product Lab".to_string(),
             description: None,
             drive_space_id: "drive-space-001".to_string(),
