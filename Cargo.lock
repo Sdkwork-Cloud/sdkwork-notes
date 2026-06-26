@@ -1884,10 +1884,15 @@ dependencies = [
 name = "sdkwork-iam-bootstrap"
 version = "0.1.0"
 dependencies = [
+ "aes-gcm",
+ "base64",
  "chrono",
+ "rand_core 0.6.4",
  "sdkwork-iam-context-service",
  "sdkwork-iam-module-registry",
+ "sha2",
  "sqlx",
+ "uuid",
 ]
 
 [[package]]
@@ -1958,6 +1963,7 @@ dependencies = [
  "password-hash",
  "rand_core 0.6.4",
  "reqwest",
+ "sdkwork-database-config",
  "sdkwork-database-sqlx",
  "sdkwork-iam-bootstrap",
  "sdkwork-iam-context-service",
@@ -1995,11 +2001,12 @@ dependencies = [
  "sdkwork-iam-web-adapter",
  "sdkwork-notes-pages-repository-sqlx",
  "sdkwork-notes-pages-service",
- "sdkwork-router-iam-app-api",
- "sdkwork-router-notes-app-api",
- "sdkwork-router-notes-backend-api",
+ "sdkwork-routes-iam-app-api",
+ "sdkwork-routes-notes-app-api",
+ "sdkwork-routes-notes-backend-api",
  "sdkwork-utils-rust",
  "sdkwork-web-axum",
+ "sdkwork-web-bootstrap",
  "sdkwork-web-core",
  "serde_json",
  "sha2",
@@ -2050,7 +2057,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-router-iam-app-api"
+name = "sdkwork-routes-iam-app-api"
 version = "0.1.0"
 dependencies = [
  "argon2",
@@ -2082,7 +2089,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-router-notes-app-api"
+name = "sdkwork-routes-notes-app-api"
 version = "0.1.0"
 dependencies = [
  "async-trait",
@@ -2092,7 +2099,7 @@ dependencies = [
  "sdkwork-iam-web-adapter",
  "sdkwork-notes-pages-repository-sqlx",
  "sdkwork-notes-pages-service",
- "sdkwork-router-notes-http-auth",
+ "sdkwork-routes-notes-http-auth",
  "sdkwork-utils-rust",
  "sdkwork-web-axum",
  "sdkwork-web-core",
@@ -2104,7 +2111,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-router-notes-backend-api"
+name = "sdkwork-routes-notes-backend-api"
 version = "0.1.0"
 dependencies = [
  "async-trait",
@@ -2114,7 +2121,7 @@ dependencies = [
  "sdkwork-iam-web-adapter",
  "sdkwork-notes-pages-repository-sqlx",
  "sdkwork-notes-pages-service",
- "sdkwork-router-notes-http-auth",
+ "sdkwork-routes-notes-http-auth",
  "sdkwork-web-axum",
  "sdkwork-web-core",
  "serde",
@@ -2125,7 +2132,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sdkwork-router-notes-http-auth"
+name = "sdkwork-routes-notes-http-auth"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -2165,6 +2172,24 @@ dependencies = [
  "tokio",
  "tower",
  "tracing",
+]
+
+[[package]]
+name = "sdkwork-web-bootstrap"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "http",
+ "sdkwork-web-axum",
+ "sdkwork-web-contract",
+ "sdkwork-web-core",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

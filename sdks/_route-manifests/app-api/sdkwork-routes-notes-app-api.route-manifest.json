@@ -1,0 +1,645 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.route.manifest",
+  "packageName": "sdkwork-routes-notes-app-api",
+  "surface": "app-api",
+  "owner": "sdkwork-notes",
+  "domain": "notes",
+  "capability": "notes",
+  "apiAuthority": "sdkwork-notes-app-api",
+  "sdkFamily": "sdkwork-notes-app-sdk",
+  "prefix": "/app/v3/api",
+  "source": {
+    "crateRoot": "crates/sdkwork-routes-notes-app-api",
+    "crateImport": "sdkwork_routes_notes_app_api"
+  },
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/app/v3/api/notes/workspaces",
+      "operationId": "workspaces.list",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.workspaces.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "list_workspaces"
+      },
+      "schemas": {
+        "request": null,
+        "response": "WorkspacePage",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/workspaces",
+      "operationId": "workspaces.create",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.workspaces.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "create_workspace"
+      },
+      "schemas": {
+        "request": "CreateWorkspaceRequest",
+        "response": "Workspace",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/notes/workspaces/{workspaceId}/bootstrap",
+      "operationId": "workspaces.bootstrap.retrieve",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.workspaces.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "get_workspace_bootstrap"
+      },
+      "schemas": {
+        "request": null,
+        "response": "WorkspaceBootstrap",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/notes/workspaces/{workspaceId}/pages",
+      "operationId": "pages.list",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "list_pages"
+      },
+      "schemas": {
+        "request": null,
+        "response": "PageSummaryPage",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/workspaces/{workspaceId}/pages",
+      "operationId": "pages.create",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "create_page"
+      },
+      "schemas": {
+        "request": "CreatePageRequest",
+        "response": "Page",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/notes/pages/{pageId}",
+      "operationId": "pages.retrieve",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "get_page"
+      },
+      "schemas": {
+        "request": null,
+        "response": "Page",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "PATCH",
+      "path": "/app/v3/api/notes/pages/{pageId}",
+      "operationId": "pages.update",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "update_page"
+      },
+      "schemas": {
+        "request": "UpdatePageRequest",
+        "response": "Page",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/pages/{pageId}/remote_apply",
+      "operationId": "pages.remoteApply",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "remote_apply_page"
+      },
+      "schemas": {
+        "request": "NoteRemoteApplyRequest",
+        "response": "NoteRemoteApplyResult",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/notes/pages/{pageId}/content",
+      "operationId": "pages.content.retrieve",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.content.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "get_page_content"
+      },
+      "schemas": {
+        "request": null,
+        "response": "PageContent",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "PUT",
+      "path": "/app/v3/api/notes/pages/{pageId}/content",
+      "operationId": "pages.content.update",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.content.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "update_page_content"
+      },
+      "schemas": {
+        "request": "UpdatePageContentRequest",
+        "response": "PageContent",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/notes/pages/{pageId}/versions",
+      "operationId": "pages.versions.list",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.versions.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "list_page_versions"
+      },
+      "schemas": {
+        "request": null,
+        "response": "DriveVersionPage",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/pages/{pageId}/versions/{driveVersionId}/restore",
+      "operationId": "pages.versions.restore",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.versions.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "restore_page_version"
+      },
+      "schemas": {
+        "request": "RestorePageVersionRequest",
+        "response": "PageContent",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/notes/pages/{pageId}/ai_suggestions",
+      "operationId": "pages.aiSuggestions.list",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.pages.ai_suggestions.read",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "list_page_ai_suggestions"
+      },
+      "schemas": {
+        "request": null,
+        "response": "AiSuggestionPage",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "GET",
+      "path": "/app/v3/api/notes/search",
+      "operationId": "search.query",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.search.query",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "query_search"
+      },
+      "schemas": {
+        "request": null,
+        "response": "SearchResultPage",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/ai_jobs",
+      "operationId": "aiJobs.create",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.ai_jobs.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "create_ai_job"
+      },
+      "schemas": {
+        "request": "CreateAiJobRequest",
+        "response": "AiJob",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/ai_suggestions/{aiSuggestionId}/accept",
+      "operationId": "aiSuggestions.accept",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.ai_suggestions.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "accept_ai_suggestion"
+      },
+      "schemas": {
+        "request": "AiSuggestionDecisionRequest",
+        "response": "AiSuggestion",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/ai_suggestions/{aiSuggestionId}/reject",
+      "operationId": "aiSuggestions.reject",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.ai_suggestions.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "reject_ai_suggestion"
+      },
+      "schemas": {
+        "request": "AiSuggestionDecisionRequest",
+        "response": "AiSuggestion",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/ai_suggestions/{aiSuggestionId}/apply",
+      "operationId": "aiSuggestions.apply",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.ai_suggestions.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "apply_ai_suggestion"
+      },
+      "schemas": {
+        "request": "AiSuggestionApplyRequest",
+        "response": "PageContent",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    },
+    {
+      "method": "POST",
+      "path": "/app/v3/api/notes/ai_suggestions/{aiSuggestionId}/feedback",
+      "operationId": "aiSuggestions.feedback.create",
+      "tags": [
+        "notes"
+      ],
+      "auth": {
+        "mode": "dual-token",
+        "required": true,
+        "permission": "notes.ai_suggestions.feedback.write",
+        "tenantScope": "tenant",
+        "dataScope": "organization"
+      },
+      "handler": {
+        "module": "sdkwork_routes_notes_app_api::handlers",
+        "name": "create_ai_suggestion_feedback"
+      },
+      "schemas": {
+        "request": "AiFeedbackCreateRequest",
+        "response": "AiFeedback",
+        "problem": "ProblemDetail"
+      },
+      "ownership": {
+        "owner": "sdkwork-notes",
+        "apiAuthority": "sdkwork-notes-app-api"
+      },
+      "source": {
+        "file": "crates/sdkwork-routes-notes-app-api/src/handlers.rs"
+      },
+      "requestContext": "WebRequestContext",
+      "apiSurface": "app-api"
+    }
+  ]
+}

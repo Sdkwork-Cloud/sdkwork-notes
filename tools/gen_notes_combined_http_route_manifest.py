@@ -9,8 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 CRATES = [
-    "sdkwork-router-notes-app-api",
-    "sdkwork-router-notes-backend-api",
+    "sdkwork-routes-notes-app-api",
+    "sdkwork-routes-notes-backend-api",
 ]
 
 ROUTE_ENTRY = re.compile(

@@ -1,0 +1,16 @@
+[package]
+name = "sdkwork-notes-gateway-assembly"
+edition.workspace = true
+version.workspace = true
+description = "Generated gateway assembly for sdkwork-notes application HTTP plane."
+
+[lib]
+name = "sdkwork_notes_gateway_assembly"
+path = "src/lib.rs"
+
+[dependencies]
+axum.workspace = true
+tokio = { version = "1.48", features = ["macros", "rt-multi-thread"] }
+sdkwork_routes_notes_app_api = { package = "sdkwork-routes-notes-app-api", path = "../sdkwork-routes-notes-app-api" }
+sdkwork_routes_notes_backend_api = { package = "sdkwork-routes-notes-backend-api", path = "../sdkwork-routes-notes-backend-api" }
+sdkwork_routes_notes_http_auth = { package = "sdkwork-routes-notes-http-auth", path = "../sdkwork-routes-notes-http-auth" }

@@ -1,13 +1,41 @@
 # apps/
 
-SDKWork application surface roots for Notes.
+Application: notes
+Status: active
+Owner: SDKWork maintainers
+Specs: APPLICATION_SPEC.md, SDKWORK_WORKSPACE_SPEC.md
 
-This repository uses a hybrid layout: the primary PC React/Tauri application is checked in at the repository root as `sdkwork-notes-pc-react/` rather than `apps/sdkwork-notes-pc-react/`. Future surfaces should prefer the standard `apps/<app-key>/` placement when migrated.
+## Primary App Surface
 
-| Surface | Path | Manifest |
-| --- | --- | --- |
-| PC React / Tauri | [../sdkwork-notes-pc-react](../sdkwork-notes-pc-react) | `sdkwork-notes-pc-react/sdkwork.app.config.json` |
-| H5 mobile React | [../sdkwork-notes-mobile-react](../sdkwork-notes-mobile-react) | Reserved placeholder |
-| Flutter mobile | [../sdkwork-notes-mobile-flutter](../sdkwork-notes-mobile-flutter) | Reserved placeholder |
+The repository root is not the primary runnable app surface.
+This repository uses a hybrid layout. Primary runnable app surfaces currently live outside `apps/`:
 
-See [../docs/root-layout.md](../docs/root-layout.md) for the full root dictionary.
+- `sdkwork-notes-pc-react/` with `sdkwork-notes-pc-react/sdkwork.app.config.json`
+
+## Directory Index
+
+| Directory | Surface role | Runnable | Purpose | Entry |
+| --- | --- | --- | --- | --- |
+| sdkwork-notes-pc | pc | yes | Run and deploy your AI Studio app | [README](sdkwork-notes-pc/README.md) |
+
+## Allowed Content
+
+- Selected language/architecture application roots with `README.md`, `AGENTS.md`, `.sdkwork/`, and `specs/` when authored packages exist.
+- Architecture-local `packages/`, `config/`, `src/`, `lib/`, `App/`, or `entry/` directories required by the owning architecture standard.
+
+## Forbidden Content
+
+- Repository-root API contracts, generated SDK workspaces, Rust crates, or deployment descriptors moved under `apps/`.
+- Runtime secrets, user-private state, generated SDK transport output, or cross-application copied business logic.
+
+## Related Specs
+
+- `../sdkwork-specs/APPLICATION_SPEC.md`
+- `../sdkwork-specs/SDKWORK_WORKSPACE_SPEC.md`
+- `../sdkwork-specs/APP_CLIENT_ARCHITECTURE_ALIGNMENT_SPEC.md`
+
+## Verification
+
+```bash
+node ../sdkwork-specs/tools/check-apps-directory-index.mjs --root .
+```

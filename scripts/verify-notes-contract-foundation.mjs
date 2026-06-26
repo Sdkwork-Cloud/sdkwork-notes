@@ -449,7 +449,7 @@ function expectedSurfacePrefix(surface) {
 }
 
 function parseRoutePackageName(packageName) {
-  if (typeof packageName !== 'string' || !packageName.startsWith('sdkwork-router-')) {
+  if (typeof packageName !== 'string' || !packageName.startsWith('sdkwork-routes-')) {
     return null;
   }
 
@@ -459,7 +459,7 @@ function parseRoutePackageName(packageName) {
       continue;
     }
 
-    const capability = packageName.slice('sdkwork-router-'.length, -suffix.length);
+    const capability = packageName.slice('sdkwork-routes-'.length, -suffix.length);
     if (!capability) {
       return null;
     }
@@ -1173,7 +1173,7 @@ async function verifyRouteManifestMetadata(rootDir, findings) {
         findings,
         'ROUTE_MANIFEST_METADATA_MISMATCH',
         relativePath,
-        `Route manifest packageName must follow sdkwork-router-<capability>-<surface>, got ${manifest.packageName ?? 'missing'}.`
+        `Route manifest packageName must follow sdkwork-routes-<capability>-<surface>, got ${manifest.packageName ?? 'missing'}.`
       );
       continue;
     }

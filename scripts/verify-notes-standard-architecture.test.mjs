@@ -45,19 +45,19 @@ const API_INPUTS = [
 
 const ROUTE_MANIFESTS = [
   {
-    file: 'sdks/_route-manifests/app-api/sdkwork-router-notes-app-api.route-manifest.json',
+    file: 'sdks/_route-manifests/app-api/sdkwork-routes-notes-app-api.route-manifest.json',
     apiSurface: 'app-api',
   },
   {
-    file: 'sdks/_route-manifests/backend-api/sdkwork-router-notes-backend-api.route-manifest.json',
+    file: 'sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json',
     apiSurface: 'backend-api',
   },
 ];
 
 const WEB_FRAMEWORK_CRATES = [
-  'crates/sdkwork-router-notes-app-api/Cargo.toml',
-  'crates/sdkwork-router-notes-backend-api/Cargo.toml',
-  'crates/sdkwork-router-notes-http-auth/Cargo.toml',
+  'crates/sdkwork-routes-notes-app-api/Cargo.toml',
+  'crates/sdkwork-routes-notes-backend-api/Cargo.toml',
+  'crates/sdkwork-routes-notes-http-auth/Cargo.toml',
   'crates/sdkwork-notes-api-server/Cargo.toml',
 ];
 
@@ -117,7 +117,7 @@ test('integrates sdkwork-utils in HTTP route crates', () => {
   const rootCargo = read('Cargo.toml');
   assert.match(rootCargo, /sdkwork-utils-rust/);
 
-  const appRouteCargo = read('crates/sdkwork-router-notes-app-api/Cargo.toml');
+  const appRouteCargo = read('crates/sdkwork-routes-notes-app-api/Cargo.toml');
   assert.match(appRouteCargo, /sdkwork-utils-rust/);
 });
 
@@ -241,10 +241,10 @@ test('SqlNotesStore SQL references only database contract registry tables', () =
 });
 
 test('integrates sdkwork-utils in HTTP auth actor context checks', () => {
-  const authCargo = read('crates/sdkwork-router-notes-http-auth/Cargo.toml');
+  const authCargo = read('crates/sdkwork-routes-notes-http-auth/Cargo.toml');
   assert.match(authCargo, /sdkwork-utils-rust/);
 
-  const actorContext = read('crates/sdkwork-router-notes-http-auth/src/actor_context.rs');
+  const actorContext = read('crates/sdkwork-routes-notes-http-auth/src/actor_context.rs');
   assert.match(actorContext, /sdkwork_utils_rust::string::trim/);
 });
 
@@ -314,11 +314,11 @@ test('PC application root declares sdkwork.app.config.json and component spec', 
   assert.equal(manifest.kind, 'sdkwork.app');
 });
 
-test('Rust HTTP crates follow sdkwork-router-* and sdkwork-notes-api-server naming', () => {
+test('Rust HTTP crates follow sdkwork-routes-* and sdkwork-notes-api-server naming', () => {
   const expectedMembers = [
-    'crates/sdkwork-router-notes-app-api',
-    'crates/sdkwork-router-notes-backend-api',
-    'crates/sdkwork-router-notes-http-auth',
+    'crates/sdkwork-routes-notes-app-api',
+    'crates/sdkwork-routes-notes-backend-api',
+    'crates/sdkwork-routes-notes-http-auth',
     'crates/sdkwork-notes-api-server',
     'crates/sdkwork-notes-pages-service',
     'crates/sdkwork-notes-pages-repository-sqlx',

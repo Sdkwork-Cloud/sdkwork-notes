@@ -87,7 +87,7 @@
   "components": {
     "applicationServer": {
       "crate": "sdkwork-notes-api-server",
-      "binary": "sdkwork-notes-api-server"
+      "binary": "sdkwork-notes-standalone-gateway"
     },
     "cloudGateway": {
       "crate": "sdkwork-api-cloud-gateway-api-server",
@@ -103,7 +103,7 @@
           {
             "id": "application.public-ingress",
             "crate": "sdkwork-notes-api-server",
-            "binary": "sdkwork-notes-api-server",
+            "binary": "sdkwork-notes-standalone-gateway",
             "required": true
           },
           {
@@ -129,7 +129,7 @@
           {
             "id": "application.public-ingress",
             "crate": "sdkwork-notes-api-server",
-            "binary": "sdkwork-notes-api-server",
+            "binary": "sdkwork-notes-standalone-gateway",
             "required": true
           },
           {
@@ -149,7 +149,7 @@
           {
             "id": "application.public-ingress",
             "crate": "sdkwork-notes-api-server",
-            "binary": "sdkwork-notes-api-server",
+            "binary": "sdkwork-notes-standalone-gateway",
             "required": true
           },
           {
@@ -175,7 +175,7 @@
           {
             "id": "application.public-ingress",
             "crate": "sdkwork-notes-api-server",
-            "binary": "sdkwork-notes-api-server",
+            "binary": "sdkwork-notes-standalone-gateway",
             "required": true
           },
           {

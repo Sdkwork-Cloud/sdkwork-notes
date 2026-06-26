@@ -11,11 +11,11 @@ const ROOT = process.cwd();
 
 const ROUTE_MANIFESTS = [
   {
-    file: 'sdks/_route-manifests/app-api/sdkwork-router-notes-app-api.route-manifest.json',
+    file: 'sdks/_route-manifests/app-api/sdkwork-routes-notes-app-api.route-manifest.json',
     apiSurface: 'app-api',
   },
   {
-    file: 'sdks/_route-manifests/backend-api/sdkwork-router-notes-backend-api.route-manifest.json',
+    file: 'sdks/_route-manifests/backend-api/sdkwork-routes-notes-backend-api.route-manifest.json',
     apiSurface: 'backend-api',
   },
 ];

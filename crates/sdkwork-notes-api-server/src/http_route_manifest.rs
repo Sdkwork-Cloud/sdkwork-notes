@@ -178,5 +178,5 @@ pub fn notes_route_manifest() -> HttpRouteManifest {
 }
 
 pub fn notes_public_path_prefixes() -> Vec<String> {
-    vec!["/health".to_string(), "/healthz".to_string()]
+    sdkwork_web_bootstrap::infra_public_path_prefixes()
 }
