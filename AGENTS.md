@@ -76,7 +76,7 @@ Run commands from this repository root unless a command explicitly targets anoth
 
 - `pnpm dev`: start browser development with standalone unified-process topology.
 - `pnpm dev:desktop`: start Tauri desktop development.
-- `pnpm start:api-server`: run the Notes API server with topology profile env.
+- `pnpm gateway:run:standalone`: run the Notes standalone gateway with topology profile env.
 - `pnpm build`: build the Rust workspace.
 - `pnpm test`: run topology and contract verification scripts.
 - `pnpm check`: run Rust checks, PNPM script standard, architecture alignment, topology, database, and API contract checks.

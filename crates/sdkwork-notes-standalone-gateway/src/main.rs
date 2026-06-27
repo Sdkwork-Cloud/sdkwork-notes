@@ -1,4 +1,4 @@
-use sdkwork_notes_api_server::build_router;
+use sdkwork_notes_standalone_gateway::build_router;
 
 #[tokio::main]
 async fn main() {
@@ -13,12 +13,12 @@ async fn main() {
         .expect("SDKWORK_NOTES_APPLICATION_PUBLIC_INGRESS_BIND must be set from a topology profile env");
     let app = build_router()
         .await
-        .expect("notes api-server bootstrap failed");
+        .expect("notes standalone-gateway bootstrap failed");
     let listener = tokio::net::TcpListener::bind(&bind_address)
         .await
-        .expect("bind notes api-server listener failed");
-    tracing::info!("sdkwork-notes-api-server listening on {bind_address}");
+        .expect("bind notes standalone-gateway listener failed");
+    tracing::info!("sdkwork-notes-standalone-gateway listening on {bind_address}");
     axum::serve(listener, app)
         .await
-        .expect("serve notes api-server failed");
+        .expect("serve notes standalone-gateway failed");
 }

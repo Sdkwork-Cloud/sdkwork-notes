@@ -14,7 +14,7 @@
     "dev:browser:split-services": "node scripts/notes-dev.mjs --runtime-target browser --database postgres --service-layout split-services --deployment-profile standalone",
     "dev:desktop": "node scripts/notes-dev.mjs --runtime-target desktop --database postgres --service-layout unified-process --deployment-profile standalone",
     "dev:desktop:cloud": "node scripts/notes-dev.mjs --runtime-target desktop --database postgres --service-layout split-services --deployment-profile cloud",
-    "start:api-server": "node scripts/run-notes-api-server.mjs",
+    "gateway:run:standalone": "node scripts/run-notes-standalone-gateway.mjs",
     "build": "cargo build --workspace",
     "test": "pnpm topology:validate && pnpm test:topology && pnpm test:topology-baggage && pnpm test:contracts && pnpm test:iam-application-bootstrap-standard",
     "check": "cargo check --workspace && pnpm check:pnpm-script-standard && pnpm check:architecture-alignment && pnpm check:deploy-standard && pnpm topology:validate && pnpm db:validate && pnpm api:check",

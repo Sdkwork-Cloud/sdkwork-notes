@@ -7,7 +7,7 @@ members = [
     "crates/sdkwork-routes-notes-http-auth",
     "crates/sdkwork-routes-notes-app-api",
     "crates/sdkwork-routes-notes-backend-api",
-    "crates/sdkwork-notes-api-server",
+    "crates/sdkwork-notes-standalone-gateway",
 ]
 resolver = "2"
 

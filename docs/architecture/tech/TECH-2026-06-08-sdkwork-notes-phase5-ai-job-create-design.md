@@ -94,9 +94,9 @@ Example request:
 
 ```json
 {
-  "tenantId": "tenant-001",
-  "organizationId": "org-001",
-  "operatorId": "user-001",
+  "tenantId": "100001",
+  "organizationId": "0",
+  "operatorId": "1",
   "workspaceId": "workspace-001",
   "jobType": "summarize",
   "targetType": "page",

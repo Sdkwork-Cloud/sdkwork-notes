@@ -68,22 +68,25 @@ test('notes dev orchestrator rejects retired --topology flag', async () => {
   assert.match(notesDev, /--topology is retired/);
 });
 
-test('run-notes-api-server loads topology profile env instead of hardcoded bind defaults', async () => {
-  const script = await read('scripts/run-notes-api-server.mjs');
+test('run-notes-standalone-gateway loads topology profile env instead of hardcoded bind defaults', async () => {
+  const script = await read('scripts/run-notes-standalone-gateway.mjs');
   assert.match(script, /notes-topology\.mjs/);
   assert.match(script, /loadProfile/);
   assert.doesNotMatch(script, /127\.0\.0\.1:8787/);
 });
 
-test('notes api-server reads application.public-ingress bind env key', async () => {
-  const mainRs = await read('crates/sdkwork-notes-api-server/src/main.rs');
+test('notes standalone-gateway reads application.public-ingress bind env key', async () => {
+  const mainRs = await read('crates/sdkwork-notes-standalone-gateway/src/main.rs');
   assert.match(mainRs, /SDKWORK_NOTES_APPLICATION_PUBLIC_INGRESS_BIND/);
   assert.doesNotMatch(mainRs, /SDKWORK_NOTES_BIND_ADDRESS/);
 });
 
-test('notes api-server exposes /healthz for topology health waits', async () => {
-  const routers = await read('crates/sdkwork-notes-api-server/src/bootstrap/routers.rs');
-  assert.match(routers, /\/healthz/);
+test('notes standalone-gateway exposes /healthz for topology health waits', async () => {
+  const routers = await read('crates/sdkwork-notes-standalone-gateway/src/bootstrap/routers.rs');
+  const bootstrapMod = await read('crates/sdkwork-notes-standalone-gateway/src/bootstrap/mod.rs');
+  const usesServiceRouter =
+    /service_router\s*\(/u.test(routers) || /service_router\s*\(/u.test(bootstrapMod);
+  assert.ok(usesServiceRouter, 'standalone gateway must mount infra via service_router');
 });
 
 test('declares cloud gateway config bundles referenced by topology spec', async () => {
@@ -102,8 +105,8 @@ test('notes dev orchestrator uses orchestration spec and gateway config', async 
   assert.match(devScript, /--config/);
 });
 
-test('notes api-server requires topology bind env without hardcoded fallback', async () => {
-  const mainRs = await read('crates/sdkwork-notes-api-server/src/main.rs');
+test('notes standalone-gateway requires topology bind env without hardcoded fallback', async () => {
+  const mainRs = await read('crates/sdkwork-notes-standalone-gateway/src/main.rs');
   assert.match(mainRs, /SDKWORK_NOTES_APPLICATION_PUBLIC_INGRESS_BIND/);
   assert.doesNotMatch(mainRs, /127\.0\.0\.1:8787/);
 });

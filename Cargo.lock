@@ -1809,6 +1809,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "sdkwork-database-id"
+version = "0.1.0"
+dependencies = [
+ "sdkwork-database-config",
+ "sdkwork-database-sqlx",
+ "sdkwork-id-core",
+ "sqlx",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "sdkwork-database-lifecycle"
 version = "0.1.0"
 dependencies = [
@@ -1833,8 +1845,8 @@ dependencies = [
  "chrono",
  "paste",
  "sdkwork-database-config",
+ "sdkwork-database-id",
  "sdkwork-database-sqlx",
- "sdkwork-id-core",
  "serde",
  "serde_json",
  "sqlx",
@@ -1888,9 +1900,9 @@ dependencies = [
  "base64",
  "chrono",
  "rand_core 0.6.4",
+ "sdkwork-database-id",
  "sdkwork-iam-context-service",
  "sdkwork-iam-module-registry",
- "sdkwork-id-core",
  "sha2",
  "sqlx",
  "uuid",
@@ -2004,8 +2016,6 @@ dependencies = [
  "sdkwork-notes-pages-repository-sqlx",
  "sdkwork-notes-pages-service",
  "sdkwork-routes-iam-app-api",
- "sdkwork-routes-notes-app-api",
- "sdkwork-routes-notes-backend-api",
  "sdkwork-utils-rust",
  "sdkwork-web-axum",
  "sdkwork-web-bootstrap",
@@ -2035,6 +2045,7 @@ name = "sdkwork-notes-gateway-assembly"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "sdkwork-notes-pages-service",
  "sdkwork-routes-notes-app-api",
  "sdkwork-routes-notes-backend-api",
  "sdkwork-routes-notes-http-auth",
@@ -2161,11 +2172,14 @@ dependencies = [
 name = "sdkwork-utils-rust"
 version = "0.10.0"
 dependencies = [
+ "aes-gcm",
  "base64",
  "chrono",
+ "hkdf",
  "hmac",
  "rand 0.8.6",
  "regex",
+ "serde",
  "serde_json",
  "sha2",
  "urlencoding",

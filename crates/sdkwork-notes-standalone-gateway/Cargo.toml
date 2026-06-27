@@ -1,10 +1,10 @@
 [package]
-name = "sdkwork-notes-api-server"
+name = "sdkwork-notes-standalone-gateway"
 version.workspace = true
 edition.workspace = true
 
 [[bin]]
-name = "sdkwork-notes-api-server"
+name = "sdkwork-notes-standalone-gateway"
 path = "src/main.rs"
 
 [dependencies]
@@ -19,8 +19,6 @@ sqlx.workspace = true
 async-trait.workspace = true
 sdkwork-notes-pages-service.workspace = true
 sdkwork-notes-pages-repository-sqlx.workspace = true
-sdkwork-routes-notes-app-api.workspace = true
-sdkwork-routes-notes-backend-api.workspace = true
 sdkwork-web-core.workspace = true
 sdkwork-web-axum.workspace = true
 sdkwork-web-bootstrap.workspace = true
@@ -35,6 +33,3 @@ sdkwork_drive_app_sdk_generated_rust.workspace = true
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 sha2 = "0.10"
 
-[[bin]]
-name = "sdkwork-notes-standalone-gateway"
-path = "src/main.rs"

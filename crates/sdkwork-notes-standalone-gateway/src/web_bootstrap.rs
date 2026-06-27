@@ -12,7 +12,7 @@ pub fn wrap_router_with_web_framework(
     let route_manifest = notes_route_manifest();
     route_manifest
         .validate_public_path_prefixes(&notes_public_path_prefixes())
-        .expect("notes api-server public prefixes must not cover protected manifest routes");
+        .expect("notes standalone-gateway public prefixes must not cover protected manifest routes");
 
     let layer = WebFrameworkLayer::new(resolver)
         .with_profile(WebRequestContextProfile {

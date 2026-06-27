@@ -28,7 +28,7 @@ const env = mergeRuntimeEnv(process.env, profileEnv, resolveIamDevEnv(process.en
   ...IAM_APPLICATION_BOOTSTRAP_ENV,
 });
 
-const child = spawn('cargo', ['run', '-p', 'sdkwork-notes-api-server'], {
+const child = spawn('cargo', ['run', '-p', 'sdkwork-notes-standalone-gateway'], {
   cwd: repoRoot,
   env,
   stdio: 'inherit',

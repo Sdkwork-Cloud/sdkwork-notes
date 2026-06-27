@@ -18,7 +18,7 @@ OpenAPI authorities live under `apis/` only. Three SDK families ship TypeScript 
 | PNPM scripts | `PNPM_SCRIPT_SPEC.md` | Aligned | Root exposes `dev`, `build`, `test`, `check`, `verify`, `clean`, `api:*`, `sdk:*`, `db:*`, `topology:*` |
 | Web framework | `WEB_FRAMEWORK_SPEC.md` | Aligned | `sdkwork-web-core`, `sdkwork-web-axum`, `WebRequestContext`, IAM adapter layer |
 | Database framework | `DATABASE_SPEC.md` + `sdkwork-database` | Aligned | `database/` lifecycle; `DatabaseConfig::from_env("notes")`; repository entities; SQL table registry guard |
-| Shared utils | `sdkwork-utils` | Aligned | Rust: route crates, pages-service, api-server, http-auth; TS: PC commons + core SDK boundaries |
+| Shared utils | `sdkwork-utils` | Aligned | Rust: route crates, pages-service, standalone-gateway, http-auth; TS: PC commons + core SDK boundaries |
 | Service discovery | RPC only | N/A | No proto/RPC; discovery not required |
 | API contracts | `API_SPEC.md` | Aligned | `apis/*/*.openapi.json`, route manifests, `x-sdkwork-*` extensions |
 | SDK workspace | `SDK_WORKSPACE_GENERATION_SPEC.md` | Aligned | Three SDK families with TypeScript + Rust sdkgen output; `api:check` validates manifests |
@@ -48,7 +48,7 @@ OpenAPI authorities live under `apis/` only. Three SDK families ship TypeScript 
 
 ### sdkwork-utils
 
-- `sdkwork-utils-rust`: app-api routes, pages-service validation, api-server Drive bootstrap, http-auth actor matching
+- `sdkwork-utils-rust`: app-api routes, pages-service validation, standalone-gateway Drive bootstrap, http-auth actor matching
 - `@sdkwork/utils`: PC commons text helpers; PC core SDK client boundaries (`useAppSdkClient`, `notesProductAppSdkClient`, `sessionIdentityClaims`, `appSdkCredentialEnv`)
 - Notes-owned Vite private env helpers (`scripts/vite-private-env.ts`) — web and desktop Vite configs no longer import `@sdkwork/core-pc-react/vite`
 

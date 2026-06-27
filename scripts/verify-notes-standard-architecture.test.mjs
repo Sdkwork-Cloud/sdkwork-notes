@@ -58,7 +58,7 @@ const WEB_FRAMEWORK_CRATES = [
   'crates/sdkwork-routes-notes-app-api/Cargo.toml',
   'crates/sdkwork-routes-notes-backend-api/Cargo.toml',
   'crates/sdkwork-routes-notes-http-auth/Cargo.toml',
-  'crates/sdkwork-notes-api-server/Cargo.toml',
+  'crates/sdkwork-notes-standalone-gateway/Cargo.toml',
 ];
 
 function read(relativePath) {
@@ -99,7 +99,7 @@ test('declares author-owned API contracts under apis/', () => {
   }
 });
 
-test('integrates sdkwork-web-framework in HTTP route crates and api-server', () => {
+test('integrates sdkwork-web-framework in HTTP route crates and standalone gateway', () => {
   const rootCargo = read('Cargo.toml');
   assert.match(rootCargo, /sdkwork-web-core/);
   assert.match(rootCargo, /sdkwork-web-axum/);
@@ -109,7 +109,7 @@ test('integrates sdkwork-web-framework in HTTP route crates and api-server', () 
     assert.match(cargo, /sdkwork-web-/);
   }
 
-  const authBootstrap = read('crates/sdkwork-notes-api-server/src/bootstrap/auth.rs');
+  const authBootstrap = read('crates/sdkwork-notes-standalone-gateway/src/bootstrap/auth.rs');
   assert.match(authBootstrap, /wrap_router_with_web_framework_from_env/);
 });
 
@@ -144,12 +144,12 @@ test('integrates sdkwork-utils-rust in product service validation', () => {
   assert.match(serviceSource, /sdkwork_utils_rust::string::\{is_blank/);
 });
 
-test('integrates sdkwork-database in api-server bootstrap', () => {
-  const apiServerCargo = read('crates/sdkwork-notes-api-server/Cargo.toml');
-  assert.match(apiServerCargo, /sdkwork-database-config/);
-  assert.match(apiServerCargo, /sdkwork-database-sqlx|sdkwork_database_sqlx/);
+test('integrates sdkwork-database in standalone gateway bootstrap', () => {
+  const gatewayCargo = read('crates/sdkwork-notes-standalone-gateway/Cargo.toml');
+  assert.match(gatewayCargo, /sdkwork-database-config/);
+  assert.match(gatewayCargo, /sdkwork-database-sqlx|sdkwork_database_sqlx/);
 
-  const databaseBootstrap = read('crates/sdkwork-notes-api-server/src/bootstrap/database.rs');
+  const databaseBootstrap = read('crates/sdkwork-notes-standalone-gateway/src/bootstrap/database.rs');
   assert.match(databaseBootstrap, /DatabaseConfig::from_env\("notes"\)/);
 });
 
@@ -314,12 +314,12 @@ test('PC application root declares sdkwork.app.config.json and component spec', 
   assert.equal(manifest.kind, 'sdkwork.app');
 });
 
-test('Rust HTTP crates follow sdkwork-routes-* and sdkwork-notes-api-server naming', () => {
+test('Rust HTTP crates follow sdkwork-routes-* and sdkwork-notes-standalone-gateway naming', () => {
   const expectedMembers = [
     'crates/sdkwork-routes-notes-app-api',
     'crates/sdkwork-routes-notes-backend-api',
     'crates/sdkwork-routes-notes-http-auth',
-    'crates/sdkwork-notes-api-server',
+    'crates/sdkwork-notes-standalone-gateway',
     'crates/sdkwork-notes-pages-service',
     'crates/sdkwork-notes-pages-repository-sqlx',
   ];
@@ -398,7 +398,7 @@ test('integrates sdkwork-drive through generated Rust app SDK facade', () => {
   const rootCargo = read('Cargo.toml');
   assert.match(rootCargo, /sdkwork_drive_app_sdk_generated_rust/);
 
-  const facade = read('crates/sdkwork-notes-api-server/src/bootstrap/drive_app_sdk_facade.rs');
+  const facade = read('crates/sdkwork-notes-standalone-gateway/src/bootstrap/drive_app_sdk_facade.rs');
   assert.match(facade, /sdkwork_drive_app_sdk_generated_rust/);
   assert.match(facade, /uploader_uploads_prepare/);
   assert.match(facade, /upload_sessions_complete/);

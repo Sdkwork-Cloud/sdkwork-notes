@@ -63,7 +63,7 @@
   "contracts": {
     "publicExports": [],
     "runtimeEntrypoints": [
-      "crates/sdkwork-notes-api-server",
+      "crates/sdkwork-notes-standalone-gateway",
       "sdkwork-notes-pc-react"
     ],
     "routeManifest": null,

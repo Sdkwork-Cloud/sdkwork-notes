@@ -141,9 +141,9 @@ function ensureNotesDataDir() {
 function createNotesApiServerProcess(env) {
   ensureNotesDataDir();
   return {
-    label: 'sdkwork-notes-api-server',
+    label: 'sdkwork-notes-standalone-gateway',
     command: cargoCommand(),
-    args: ['run', '-p', 'sdkwork-notes-api-server'],
+    args: ['run', '-p', 'sdkwork-notes-standalone-gateway'],
     cwd: REPO_ROOT,
     env,
   };
@@ -159,7 +159,7 @@ function createPlatformGatewayProcess(env) {
     args: [
       'run',
       '-p',
-      'sdkwork-api-cloud-gateway-api-server',
+      'sdkwork-api-cloud-gateway',
       '--bin',
       'sdkwork-api-cloud-gateway',
       '--',

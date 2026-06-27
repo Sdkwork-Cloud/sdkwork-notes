@@ -9,7 +9,7 @@ This repository adopts the shared SDKWork runtime topology framework.
 
 ## Archetype
 
-`application-http-gateway` — Notes exposes **application.public-ingress** through `sdkwork-notes-api-server`. Shared IAM and appbase SDKs use **platform.api-gateway**.
+`application-http-gateway` — Notes exposes **application.public-ingress** through `sdkwork-notes-standalone-gateway`. Shared IAM and appbase SDKs use **platform.api-gateway**.
 
 ## Default dev profile
 
@@ -21,7 +21,7 @@ This repository adopts the shared SDKWork runtime topology framework.
 pnpm dev                       # standalone unified-process development (browser)
 pnpm dev:browser:cloud         # cloud split-services development
 pnpm dev:desktop               # standalone unified-process development (Tauri)
-pnpm start:api-server          # Notes API server only (topology profile env)
+pnpm gateway:run:standalone          # Notes standalone gateway only (topology profile env)
 pnpm topology:validate         # validate specs/topology.spec.json
 pnpm gateway:matrix            # print gateway packaging matrix
 pnpm gateway:package:cloud      # bundle cloud gateway TOML configs
