@@ -4,20 +4,9 @@ use sdkwork_notes_pages_service::domain::{
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct BackendContextQuery {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AiJobListQuery {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: Option<String>,
     #[serde(rename = "workspace_id")]
     pub workspace_id: Option<String>,
     pub page: Option<i64>,
@@ -25,12 +14,9 @@ pub struct AiJobListQuery {
     pub page_size: Option<i64>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AiFeedbackListQuery {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: Option<String>,
     pub page: Option<i64>,
     #[serde(rename = "page_size")]
     pub page_size: Option<i64>,
@@ -45,9 +31,6 @@ pub struct CompleteAiJobRequest {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FailAiJobRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub error_code: String,
     pub error_message: String,
 }
@@ -62,18 +45,7 @@ pub struct CompleteAiSuggestionRequest {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AiSuggestionDecisionRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct AiSuggestionApplyRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub expected_drive_version_id: Option<String>,
     pub create_checkpoint: Option<bool>,
 }

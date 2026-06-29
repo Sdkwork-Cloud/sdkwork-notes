@@ -13,9 +13,6 @@ pub const DEFAULT_PAGE_SCHEMA_VERSION: &str = "1";
 #[serde(rename_all = "camelCase")]
 pub struct CreateWorkspaceRequest {
     pub id: String,
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub owner_subject_type: Option<String>,
     pub owner_subject_id: Option<String>,
     pub name: String,
@@ -30,9 +27,6 @@ pub struct CreateWorkspaceRequest {
 #[serde(rename_all = "camelCase")]
 pub struct CreatePageRequest {
     pub id: String,
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub title: String,
     pub page_kind: Option<String>,
     pub parent_page_id: Option<String>,
@@ -46,9 +40,6 @@ pub struct CreatePageRequest {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdatePageContentRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub content: Value,
     pub content_type: Option<String>,
     pub content_schema_version: Option<String>,
@@ -60,18 +51,12 @@ pub struct UpdatePageContentRequest {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RestorePageVersionRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub expected_current_drive_version_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdatePageRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub title: Option<String>,
     pub favorite: Option<bool>,
     pub archive_status: Option<String>,
@@ -108,9 +93,6 @@ pub enum NoteRemoteApplyMutationRequest {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NoteRemoteApplyRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub idempotency_key: String,
     pub task_id: String,
     pub entity_type: String,
@@ -145,9 +127,6 @@ pub struct NoteRemoteApplyResultResponse {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateAiJobRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub workspace_id: String,
     pub job_type: String,
     pub target_type: String,
@@ -158,18 +137,7 @@ pub struct CreateAiJobRequest {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AiSuggestionDecisionRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct AiSuggestionApplyRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub expected_drive_version_id: Option<String>,
     pub create_checkpoint: Option<bool>,
 }
@@ -177,39 +145,22 @@ pub struct AiSuggestionApplyRequest {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AiFeedbackCreateRequest {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: String,
     pub feedback_type: String,
     pub feedback_text: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct NotesContextQuery {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NotesPageQuery {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: Option<String>,
     pub page: Option<i64>,
     #[serde(rename = "page_size")]
     pub page_size: Option<i64>,
     pub q: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NotesSearchQuery {
-    pub tenant_id: String,
-    pub organization_id: String,
-    pub operator_id: Option<String>,
     #[serde(rename = "workspace_id")]
     pub workspace_id: Option<String>,
     pub page: Option<i64>,

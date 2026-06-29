@@ -1,6 +1,9 @@
 export interface PageInfo {
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-  nextCursor?: string;
+  mode: 'offset' | 'cursor';
+  page?: number;
+  pageSize?: number;
+  totalItems?: string;
+  totalPages?: number;
+  nextCursor?: string | null;
+  hasMore?: boolean;
 }

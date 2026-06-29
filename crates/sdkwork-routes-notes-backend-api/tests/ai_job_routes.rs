@@ -48,7 +48,7 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/backend/v3/api/notes/ai_jobs?tenantId=100001&organizationId=0&operatorId=30&workspace_id=workspace-001&page=1&page_size=20",
+                    "/backend/v3/api/notes/ai_jobs?workspace_id=workspace-001&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("AI job list request should be built"),
@@ -56,7 +56,7 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
         .await
         .expect("AI job list request should be handled");
     assert_eq!(list_response.status(), StatusCode::OK);
-    let list_payload = read_json(list_response).await;
+    let list_payload = read_envelope_data(list_response).await;
     let ai_job_id = list_payload["items"][0]["id"]
         .as_str()
         .expect("AI job list should include id")
@@ -72,7 +72,7 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}?tenantId=100001&organizationId=0&operatorId=30"
+                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}"
                 ))
                 .body(Body::empty())
                 .expect("AI job retrieve request should be built"),
@@ -80,7 +80,7 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
         .await
         .expect("AI job retrieve request should be handled");
     assert_eq!(retrieve_response.status(), StatusCode::OK);
-    let retrieve_payload = read_json(retrieve_response).await;
+    let retrieve_payload = read_envelope_data(retrieve_response).await;
     assert_eq!(retrieve_payload["id"], ai_job_id);
     assert_eq!(retrieve_payload["sourceCount"], "1");
 
@@ -90,7 +90,7 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
             auth_request_builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/cancel?tenantId=100001&organizationId=0&operatorId=30"
+                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/cancel"
                 ))
                 .body(Body::empty())
                 .expect("AI job cancel request should be built"),
@@ -98,7 +98,7 @@ async fn backend_api_routes_list_retrieve_and_cancel_ai_jobs() {
         .await
         .expect("AI job cancel request should be handled");
     assert_eq!(cancel_response.status(), StatusCode::OK);
-    let cancel_payload = read_json(cancel_response).await;
+    let cancel_payload = read_envelope_data(cancel_response).await;
     assert_eq!(cancel_payload["id"], ai_job_id);
     assert_eq!(cancel_payload["status"], "canceled");
 }
@@ -128,14 +128,14 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/backend/v3/api/notes/ai_jobs?tenantId=100001&organizationId=0&operatorId=30&workspace_id=workspace-001&page=1&page_size=20",
+                    "/backend/v3/api/notes/ai_jobs?workspace_id=workspace-001&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("AI job list request should be built"),
         )
         .await
         .expect("AI job list request should be handled");
-    let list_payload = read_json(list_response).await;
+    let list_payload = read_envelope_data(list_response).await;
     let ai_job_id = list_payload["items"][0]["id"]
         .as_str()
         .expect("AI job list should include id")
@@ -147,7 +147,7 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
             auth_request_builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/claim?tenantId=100001&organizationId=0&operatorId=30"
+                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/claim"
                 ))
                 .body(Body::empty())
                 .expect("AI job claim request should be built"),
@@ -155,7 +155,7 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
         .await
         .expect("AI job claim request should be handled");
     assert_eq!(claim_response.status(), StatusCode::OK);
-    let claim_payload = read_json(claim_response).await;
+    let claim_payload = read_envelope_data(claim_response).await;
     assert_eq!(claim_payload["id"], ai_job_id);
     assert_eq!(claim_payload["status"], "running");
 
@@ -165,7 +165,7 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
             auth_request_builder()
                 .method(Method::POST)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/complete?tenantId=100001&organizationId=0&operatorId=30"
+                    "/backend/v3/api/notes/ai_jobs/{ai_job_id}/complete"
                 ))
                 .header("content-type", "application/json")
                 .body(Body::from(
@@ -188,7 +188,7 @@ async fn backend_api_routes_claim_and_complete_ai_jobs() {
         .await
         .expect("AI job complete request should be handled");
     assert_eq!(complete_response.status(), StatusCode::OK);
-    let complete_payload = read_json(complete_response).await;
+    let complete_payload = read_envelope_data(complete_response).await;
     assert_eq!(complete_payload["id"], ai_job_id);
     assert_eq!(complete_payload["status"], "succeeded");
     assert_eq!(complete_payload["suggestionCount"], "1");
@@ -219,15 +219,12 @@ async fn backend_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/backend/v3/api/notes/ai_suggestions/{summary_id}/accept"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30"
             }),
         ))
         .await
         .expect("AI suggestion accept request should be handled");
     assert_eq!(accept_response.status(), StatusCode::OK);
-    let accept_payload = read_json(accept_response).await;
+    let accept_payload = read_envelope_data(accept_response).await;
     assert_eq!(accept_payload["id"], summary_id);
     assert_eq!(accept_payload["status"], "accepted");
 
@@ -237,15 +234,12 @@ async fn backend_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/backend/v3/api/notes/ai_suggestions/{tag_id}/reject"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30"
             }),
         ))
         .await
         .expect("AI suggestion reject request should be handled");
     assert_eq!(reject_response.status(), StatusCode::OK);
-    let reject_payload = read_json(reject_response).await;
+    let reject_payload = read_envelope_data(reject_response).await;
     assert_eq!(reject_payload["id"], tag_id);
     assert_eq!(reject_payload["status"], "rejected");
 
@@ -254,9 +248,6 @@ async fn backend_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/backend/v3/api/notes/ai_suggestions/{summary_id}/reject"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30"
             }),
         ))
         .await
@@ -289,9 +280,6 @@ async fn backend_api_routes_apply_accepted_ai_suggestion() {
             Method::POST,
             &format!("/backend/v3/api/notes/ai_suggestions/{summary_id}/accept"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30"
             }),
         ))
         .await
@@ -303,9 +291,6 @@ async fn backend_api_routes_apply_accepted_ai_suggestion() {
             Method::POST,
             &format!("/backend/v3/api/notes/ai_suggestions/{summary_id}/apply"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "expectedDriveVersionId": "drive-version-page-001-v1",
                 "createCheckpoint": true
             }),
@@ -313,7 +298,7 @@ async fn backend_api_routes_apply_accepted_ai_suggestion() {
         .await
         .expect("AI suggestion apply request should be handled");
     assert_eq!(apply_response.status(), StatusCode::OK);
-    let apply_payload = read_json(apply_response).await;
+    let apply_payload = read_envelope_data(apply_response).await;
     assert_eq!(apply_payload["pageId"], "page-001");
     assert_eq!(apply_payload["driveNodeId"], "drive-node-page-001");
     assert_eq!(apply_payload["driveVersionId"], "drive-version-page-001-v2");
@@ -361,7 +346,7 @@ async fn backend_api_routes_list_ai_suggestion_feedback() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(format!(
-                    "/backend/v3/api/notes/ai_suggestions/{summary_id}/feedback?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20"
+                    "/backend/v3/api/notes/ai_suggestions/{summary_id}/feedback?page=1&page_size=20"
                 ))
                 .body(Body::empty())
                 .expect("AI suggestion feedback request should be built"),
@@ -369,7 +354,7 @@ async fn backend_api_routes_list_ai_suggestion_feedback() {
         .await
         .expect("AI suggestion feedback request should be handled");
     assert_eq!(feedback_response.status(), StatusCode::OK);
-    let feedback_payload = read_json(feedback_response).await;
+    let feedback_payload = read_envelope_data(feedback_response).await;
     assert_eq!(feedback_payload["items"].as_array().map(Vec::len), Some(1));
     assert_eq!(feedback_payload["items"][0]["suggestionId"], summary_id);
     assert_eq!(feedback_payload["items"][0]["feedbackType"], "helpful");
@@ -652,6 +637,12 @@ fn json_request(method: Method, uri: &str, body: serde_json::Value) -> Request<B
         .header("content-type", "application/json")
         .body(Body::from(body.to_string()))
         .expect("json request should be built")
+}
+
+async fn read_envelope_data(response: axum::response::Response) -> serde_json::Value {
+    let payload = read_json(response).await;
+    assert_eq!(payload["code"], 0);
+    payload["data"].clone()
 }
 
 async fn read_json(response: axum::response::Response) -> serde_json::Value {

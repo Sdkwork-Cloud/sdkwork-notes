@@ -4,12 +4,6 @@ use serde::{Deserialize, Serialize};
 pub struct WorkspaceAdmin {
     pub id: String,
 
-    #[serde(rename = "tenantId")]
-    pub tenant_id: String,
-
-    #[serde(rename = "organizationId")]
-    pub organization_id: String,
-
     pub name: String,
 
     #[serde(rename = "driveSpaceId")]

@@ -1,7 +1,4 @@
 export interface NoteRemoteApplyRequest {
-  tenantId: string;
-  organizationId: string;
-  operatorId: string;
   idempotencyKey: string;
   taskId: string;
   entityType: string;

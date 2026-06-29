@@ -1,7 +1,7 @@
 import { appApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { AiFeedback, AiFeedbackCreateRequest, AiJob, AiSuggestion, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, AiSuggestionPage, CreateAiJobRequest, CreatePageRequest, CreateWorkspaceRequest, DriveVersionPage, NoteRemoteApplyRequest, NoteRemoteApplyResult, Page, PageContent, PageSummaryPage, RestorePageVersionRequest, SearchResultPage, UpdatePageContentRequest, UpdatePageRequest, Workspace, WorkspaceBootstrap, WorkspacePage } from '../types';
+import type { AiFeedback, AiFeedbackCreateRequest, AiJob, AiSuggestion, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, CreateAiJobRequest, CreatePageRequest, CreateWorkspaceRequest, DriveVersionSummary, NoteRemoteApplyRequest, PageContent, PageInfo, PageSummary, RestorePageVersionRequest, SdkWorkPageData, SearchResult, UpdatePageContentRequest, UpdatePageRequest, Workspace, WorkspaceBootstrap } from '../types';
 
 
 export class NotesAiSuggestionsFeedbackApi {
@@ -69,9 +69,6 @@ export class NotesAiJobsApi {
 }
 
 export interface NotesSearchQueryParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
   workspaceId?: string;
   q?: string;
   page?: number;
@@ -87,24 +84,18 @@ export class NotesSearchApi {
 
 
 /** Search Notes page projections while preserving Drive version provenance. */
-  async query(params: NotesSearchQueryParams): Promise<SearchResultPage> {
+  async query(params?: NotesSearchQueryParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-      { name: 'workspace_id', value: params.workspaceId, style: 'form', explode: true, allowReserved: false },
-      { name: 'q', value: params.q, style: 'form', explode: true, allowReserved: false },
-      { name: 'page', value: params.page, style: 'form', explode: true, allowReserved: false },
-      { name: 'page_size', value: params.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
+      { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<SearchResultPage>(appendQueryString(appApiPath(`/notes/search`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/search`), query));
   }
 }
 
 export interface NotesPagesAiSuggestionsListParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
   page?: number;
   pageSize?: number;
 }
@@ -118,22 +109,16 @@ export class NotesPagesAiSuggestionsApi {
 
 
 /** List reviewable AI suggestions for a Notes page. */
-  async list(pageId: string, params: NotesPagesAiSuggestionsListParams): Promise<AiSuggestionPage> {
+  async list(pageId: string, params?: NotesPagesAiSuggestionsListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-      { name: 'page', value: params.page, style: 'form', explode: true, allowReserved: false },
-      { name: 'page_size', value: params.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<AiSuggestionPage>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/ai_suggestions`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/ai_suggestions`), query));
   }
 }
 
 export interface NotesPagesVersionsListParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
   page?: number;
   pageSize?: number;
 }
@@ -147,27 +132,18 @@ export class NotesPagesVersionsApi {
 
 
 /** List Drive node versions for a Notes page through the Notes business facade. */
-  async list(pageId: string, params: NotesPagesVersionsListParams): Promise<DriveVersionPage> {
+  async list(pageId: string, params?: NotesPagesVersionsListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-      { name: 'page', value: params.page, style: 'form', explode: true, allowReserved: false },
-      { name: 'page_size', value: params.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<DriveVersionPage>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions`), query));
   }
 
 /** Restore a Drive-owned page content version through the Notes business facade. */
-  async restore(pageId: string, driveVersionId: string, body: RestorePageVersionRequest): Promise<PageContent> {
-    return this.client.post<PageContent>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions/${serializePathParameter(driveVersionId, { name: 'driveVersionId', style: 'simple', explode: false })}/restore`), body, undefined, undefined, 'application/json');
+  async restore(pageId: string, driveVersionId: string, body: RestorePageVersionRequest): Promise<SdkWorkPageData> {
+    return this.client.post<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions/${serializePathParameter(driveVersionId, { name: 'driveVersionId', style: 'simple', explode: false })}/restore`), body, undefined, undefined, 'application/json');
   }
-}
-
-export interface NotesPagesContentRetrieveParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
 }
 
 export class NotesPagesContentApi {
@@ -179,34 +155,20 @@ export class NotesPagesContentApi {
 
 
 /** Retrieve Drive-backed page content through the Notes facade. */
-  async retrieve(pageId: string, params: NotesPagesContentRetrieveParams): Promise<PageContent> {
-    const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-    ]);
-    return this.client.get<PageContent>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), query));
+  async retrieve(pageId: string): Promise<SdkWorkPageData> {
+    return this.client.get<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`));
   }
 
 /** Update Drive-backed page content and refresh Notes current version pointers. */
-  async update(pageId: string, body: UpdatePageContentRequest): Promise<PageContent> {
-    return this.client.put<PageContent>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), body, undefined, undefined, 'application/json');
+  async update(pageId: string, body: UpdatePageContentRequest): Promise<SdkWorkPageData> {
+    return this.client.put<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), body, undefined, undefined, 'application/json');
   }
 }
 
 export interface NotesPagesListParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
   page?: number;
   pageSize?: number;
   q?: string;
-}
-
-export interface NotesPagesRetrieveParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
 }
 
 export class NotesPagesApi {
@@ -224,48 +186,34 @@ export class NotesPagesApi {
 
 
 /** List pages in a workspace. */
-  async list(workspaceId: string, params: NotesPagesListParams): Promise<PageSummaryPage> {
+  async list(workspaceId: string, params?: NotesPagesListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-      { name: 'page', value: params.page, style: 'form', explode: true, allowReserved: false },
-      { name: 'page_size', value: params.pageSize, style: 'form', explode: true, allowReserved: false },
-      { name: 'q', value: params.q, style: 'form', explode: true, allowReserved: false },
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<PageSummaryPage>(appendQueryString(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/pages`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/pages`), query));
   }
 
 /** Create a Drive-backed Notes page. */
-  async create(workspaceId: string, body: CreatePageRequest): Promise<Page> {
-    return this.client.post<Page>(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/pages`), body, undefined, undefined, 'application/json');
+  async create(workspaceId: string, body: CreatePageRequest): Promise<SdkWorkPageData> {
+    return this.client.post<SdkWorkPageData>(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/pages`), body, undefined, undefined, 'application/json');
   }
 
 /** Retrieve Notes page metadata and Drive binding references. */
-  async retrieve(pageId: string, params: NotesPagesRetrieveParams): Promise<Page> {
-    const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-    ]);
-    return this.client.get<Page>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), query));
+  async retrieve(pageId: string): Promise<SdkWorkPageData> {
+    return this.client.get<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`));
   }
 
 /** Update mutable Notes page metadata. */
-  async update(pageId: string, body: UpdatePageRequest): Promise<Page> {
-    return this.client.patch<Page>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(pageId: string, body: UpdatePageRequest): Promise<SdkWorkPageData> {
+    return this.client.patch<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
   }
 
 /** Apply a queued sync mutation to a Notes page. */
-  async remoteApply(pageId: string, body: NoteRemoteApplyRequest): Promise<NoteRemoteApplyResult> {
-    return this.client.post<NoteRemoteApplyResult>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/remote_apply`), body, undefined, undefined, 'application/json');
+  async remoteApply(pageId: string, body: NoteRemoteApplyRequest): Promise<SdkWorkPageData> {
+    return this.client.post<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/remote_apply`), body, undefined, undefined, 'application/json');
   }
-}
-
-export interface NotesWorkspacesBootstrapRetrieveParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
 }
 
 export class NotesWorkspacesBootstrapApi {
@@ -277,20 +225,12 @@ export class NotesWorkspacesBootstrapApi {
 
 
 /** Retrieve workspace bootstrap metadata for editor startup. */
-  async retrieve(workspaceId: string, params: NotesWorkspacesBootstrapRetrieveParams): Promise<WorkspaceBootstrap> {
-    const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-    ]);
-    return this.client.get<WorkspaceBootstrap>(appendQueryString(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/bootstrap`), query));
+  async retrieve(workspaceId: string): Promise<WorkspaceBootstrap> {
+    return this.client.get<WorkspaceBootstrap>(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/bootstrap`));
   }
 }
 
 export interface NotesWorkspacesListParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
   page?: number;
   pageSize?: number;
 }
@@ -306,15 +246,12 @@ export class NotesWorkspacesApi {
 
 
 /** List Notes workspaces visible to the current app principal. */
-  async list(params: NotesWorkspacesListParams): Promise<WorkspacePage> {
+  async list(params?: NotesWorkspacesListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-      { name: 'page', value: params.page, style: 'form', explode: true, allowReserved: false },
-      { name: 'page_size', value: params.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<WorkspacePage>(appendQueryString(appApiPath(`/notes/workspaces`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/workspaces`), query));
   }
 
 /** Create a Notes workspace and bind it to a Drive Notes space or compatible app-upload space. */

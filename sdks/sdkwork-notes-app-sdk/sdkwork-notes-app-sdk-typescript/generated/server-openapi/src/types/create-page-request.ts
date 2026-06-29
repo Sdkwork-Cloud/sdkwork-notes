@@ -1,7 +1,4 @@
 export interface CreatePageRequest {
-  tenantId: string;
-  organizationId: string;
-  operatorId: string;
   id: string;
   title: string;
   pageKind?: 'doc' | 'article' | 'code' | 'log' | 'database' | 'canvas' | 'folder';

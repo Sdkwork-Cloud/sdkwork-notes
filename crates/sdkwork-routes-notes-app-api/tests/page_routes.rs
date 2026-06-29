@@ -48,9 +48,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces",
             json!({
                 "id": "workspace-001",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "ownerSubjectType": "user",
                 "ownerSubjectId": "30",
                 "name": "Product Lab",
@@ -69,9 +66,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces",
             json!({
                 "id": "workspace-002",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "ownerSubjectType": "user",
                 "ownerSubjectId": "30",
                 "name": "Research Lab",
@@ -88,7 +82,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/workspaces?tenantId=100001&organizationId=0&page=1&page_size=1",
+                    "/app/v3/api/notes/workspaces?page=1&page_size=1",
                 )
                 .body(Body::empty())
                 .expect("workspace list request should be built"),
@@ -96,7 +90,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("workspace list request should be handled");
     assert_eq!(workspace_list_response.status(), StatusCode::OK);
-    let workspace_list_payload = read_json(workspace_list_response).await;
+    let workspace_list_payload = read_envelope_data(workspace_list_response).await;
     assert_eq!(
         workspace_list_payload["items"].as_array().map(Vec::len),
         Some(1)
@@ -110,9 +104,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces/workspace-001/pages",
             json!({
                 "id": "page-001",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "title": "Roadmap",
                 "initialContent": { "blocks": [{ "type": "paragraph", "text": "hello" }] },
                 "contentType": "application/vnd.sdkwork.notes.page+json"
@@ -121,7 +112,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("create page request should be handled");
     assert_eq!(create_page_response.status(), StatusCode::CREATED);
-    let create_page_payload = read_json(create_page_response).await;
+    let create_page_payload = read_envelope_data(create_page_response).await;
     assert_eq!(
         create_page_payload["driveNodeId"].as_str(),
         Some("drive-node-page-001")
@@ -142,9 +133,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces/workspace-001/pages",
             json!({
                 "id": "page-002",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "title": "Release notes",
                 "initialContent": { "blocks": [] },
                 "contentType": "application/vnd.sdkwork.notes.page+json"
@@ -161,9 +149,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             "/app/v3/api/notes/workspaces/workspace-001/pages",
             json!({
                 "id": "page-child",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "title": "Roadmap child",
                 "parentPageId": "page-001",
                 "initialContent": { "blocks": [] },
@@ -180,7 +165,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/workspaces/workspace-001/bootstrap?tenantId=100001&organizationId=0",
+                    "/app/v3/api/notes/workspaces/workspace-001/bootstrap",
                 )
                 .body(Body::empty())
                 .expect("bootstrap request should be built"),
@@ -188,7 +173,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("bootstrap request should be handled");
     assert_eq!(bootstrap_response.status(), StatusCode::OK);
-    let bootstrap_payload = read_json(bootstrap_response).await;
+    let bootstrap_payload = read_envelope_data(bootstrap_response).await;
     assert_eq!(bootstrap_payload["workspace"]["id"], "workspace-001");
     assert!(!bootstrap_payload["rootPages"]
         .as_array()
@@ -207,7 +192,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/workspaces/workspace-001/pages?tenantId=100001&organizationId=0&page=1&page_size=20&q=release",
+                    "/app/v3/api/notes/workspaces/workspace-001/pages?page=1&page_size=20&q=release",
                 )
                 .body(Body::empty())
                 .expect("page list request should be built"),
@@ -215,12 +200,12 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("page list request should be handled");
     assert_eq!(page_list_response.status(), StatusCode::OK);
-    let page_list_payload = read_json(page_list_response).await;
+    let page_list_payload = read_envelope_data(page_list_response).await;
     assert_eq!(page_list_payload["items"].as_array().map(Vec::len), Some(1));
     assert_eq!(page_list_payload["items"][0]["id"], "page-002");
 
     let oversized_page_query_uri = format!(
-        "/app/v3/api/notes/workspaces/workspace-001/pages?tenantId=100001&organizationId=0&page=1&page_size=20&q={}",
+        "/app/v3/api/notes/workspaces/workspace-001/pages?page=1&page_size=20&q={}",
         "x".repeat(201)
     );
     let oversized_page_query_response = app
@@ -245,9 +230,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             Method::PATCH,
             "/app/v3/api/notes/pages/page-001",
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "title": "Roadmap v2",
                 "favorite": true,
                 "archiveStatus": "archived",
@@ -258,7 +240,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("metadata update request should be handled");
     assert_eq!(metadata_update_response.status(), StatusCode::OK);
-    let metadata_update_payload = read_json(metadata_update_response).await;
+    let metadata_update_payload = read_envelope_data(metadata_update_response).await;
     assert_eq!(metadata_update_payload["title"], "Roadmap v2");
     assert_eq!(metadata_update_payload["favorite"], true);
     assert_eq!(
@@ -272,9 +254,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             Method::PATCH,
             "/app/v3/api/notes/pages/page-001",
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "title": "stale title",
                 "expectedVersion": "1"
             }),
@@ -292,9 +271,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             Method::PUT,
             "/app/v3/api/notes/pages/page-001/content",
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "content": { "blocks": [{ "type": "paragraph", "text": "hello v2" }] },
                 "contentType": "application/vnd.sdkwork.notes.page+json",
                 "expectedDriveVersionId": "drive-version-page-001-v1"
@@ -303,7 +279,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("update content request should be handled");
     assert_eq!(update_response.status(), StatusCode::OK);
-    let update_payload = read_json(update_response).await;
+    let update_payload = read_envelope_data(update_response).await;
     assert_eq!(
         update_payload["driveVersionId"].as_str(),
         Some("drive-version-page-001-v2")
@@ -316,7 +292,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/content?tenantId=100001&organizationId=0",
+                    "/app/v3/api/notes/pages/page-001/content",
                 )
                 .body(Body::empty())
                 .expect("content request should be built"),
@@ -324,7 +300,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("content request should be handled");
     assert_eq!(content_response.status(), StatusCode::OK);
-    let content_payload = read_json(content_response).await;
+    let content_payload = read_envelope_data(content_response).await;
     assert_eq!(content_payload["content"]["blocks"][0]["text"], "hello v2");
 
     let versions_response = app
@@ -333,7 +309,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/versions?tenantId=100001&organizationId=0&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/versions?page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("versions request should be built"),
@@ -341,7 +317,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("versions request should be handled");
     assert_eq!(versions_response.status(), StatusCode::OK);
-    let versions_payload = read_json(versions_response).await;
+    let versions_payload = read_envelope_data(versions_response).await;
     assert_eq!(
         versions_payload["items"][0]["driveVersionId"].as_str(),
         Some("drive-version-page-001-v2")
@@ -362,16 +338,13 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             Method::POST,
             "/app/v3/api/notes/pages/page-001/versions/drive-version-page-001-v1/restore",
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "expectedCurrentDriveVersionId": "drive-version-page-001-v2"
             }),
         ))
         .await
         .expect("restore page version request should be handled");
     assert_eq!(restore_response.status(), StatusCode::OK);
-    let restore_payload = read_json(restore_response).await;
+    let restore_payload = read_envelope_data(restore_response).await;
     assert_eq!(
         restore_payload["driveVersionId"].as_str(),
         Some("drive-version-page-001-v3")
@@ -385,7 +358,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/search?tenantId=100001&organizationId=0&workspace_id=workspace-001&q=v2&page=1&page_size=20",
+                    "/app/v3/api/notes/search?workspace_id=workspace-001&q=v2&page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("search request should be built"),
@@ -393,7 +366,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("search request should be handled");
     assert_eq!(search_response.status(), StatusCode::OK);
-    let search_payload = read_json(search_response).await;
+    let search_payload = read_envelope_data(search_response).await;
     assert_eq!(search_payload["items"][0]["page"]["id"], "page-001");
     assert_eq!(
         search_payload["items"][0]["sourceDriveVersionNo"].as_str(),
@@ -406,7 +379,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
     assert_eq!(search_payload["items"][0]["highlights"][0], "Roadmap v2");
 
     let oversized_search_query_uri = format!(
-        "/app/v3/api/notes/search?tenantId=100001&organizationId=0&workspace_id=workspace-001&q={}&page=1&page_size=20",
+        "/app/v3/api/notes/search?workspace_id=workspace-001&q={}&page=1&page_size=20",
         "x".repeat(201)
     );
     let oversized_search_query_response = app
@@ -435,9 +408,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
                 .header("Idempotency-Key", "ai-job-create-001")
                 .body(Body::from(
                     json!({
-                        "tenantId": "100001",
-                        "organizationId": "0",
-                        "operatorId": "30",
                         "workspaceId": "workspace-001",
                         "jobType": "summarize",
                         "targetType": "page",
@@ -452,7 +422,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("AI job request should be handled");
     assert_eq!(ai_job_response.status(), StatusCode::ACCEPTED);
-    let ai_job_payload = read_json(ai_job_response).await;
+    let ai_job_payload = read_envelope_data(ai_job_response).await;
     assert_eq!(ai_job_payload["workspaceId"], "workspace-001");
     assert_eq!(ai_job_payload["jobType"], "summarize");
     assert_eq!(ai_job_payload["targetType"], "page");
@@ -473,9 +443,6 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
                 .header("Idempotency-Key", "ai-job-create-001")
                 .body(Body::from(
                     json!({
-                        "tenantId": "100001",
-                        "organizationId": "0",
-                        "operatorId": "30",
                         "workspaceId": "workspace-001",
                         "jobType": "summarize",
                         "targetType": "page",
@@ -490,7 +457,7 @@ async fn app_api_routes_create_page_and_update_drive_backed_content() {
         .await
         .expect("AI job replay request should be handled");
     assert_eq!(ai_job_replay_response.status(), StatusCode::ACCEPTED);
-    let ai_job_replay_payload = read_json(ai_job_replay_response).await;
+    let ai_job_replay_payload = read_envelope_data(ai_job_replay_response).await;
     assert_eq!(ai_job_replay_payload["id"], ai_job_id);
 
     let forbidden_route_response = app
@@ -530,9 +497,6 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             "/app/v3/api/notes/workspaces",
             json!({
                 "id": "workspace-remote-apply",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "ownerSubjectType": "user",
                 "ownerSubjectId": "30",
                 "name": "Remote Apply Lab",
@@ -549,9 +513,6 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             "/app/v3/api/notes/workspaces/workspace-remote-apply/pages",
             json!({
                 "id": "page-remote-apply",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "title": "Before remote apply",
                 "initialContent": { "blocks": [] },
                 "contentType": "application/vnd.sdkwork.notes.page+json"
@@ -560,7 +521,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .await
         .expect("create page request should be handled");
     assert_eq!(create_page_response.status(), StatusCode::CREATED);
-    let create_page_payload = read_json(create_page_response).await;
+    let create_page_payload = read_envelope_data(create_page_response).await;
     let remote_cursor = create_page_payload["currentDriveVersionId"]
         .as_str()
         .expect("currentDriveVersionId should be present")
@@ -572,9 +533,6 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             Method::POST,
             "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "idempotencyKey": "remote-apply-upsert-001",
                 "taskId": "sync-task-upsert-001",
                 "entityType": "note",
@@ -591,7 +549,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .await
         .expect("remote apply upsert request should be handled");
     assert_eq!(upsert_response.status(), StatusCode::OK);
-    let upsert_payload = read_json(upsert_response).await;
+    let upsert_payload = read_envelope_data(upsert_response).await;
     assert_eq!(upsert_payload["outcome"], "applied");
     assert_eq!(upsert_payload["taskId"], "sync-task-upsert-001");
     assert!(upsert_payload["remoteCursor"].is_string());
@@ -601,14 +559,14 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .oneshot(
             auth_request_builder()
                 .method(Method::GET)
-                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=100001&organizationId=0")
+                .uri("/app/v3/api/notes/pages/page-remote-apply")
                 .body(Body::empty())
                 .expect("page request should be built"),
         )
         .await
         .expect("page request should be handled");
     assert_eq!(page_response.status(), StatusCode::OK);
-    let page_payload = read_json(page_response).await;
+    let page_payload = read_envelope_data(page_response).await;
     assert_eq!(page_payload["title"], "After remote apply");
 
     let archive_response = app
@@ -617,9 +575,6 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             Method::POST,
             "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "idempotencyKey": "remote-apply-delete-001",
                 "taskId": "sync-task-delete-001",
                 "entityType": "note",
@@ -633,7 +588,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .await
         .expect("remote apply delete request should be handled");
     assert_eq!(archive_response.status(), StatusCode::OK);
-    let archive_payload = read_json(archive_response).await;
+    let archive_payload = read_envelope_data(archive_response).await;
     assert_eq!(archive_payload["outcome"], "applied");
 
     let archived_page_response = app
@@ -641,14 +596,14 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .oneshot(
             auth_request_builder()
                 .method(Method::GET)
-                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=100001&organizationId=0")
+                .uri("/app/v3/api/notes/pages/page-remote-apply")
                 .body(Body::empty())
                 .expect("archived page request should be built"),
         )
         .await
         .expect("archived page request should be handled");
     assert_eq!(archived_page_response.status(), StatusCode::OK);
-    let archived_page_payload = read_json(archived_page_response).await;
+    let archived_page_payload = read_envelope_data(archived_page_response).await;
     assert_eq!(archived_page_payload["archiveStatus"], "archived");
 
     let permanent_delete_response = app
@@ -657,9 +612,6 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
             Method::POST,
             "/app/v3/api/notes/pages/page-remote-apply/remote_apply",
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "idempotencyKey": "remote-apply-permanent-delete-001",
                 "taskId": "sync-task-permanent-delete-001",
                 "entityType": "note",
@@ -673,7 +625,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .await
         .expect("remote apply permanent delete request should be handled");
     assert_eq!(permanent_delete_response.status(), StatusCode::OK);
-    let permanent_delete_payload = read_json(permanent_delete_response).await;
+    let permanent_delete_payload = read_envelope_data(permanent_delete_response).await;
     assert_eq!(permanent_delete_payload["outcome"], "applied");
 
     let deleted_page_response = app
@@ -681,7 +633,7 @@ async fn app_api_routes_remote_apply_updates_page_metadata_and_archives_page() {
         .oneshot(
             auth_request_builder()
                 .method(Method::GET)
-                .uri("/app/v3/api/notes/pages/page-remote-apply?tenantId=100001&organizationId=0")
+                .uri("/app/v3/api/notes/pages/page-remote-apply")
                 .body(Body::empty())
                 .expect("deleted page request should be built"),
         )
@@ -715,9 +667,6 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
             "/app/v3/api/notes/workspaces",
             json!({
                 "id": "workspace-custom-metadata",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "ownerSubjectType": "user",
                 "ownerSubjectId": "30",
                 "name": "Canvas Lab",
@@ -735,9 +684,6 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
             "/app/v3/api/notes/workspaces/workspace-custom-metadata/pages",
             json!({
                 "id": "page-canvas-001",
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "title": "Canvas",
                 "initialContent": { "nodes": [{ "id": "node-1", "type": "text" }] },
                 "contentType": "application/vnd.sdkwork.notes.canvas+json",
@@ -747,7 +693,7 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
         .await
         .expect("create page request should be handled");
     assert_eq!(create_page_response.status(), StatusCode::CREATED);
-    let create_page_payload = read_json(create_page_response).await;
+    let create_page_payload = read_envelope_data(create_page_response).await;
     assert_eq!(
         create_page_payload["contentType"].as_str(),
         Some("application/vnd.sdkwork.notes.canvas+json")
@@ -763,9 +709,6 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
             Method::PUT,
             "/app/v3/api/notes/pages/page-canvas-001/content",
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "content": { "nodes": [{ "id": "node-1", "type": "text", "text": "updated" }] },
                 "expectedDriveVersionId": "drive-version-page-canvas-001-v1"
             }),
@@ -773,7 +716,7 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
         .await
         .expect("update content request should be handled");
     assert_eq!(update_response.status(), StatusCode::OK);
-    let update_payload = read_json(update_response).await;
+    let update_payload = read_envelope_data(update_response).await;
     assert_eq!(
         update_payload["contentType"].as_str(),
         Some("application/vnd.sdkwork.notes.canvas+json")
@@ -785,7 +728,7 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-canvas-001?tenantId=100001&organizationId=0",
+                    "/app/v3/api/notes/pages/page-canvas-001",
                 )
                 .body(Body::empty())
                 .expect("page request should be built"),
@@ -793,7 +736,7 @@ async fn app_api_routes_update_content_preserves_existing_content_metadata_when_
         .await
         .expect("page request should be handled");
     assert_eq!(page_response.status(), StatusCode::OK);
-    let page_payload = read_json(page_response).await;
+    let page_payload = read_envelope_data(page_response).await;
     assert_eq!(
         page_payload["contentType"].as_str(),
         Some("application/vnd.sdkwork.notes.canvas+json")
@@ -825,7 +768,7 @@ async fn app_api_routes_list_page_ai_suggestions() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/ai_suggestions?page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("page AI suggestions request should be built"),
@@ -833,7 +776,7 @@ async fn app_api_routes_list_page_ai_suggestions() {
         .await
         .expect("page AI suggestions request should be handled");
     assert_eq!(suggestions_response.status(), StatusCode::OK);
-    let suggestions_payload = read_json(suggestions_response).await;
+    let suggestions_payload = read_envelope_data(suggestions_response).await;
     assert_eq!(
         suggestions_payload["items"].as_array().map(Vec::len),
         Some(1)
@@ -878,7 +821,7 @@ async fn app_api_routes_create_ai_suggestion_feedback() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/ai_suggestions?page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("page AI suggestions request should be built"),
@@ -886,7 +829,7 @@ async fn app_api_routes_create_ai_suggestion_feedback() {
         .await
         .expect("page AI suggestions request should be handled");
     assert_eq!(suggestions_response.status(), StatusCode::OK);
-    let suggestions_payload = read_json(suggestions_response).await;
+    let suggestions_payload = read_envelope_data(suggestions_response).await;
     let suggestion_id = suggestions_payload["items"][0]["id"]
         .as_str()
         .expect("suggestion id should be present")
@@ -897,9 +840,6 @@ async fn app_api_routes_create_ai_suggestion_feedback() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{suggestion_id}/feedback"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "feedbackType": "helpful",
                 "feedbackText": "Useful summary"
             }),
@@ -907,7 +847,7 @@ async fn app_api_routes_create_ai_suggestion_feedback() {
         .await
         .expect("AI suggestion feedback request should be handled");
     assert_eq!(feedback_response.status(), StatusCode::OK);
-    let feedback_payload = read_json(feedback_response).await;
+    let feedback_payload = read_envelope_data(feedback_response).await;
     assert_eq!(feedback_payload["suggestionId"], suggestion_id);
     assert_eq!(feedback_payload["feedbackType"], "helpful");
     assert_eq!(feedback_payload["feedbackText"], "Useful summary");
@@ -938,7 +878,7 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/ai_suggestions?page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("page AI suggestions request should be built"),
@@ -946,7 +886,7 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
         .await
         .expect("page AI suggestions request should be handled");
     assert_eq!(suggestions_response.status(), StatusCode::OK);
-    let suggestions_payload = read_json(suggestions_response).await;
+    let suggestions_payload = read_envelope_data(suggestions_response).await;
     let items = suggestions_payload["items"]
         .as_array()
         .expect("suggestions should be an array");
@@ -969,15 +909,12 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{summary_id}/accept"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30"
             }),
         ))
         .await
         .expect("AI suggestion accept request should be handled");
     assert_eq!(accept_response.status(), StatusCode::OK);
-    let accept_payload = read_json(accept_response).await;
+    let accept_payload = read_envelope_data(accept_response).await;
     assert_eq!(accept_payload["id"], summary_id);
     assert_eq!(accept_payload["status"], "accepted");
 
@@ -987,15 +924,12 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{tag_id}/reject"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30"
             }),
         ))
         .await
         .expect("AI suggestion reject request should be handled");
     assert_eq!(reject_response.status(), StatusCode::OK);
-    let reject_payload = read_json(reject_response).await;
+    let reject_payload = read_envelope_data(reject_response).await;
     assert_eq!(reject_payload["id"], tag_id);
     assert_eq!(reject_payload["status"], "rejected");
 
@@ -1004,9 +938,6 @@ async fn app_api_routes_accept_and_reject_ai_suggestions() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{summary_id}/reject"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30"
             }),
         ))
         .await
@@ -1039,7 +970,7 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
             auth_request_builder()
                 .method(Method::GET)
                 .uri(
-                    "/app/v3/api/notes/pages/page-001/ai_suggestions?tenantId=100001&organizationId=0&operatorId=30&page=1&page_size=20",
+                    "/app/v3/api/notes/pages/page-001/ai_suggestions?page=1&page_size=20",
                 )
                 .body(Body::empty())
                 .expect("page AI suggestions request should be built"),
@@ -1047,7 +978,7 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
         .await
         .expect("page AI suggestions request should be handled");
     assert_eq!(suggestions_response.status(), StatusCode::OK);
-    let suggestions_payload = read_json(suggestions_response).await;
+    let suggestions_payload = read_envelope_data(suggestions_response).await;
     let suggestion_id = suggestions_payload["items"][0]["id"]
         .as_str()
         .expect("suggestion id should be present")
@@ -1059,9 +990,6 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{suggestion_id}/accept"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30"
             }),
         ))
         .await
@@ -1073,9 +1001,6 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
             Method::POST,
             &format!("/app/v3/api/notes/ai_suggestions/{suggestion_id}/apply"),
             json!({
-                "tenantId": "100001",
-                "organizationId": "0",
-                "operatorId": "30",
                 "expectedDriveVersionId": "drive-version-page-001-v1",
                 "createCheckpoint": true
             }),
@@ -1083,7 +1008,7 @@ async fn app_api_routes_apply_accepted_ai_suggestion() {
         .await
         .expect("AI suggestion apply request should be handled");
     assert_eq!(apply_response.status(), StatusCode::OK);
-    let apply_payload = read_json(apply_response).await;
+    let apply_payload = read_envelope_data(apply_response).await;
     assert_eq!(apply_payload["pageId"], "page-001");
     assert_eq!(apply_payload["driveNodeId"], "drive-node-page-001");
     assert_eq!(apply_payload["driveVersionId"], "drive-version-page-001-v2");
@@ -1359,6 +1284,12 @@ fn query_request(method: Method, uri: &str) -> Request<Body> {
         .uri(uri)
         .body(Body::empty())
         .expect("query request should be built")
+}
+
+async fn read_envelope_data(response: axum::response::Response) -> serde_json::Value {
+    let payload = read_json(response).await;
+    assert_eq!(payload["code"], 0);
+    payload["data"].clone()
 }
 
 async fn read_json(response: axum::response::Response) -> serde_json::Value {

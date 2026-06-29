@@ -49,7 +49,38 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceAdminPage"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "items",
+                            "pageInfo"
+                          ],
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/WorkspaceAdmin"
+                              }
+                            },
+                            "pageInfo": {
+                              "$ref": "#/components/schemas/PageInfo"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -94,7 +125,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceAdmin"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/WorkspaceAdmin"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -147,7 +201,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkspaceAdmin"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/WorkspaceAdmin"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -202,7 +279,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IndexJob"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/IndexJob"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -254,7 +354,38 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IndexJobPage"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "items",
+                            "pageInfo"
+                          ],
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/IndexJob"
+                              }
+                            },
+                            "pageInfo": {
+                              "$ref": "#/components/schemas/PageInfo"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -302,7 +433,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IndexJob"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/IndexJob"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -348,7 +502,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IndexJob"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/IndexJob"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -384,15 +561,6 @@
         ],
         "parameters": [
           {
-            "$ref": "#/components/parameters/TenantIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OrganizationIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OperatorIdQuery"
-          },
-          {
             "$ref": "#/components/parameters/PageQuery"
           },
           {
@@ -408,7 +576,38 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiJobPage"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "items",
+                            "pageInfo"
+                          ],
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/AiJob"
+                              }
+                            },
+                            "pageInfo": {
+                              "$ref": "#/components/schemas/PageInfo"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -445,15 +644,6 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/AiJobIdPath"
-          },
-          {
-            "$ref": "#/components/parameters/TenantIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OrganizationIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -462,7 +652,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiJob"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/AiJob"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -499,15 +712,6 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/AiJobIdPath"
-          },
-          {
-            "$ref": "#/components/parameters/TenantIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OrganizationIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -516,7 +720,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiJob"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/AiJob"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -567,7 +794,38 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DriveOrphanDiagnosticPage"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "items",
+                            "pageInfo"
+                          ],
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/DriveOrphanDiagnostic"
+                              }
+                            },
+                            "pageInfo": {
+                              "$ref": "#/components/schemas/PageInfo"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -615,7 +873,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IndexJob"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/IndexJob"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -653,15 +934,6 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/AiJobIdPath"
-          },
-          {
-            "$ref": "#/components/parameters/TenantIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OrganizationIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "responses": {
@@ -670,7 +942,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiJob"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/AiJob"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -707,15 +1002,6 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/AiJobIdPath"
-          },
-          {
-            "$ref": "#/components/parameters/TenantIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OrganizationIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OperatorIdQuery"
           }
         ],
         "requestBody": {
@@ -734,7 +1020,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiJob"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/AiJob"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -789,7 +1098,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiSuggestion"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/AiSuggestion"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -844,7 +1176,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiSuggestion"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/AiSuggestion"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -899,7 +1254,30 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PageContent"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "item"
+                          ],
+                          "properties": {
+                            "item": {
+                              "$ref": "#/components/schemas/PageContent"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -938,15 +1316,6 @@
             "$ref": "#/components/parameters/AiSuggestionIdPath"
           },
           {
-            "$ref": "#/components/parameters/TenantIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OrganizationIdQuery"
-          },
-          {
-            "$ref": "#/components/parameters/OperatorIdQuery"
-          },
-          {
             "$ref": "#/components/parameters/PageQuery"
           },
           {
@@ -959,7 +1328,38 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AiFeedbackPage"
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SdkWorkApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "data"
+                      ],
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "items",
+                            "pageInfo"
+                          ],
+                          "properties": {
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/AiFeedback"
+                              }
+                            },
+                            "pageInfo": {
+                              "$ref": "#/components/schemas/PageInfo"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               }
             }
@@ -1064,30 +1464,6 @@
         "schema": {
           "type": "string"
         }
-      },
-      "TenantIdQuery": {
-        "name": "tenantId",
-        "in": "query",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      "OrganizationIdQuery": {
-        "name": "organizationId",
-        "in": "query",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      "OperatorIdQuery": {
-        "name": "operatorId",
-        "in": "query",
-        "required": false,
-        "schema": {
-          "type": "string"
-        }
       }
     },
     "responses": {
@@ -1106,6 +1482,10 @@
       "FieldError": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "field",
+          "message"
+        ],
         "properties": {
           "field": {
             "type": "string"
@@ -1114,7 +1494,10 @@
             "type": "string"
           },
           "code": {
-            "type": "string"
+            "type": "integer",
+            "format": "int32",
+            "minimum": 40011,
+            "maximum": 40099
           }
         }
       },
@@ -1124,7 +1507,9 @@
         "required": [
           "type",
           "title",
-          "status"
+          "status",
+          "code",
+          "traceId"
         ],
         "properties": {
           "type": {
@@ -1146,10 +1531,12 @@
             "type": "string"
           },
           "code": {
-            "type": "string"
+            "$ref": "#/components/schemas/SdkWorkPlatformErrorCode"
           },
           "traceId": {
-            "type": "string"
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
           },
           "errors": {
             "type": "array",
@@ -1163,24 +1550,41 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "page",
-          "pageSize",
-          "hasMore"
+          "mode"
         ],
         "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "offset",
+              "cursor"
+            ]
+          },
           "page": {
             "type": "integer",
             "minimum": 1
           },
           "pageSize": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "maximum": 200
+          },
+          "totalItems": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "hasMore": {
             "type": "boolean"
-          },
-          "nextCursor": {
-            "type": "string"
           }
         }
       },
@@ -1189,20 +1593,12 @@
         "additionalProperties": false,
         "required": [
           "id",
-          "tenantId",
-          "organizationId",
           "name",
           "driveSpaceId",
           "lifecycleStatus"
         ],
         "properties": {
           "id": {
-            "type": "string"
-          },
-          "tenantId": {
-            "type": "string"
-          },
-          "organizationId": {
             "type": "string"
           },
           "name": {
@@ -1540,41 +1936,12 @@
       "AiSuggestionDecisionRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "tenantId",
-          "organizationId",
-          "operatorId"
-        ],
-        "properties": {
-          "tenantId": {
-            "type": "string"
-          },
-          "organizationId": {
-            "type": "string"
-          },
-          "operatorId": {
-            "type": "string"
-          }
-        }
+        "properties": {}
       },
       "AiSuggestionApplyRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "tenantId",
-          "organizationId",
-          "operatorId"
-        ],
         "properties": {
-          "tenantId": {
-            "type": "string"
-          },
-          "organizationId": {
-            "type": "string"
-          },
-          "operatorId": {
-            "type": "string"
-          },
           "expectedDriveVersionId": {
             "type": "string"
           },
@@ -1744,6 +2111,149 @@
             "$ref": "#/components/schemas/PageInfo"
           }
         }
+      },
+      "SdkWorkApiResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "data",
+          "traceId"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32",
+            "enum": [
+              0
+            ],
+            "default": 0,
+            "minimum": 0,
+            "maximum": 0
+          },
+          "data": {
+            "description": "Operation-specific payload typed per response schema."
+          },
+          "traceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Server-owned request correlation id."
+          }
+        }
+      },
+      "SdkWorkResourceData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "item"
+        ],
+        "properties": {
+          "item": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Typed domain resource for the operation."
+          }
+        }
+      },
+      "SdkWorkPageData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "pageInfo": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        }
+      },
+      "SdkWorkCommandData": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accepted"
+        ],
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "const": true
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "SdkWorkPlatformErrorCode": {
+        "type": "integer",
+        "format": "int32",
+        "minimum": 40001,
+        "maximum": 79999,
+        "description": "Platform or domain error code per API_SPEC.md §15.3."
+      },
+      "SdkWorkResourceResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SdkWorkResourceData"
+              }
+            }
+          }
+        ]
+      },
+      "SdkWorkListResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SdkWorkPageData"
+              }
+            }
+          }
+        ]
+      },
+      "SdkWorkCommandResponse": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SdkWorkApiResponse"
+          },
+          {
+            "type": "object",
+            "required": [
+              "data"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/SdkWorkCommandData"
+              }
+            }
+          }
+        ]
       }
     }
   }

@@ -17,6 +17,7 @@ sdkwork-notes-pages-service.workspace = true
 sdkwork-routes-notes-http-auth.workspace = true
 sdkwork-web-core.workspace = true
 sdkwork-web-axum.workspace = true
+sdkwork-utils-rust.workspace = true
 sdkwork_iam_web_adapter.workspace = true
 sqlx.workspace = true
 tokio.workspace = true

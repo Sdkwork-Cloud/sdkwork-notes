@@ -1,5 +1,6 @@
 pub mod context;
 pub mod dto;
+pub mod envelope;
 pub mod error;
 pub mod handlers;
 pub mod http_route_manifest;

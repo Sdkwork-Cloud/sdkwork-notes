@@ -1,13 +1,10 @@
 import { backendApiPath } from './paths';
 import type { HttpClient } from '../http/client';
 
-import type { AdminUpdateWorkspaceRequest, AiFeedbackPage, AiJob, AiJobPage, AiSuggestion, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, CompleteAiJobRequest, CreateIndexJobRequest, DriveOrphanDiagnosticPage, IndexJob, IndexJobPage, PageContent, RebuildProjectionRequest, RepairDriveOrphansRequest, WorkspaceAdmin, WorkspaceAdminPage } from '../types';
+import type { AdminUpdateWorkspaceRequest, AiFeedback, AiJob, AiSuggestion, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, CompleteAiJobRequest, CreateIndexJobRequest, DriveOrphanDiagnostic, IndexJob, PageContent, PageInfo, RebuildProjectionRequest, RepairDriveOrphansRequest, WorkspaceAdmin } from '../types';
 
 
 export interface NotesAiSuggestionsFeedbackListParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
   page?: number;
   pageSize?: number;
 }
@@ -21,15 +18,12 @@ export class NotesAiSuggestionsFeedbackApi {
 
 
 /** List AI suggestion feedback for backend-admin quality review. */
-  async list(aiSuggestionId: string, params: NotesAiSuggestionsFeedbackListParams): Promise<AiFeedbackPage> {
+  async list(aiSuggestionId: string, params?: NotesAiSuggestionsFeedbackListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-      { name: 'page', value: params.page, style: 'form', explode: true, allowReserved: false },
-      { name: 'page_size', value: params.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<AiFeedbackPage>(appendQueryString(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/feedback`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/feedback`), query));
   }
 }
 
@@ -74,13 +68,13 @@ export class NotesDiagnosticsDriveOrphansApi {
 
 
 /** List Notes metadata records with missing or inconsistent Drive bindings. */
-  async list(params?: NotesDiagnosticsDriveOrphansListParams): Promise<DriveOrphanDiagnosticPage> {
+  async list(params?: NotesDiagnosticsDriveOrphansListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<DriveOrphanDiagnosticPage>(appendQueryString(backendApiPath(`/notes/diagnostics/drive_orphans`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/diagnostics/drive_orphans`), query));
   }
 
 /** Queue repair for Notes metadata records with inconsistent Drive bindings. */
@@ -101,18 +95,9 @@ export class NotesDiagnosticsApi {
 }
 
 export interface NotesAiJobsAdminListParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
   page?: number;
   pageSize?: number;
   workspaceId?: string;
-}
-
-export interface NotesAiJobsAdminRetrieveParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
 }
 
 export class NotesAiJobsAdminApi {
@@ -124,45 +109,19 @@ export class NotesAiJobsAdminApi {
 
 
 /** List AI jobs for backend-admin review. */
-  async list(params: NotesAiJobsAdminListParams): Promise<AiJobPage> {
+  async list(params?: NotesAiJobsAdminListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-      { name: 'page', value: params.page, style: 'form', explode: true, allowReserved: false },
-      { name: 'page_size', value: params.pageSize, style: 'form', explode: true, allowReserved: false },
-      { name: 'workspace_id', value: params.workspaceId, style: 'form', explode: true, allowReserved: false },
+      { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
+      { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
+      { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<AiJobPage>(appendQueryString(backendApiPath(`/notes/ai_jobs`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/ai_jobs`), query));
   }
 
 /** Retrieve backend-admin AI job details. */
-  async retrieve(aiJobId: string, params: NotesAiJobsAdminRetrieveParams): Promise<AiJob> {
-    const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-    ]);
-    return this.client.get<AiJob>(appendQueryString(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}`), query));
+  async retrieve(aiJobId: string): Promise<AiJob> {
+    return this.client.get<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}`));
   }
-}
-
-export interface NotesAiJobsCancelParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
-}
-
-export interface NotesAiJobsClaimParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
-}
-
-export interface NotesAiJobsCompleteParams {
-  tenantId: string;
-  organizationId: string;
-  operatorId?: string;
 }
 
 export class NotesAiJobsApi {
@@ -176,33 +135,18 @@ export class NotesAiJobsApi {
 
 
 /** Cancel a running AI job through backend-admin controls. */
-  async cancel(aiJobId: string, params: NotesAiJobsCancelParams): Promise<AiJob> {
-    const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-    ]);
-    return this.client.post<AiJob>(appendQueryString(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/cancel`), query));
+  async cancel(aiJobId: string): Promise<AiJob> {
+    return this.client.post<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/cancel`));
   }
 
 /** Claim a queued AI job for backend worker execution. */
-  async claim(aiJobId: string, params: NotesAiJobsClaimParams): Promise<AiJob> {
-    const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-    ]);
-    return this.client.post<AiJob>(appendQueryString(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/claim`), query));
+  async claim(aiJobId: string): Promise<AiJob> {
+    return this.client.post<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/claim`));
   }
 
 /** Complete a running AI job and persist reviewable suggestions. */
-  async complete(aiJobId: string, body: CompleteAiJobRequest, params: NotesAiJobsCompleteParams): Promise<AiJob> {
-    const query = buildQueryString([
-      { name: 'tenantId', value: params.tenantId, style: 'form', explode: true, allowReserved: false },
-      { name: 'organizationId', value: params.organizationId, style: 'form', explode: true, allowReserved: false },
-      { name: 'operatorId', value: params.operatorId, style: 'form', explode: true, allowReserved: false },
-    ]);
-    return this.client.post<AiJob>(appendQueryString(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/complete`), query), body, undefined, undefined, 'application/json');
+  async complete(aiJobId: string, body: CompleteAiJobRequest): Promise<AiJob> {
+    return this.client.post<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/complete`), body, undefined, undefined, 'application/json');
   }
 }
 
@@ -221,13 +165,13 @@ export class NotesIndexJobsApi {
 
 
 /** List Notes index and projection jobs. */
-  async list(params?: NotesIndexJobsListParams): Promise<IndexJobPage> {
+  async list(params?: NotesIndexJobsListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<IndexJobPage>(appendQueryString(backendApiPath(`/notes/index_jobs`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/index_jobs`), query));
   }
 
 /** Create an index or projection job. */
@@ -270,13 +214,13 @@ export class NotesWorkspacesAdminApi {
 
 
 /** List Notes workspaces for backend-admin governance. */
-  async list(params?: NotesWorkspacesAdminListParams): Promise<WorkspaceAdminPage> {
+  async list(params?: NotesWorkspacesAdminListParams): Promise<Record<string, unknown>> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<WorkspaceAdminPage>(appendQueryString(backendApiPath(`/notes/workspaces`), query));
+    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/workspaces`), query));
   }
 
 /** Retrieve backend-admin workspace diagnostics. */

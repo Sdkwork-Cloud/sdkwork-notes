@@ -2,12 +2,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct AiSuggestionDecisionRequest {
-    #[serde(rename = "tenantId")]
-    pub tenant_id: String,
-
-    #[serde(rename = "organizationId")]
-    pub organization_id: String,
-
-    #[serde(rename = "operatorId")]
-    pub operator_id: String,
+    #[serde(flatten)]
+    pub additional_properties: std::collections::HashMap<String, serde_json::Value>,
 }

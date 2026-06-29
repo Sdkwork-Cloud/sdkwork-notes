@@ -52,7 +52,7 @@
     },
     {
       "path": "src/api/notes.rs",
-      "sha256": "64cf00d139177df68aec372cb22dd5746967279c2a244d764cf7ac66cdca290e"
+      "sha256": "09ed419c70eb3919105430adc14f498da98f2b6828c910e378f06ab1c219cfed"
     },
     {
       "path": "src/api/paths.rs",
@@ -95,16 +95,52 @@
       "sha256": "4a15cdeb7dab521ef4003a13c64e272fcb91117cd167ff2cce514f236119a4d6"
     },
     {
+      "path": "src/models/ai_jobs_admin_list_response.rs",
+      "sha256": "cf9cfd3939d622761763fd4bc1f0531596e28d621fddc5ae259f27549c8b9056"
+    },
+    {
+      "path": "src/models/ai_jobs_admin_retrieve_response.rs",
+      "sha256": "2d0accc71d5807f580dee169809ca116daefab280c4ddce712d31a217307568b"
+    },
+    {
+      "path": "src/models/ai_jobs_cancel_response.rs",
+      "sha256": "cafb03f4ad3f8f4da735e0cd396287f24b15f297c805764b02ef26c2bddb9712"
+    },
+    {
+      "path": "src/models/ai_jobs_claim_response.rs",
+      "sha256": "bc9188ec7fe1b436b9e862f4385b5b443787fd35279e3eb16e47fdd64f7af9d7"
+    },
+    {
+      "path": "src/models/ai_jobs_complete_response.rs",
+      "sha256": "ab9a1917a09c63c33b7d72b7dc1cf6a53f56db278e2ac4869a391c0e73836bb1"
+    },
+    {
       "path": "src/models/ai_suggestion_apply_request.rs",
-      "sha256": "d6134537b3727d44de9c3ab0def5805bcee4f3030486f2161c4c7d6adfeeed69"
+      "sha256": "247bf481f0e7112127687716f142220a82c561ef115e99e6d5dbac5d5e3d31f3"
     },
     {
       "path": "src/models/ai_suggestion_decision_request.rs",
-      "sha256": "2db00053e95d8dd3e465516ba538ca3175b4321310c4fd9a24814aeb5c514541"
+      "sha256": "1173f52f563466a965270b5e2d8f26d58692003b2e3685bc28413a58c948c9ac"
     },
     {
       "path": "src/models/ai_suggestion.rs",
       "sha256": "1552b4cc49e2b0ae17752abf7d6155f1cc0d02f006194d9243204fec0038e0f1"
+    },
+    {
+      "path": "src/models/ai_suggestions_accept_response.rs",
+      "sha256": "bcac49de77db665617a954eb283d691e70b5aaa39be67381d1d1b09527d96a73"
+    },
+    {
+      "path": "src/models/ai_suggestions_apply_response.rs",
+      "sha256": "bbbf1c9f50d7be77c7008aed28ea8f8b58af5dbf92f92d30532a9157f3d54b55"
+    },
+    {
+      "path": "src/models/ai_suggestions_feedback_list_response.rs",
+      "sha256": "a9582615f779c5e972775edcb76aaadcb2778a2430119981b8a89bf61e719280"
+    },
+    {
+      "path": "src/models/ai_suggestions_reject_response.rs",
+      "sha256": "cb41c9d15b184d1c494be69094560c1dc54b039f2a9aaaf33731d5cc15f7f02f"
     },
     {
       "path": "src/models/common.rs",
@@ -123,6 +159,14 @@
       "sha256": "2fee1beabbeb44f107d4b3d13d3de8d3cacbb488710cff9ca590bc7965169d70"
     },
     {
+      "path": "src/models/diagnostics_drive_orphans_list_response.rs",
+      "sha256": "331276d361ca90510e6b3c9a16ead67382bc44604282ea18004f51d66f823bc6"
+    },
+    {
+      "path": "src/models/diagnostics_drive_orphans_repair_response202.rs",
+      "sha256": "bbdaa2a4c4d8840965b7bbd2bef0037c6b97e4193320a56e6f8ef5e884970927"
+    },
+    {
       "path": "src/models/drive_orphan_diagnostic_page.rs",
       "sha256": "c9dcc9d8ab85fc4bb25bd3355507807b820576005656d50eb3b5f71d2b170c25"
     },
@@ -132,7 +176,7 @@
     },
     {
       "path": "src/models/field_error.rs",
-      "sha256": "d0d978b8676ae328c88e426d1cf3664b8393d40a810ed2770a38faa2e30c2f63"
+      "sha256": "c8b58fd0553f605102e3af28a94ab4618ff32cb9622ef8d427288aa766fa61d5"
     },
     {
       "path": "src/models/index_job_page.rs",
@@ -143,8 +187,20 @@
       "sha256": "ffe1b7e13a5d3a0b6fbe7ca811d98915e5908543d5c09be42ec67f2169ffdda3"
     },
     {
+      "path": "src/models/index_jobs_create_response202.rs",
+      "sha256": "bc191f1c29a20d725f099f58d347a5bf4d9de2e8cef095cc62624b8c90441f12"
+    },
+    {
+      "path": "src/models/index_jobs_list_response.rs",
+      "sha256": "f95da48e261057d30e04c4e7a53948c917742f40bd6c12ce07c0753b12a247bf"
+    },
+    {
+      "path": "src/models/index_jobs_retrieve_response.rs",
+      "sha256": "7d7584a9ab5a59b695e3deb749d912b72c596a781a58a45b382803dbd520171c"
+    },
+    {
       "path": "src/models/mod.rs",
-      "sha256": "05b0e382638a90aeab5b0602bd6a932a98067d02ad71765fd6f1ee1f8596beaa"
+      "sha256": "3a3aac6cab559265b9c85ff10555a63943ea69938df0c8c4210d5bbbbc012eb0"
     },
     {
       "path": "src/models/page_content.rs",
@@ -152,11 +208,11 @@
     },
     {
       "path": "src/models/page_info.rs",
-      "sha256": "f7860628f2d2b2215f2e4566fb70c9c064f2235c1df7d08de916b88f19873ef5"
+      "sha256": "9736eb8cc4f3bc814e92f373c25e3de4f4bfa1007f8f2c4f988e03c8986afb95"
     },
     {
       "path": "src/models/problem_detail.rs",
-      "sha256": "f591993aaacfa349333035fe90bab712ac02119a3d4fcc49457ce600fcc9277e"
+      "sha256": "da504e3bda4a51de0ef6611283e5e708596bb5861bd71e0cd46e37a29734d452"
     },
     {
       "path": "src/models/rebuild_projection_request.rs",
@@ -167,12 +223,56 @@
       "sha256": "9742b16c1aa4708055df56ee3ca4537ae1be42c18d338f9b738ec37917d45f52"
     },
     {
+      "path": "src/models/sdk_work_api_response.rs",
+      "sha256": "e5fd3b922322a1cd1b1b6a82810b0fc8222ca9bf54dd9438152e2db940d591ef"
+    },
+    {
+      "path": "src/models/sdk_work_command_data.rs",
+      "sha256": "76685631578c6bce4144c045a43d5f2746a85600f6a26e775f07874c75504b7a"
+    },
+    {
+      "path": "src/models/sdk_work_command_response.rs",
+      "sha256": "efbedd3b191e36c50add6e707435d85f98e7ed8c75f2ef0b87a1a24e784fdfa5"
+    },
+    {
+      "path": "src/models/sdk_work_list_response.rs",
+      "sha256": "46c87f337eb0f8ad7d72dd2bcb0092305f044eeb56cd7b23605ac206edf94acf"
+    },
+    {
+      "path": "src/models/sdk_work_page_data.rs",
+      "sha256": "9c53ab781272ad35a7b232ce231fc603989c774613fb09719538b0c6309c99f9"
+    },
+    {
+      "path": "src/models/sdk_work_resource_data.rs",
+      "sha256": "ec82fbd431813024f47031c6ab0d5d355ff2d8075dd2d0a71602a8ee6f6ee7fd"
+    },
+    {
+      "path": "src/models/sdk_work_resource_response.rs",
+      "sha256": "a16ff12f0418a861ef9a744a53676071b75f036536d35a0f310c9f875025a203"
+    },
+    {
       "path": "src/models/workspace_admin_page.rs",
       "sha256": "66fe13ac1c5f578b16ba24c42c31d87b5132848837d165f6d68547c2f3f07a88"
     },
     {
       "path": "src/models/workspace_admin.rs",
-      "sha256": "300100a2cd0b3166faf35802830350af01be9165f7a1e935bcdd566ec5c86ff2"
+      "sha256": "d3b7b5e1aed7423cee67ceffa4f154027c85542734658729e6f2c242351c535e"
+    },
+    {
+      "path": "src/models/workspaces_admin_list_response.rs",
+      "sha256": "c3658f9cba111a62a737da840527dcacca586157d41fce1be534c37eb04cbb29"
+    },
+    {
+      "path": "src/models/workspaces_admin_retrieve_response.rs",
+      "sha256": "b9f094d5c8b0ba3d8d84856019d3daeaf4751e9ce4a4db5c1268837ffe161506"
+    },
+    {
+      "path": "src/models/workspaces_admin_update_response.rs",
+      "sha256": "0aaf062e3225b4690828f06391da31b337c854b73c84d9629ed3ed2b7e8feac5"
+    },
+    {
+      "path": "src/models/workspaces_projection_rebuild_response202.rs",
+      "sha256": "0db3f0dd3a97e7077dc5d693c846848410c3a1e649edd76604d11a36c8d50cf4"
     }
   ],
   "scaffoldFiles": [

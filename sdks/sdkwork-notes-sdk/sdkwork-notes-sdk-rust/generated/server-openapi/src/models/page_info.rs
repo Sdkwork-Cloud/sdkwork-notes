@@ -2,15 +2,28 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct PageInfo {
-    pub page: i64,
+    pub mode: String,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub page: Option<i64>,
 
     #[serde(rename = "pageSize")]
-    pub page_size: i64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub page_size: Option<i64>,
 
-    #[serde(rename = "hasMore")]
-    pub has_more: bool,
+    #[serde(rename = "totalItems")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_items: Option<String>,
+
+    #[serde(rename = "totalPages")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_pages: Option<i64>,
 
     #[serde(rename = "nextCursor")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub next_cursor: Option<String>,
+
+    #[serde(rename = "hasMore")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub has_more: Option<bool>,
 }

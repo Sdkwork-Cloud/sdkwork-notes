@@ -12,7 +12,7 @@ cargo add sdkwork-notes-app-sdk-generated
 
 ```rust
 use sdkwork_notes_app_sdk_generated::{SdkworkAppClient, SdkworkConfig};
-use sdkwork_notes_app_sdk_generated::*;
+use std::collections::HashMap;
 
 
 #[tokio::main]
@@ -21,22 +21,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     client.set_auth_token("your-auth-token");
 client.set_access_token("your-access-token");
 
-    let body = CreateWorkspaceRequest {
-        tenant_id: "1".to_string(),
-        organization_id: "1".to_string(),
-        operator_id: "1".to_string(),
-        id: "1".to_string(),
-        owner_subject_type: Some("user".to_string()),
-        owner_subject_id: Some("1".to_string()),
-        name: "name".to_string(),
-        description: Some("description".to_string()),
-        drive_space_id: "1".to_string(),
-        default_page_content_type: Some("defaultpagecontenttype".to_string()),
-        default_page_schema_version: Some("defaultpageschemaversion".to_string()),
-        ai_index_policy_code: Some("ok".to_string()),
-        ..Default::default()
-    };
-    let result = client.notes().workspaces_create(&body).await?;
+    let mut query = HashMap::new();
+    query.insert("page".to_string(), serde_json::json!(1));
+    query.insert("page_size".to_string(), serde_json::json!(2));
+    let result = client.notes().workspaces_list(Some(&query)).await?;
     println!("{result:?}");
     Ok(())
 }
@@ -66,24 +54,12 @@ client.set_header("X-Custom-Header", "value");
 ### notes
 
 ```rust
-use sdkwork_notes_app_sdk_generated::*;
-// Create a Notes workspace and bind it to a Drive Notes space or compatible app-upload space.
-let body = CreateWorkspaceRequest {
-    tenant_id: "1".to_string(),
-    organization_id: "1".to_string(),
-    operator_id: "1".to_string(),
-    id: "1".to_string(),
-    owner_subject_type: Some("user".to_string()),
-    owner_subject_id: Some("1".to_string()),
-    name: "name".to_string(),
-    description: Some("description".to_string()),
-    drive_space_id: "1".to_string(),
-    default_page_content_type: Some("defaultpagecontenttype".to_string()),
-    default_page_schema_version: Some("defaultpageschemaversion".to_string()),
-    ai_index_policy_code: Some("ok".to_string()),
-    ..Default::default()
-};
-let result = client.notes().workspaces_create(&body).await?;
+use std::collections::HashMap;
+// List Notes workspaces visible to the current app principal.
+let mut query = HashMap::new();
+query.insert("page".to_string(), serde_json::json!(1));
+query.insert("page_size".to_string(), serde_json::json!(2));
+let result = client.notes().workspaces_list(Some(&query)).await?;
 println!("{result:?}");
 ```
 
@@ -91,28 +67,16 @@ println!("{result:?}");
 
 ```rust
 use sdkwork_notes_app_sdk_generated::{SdkworkAppClient, SdkworkConfig};
-use sdkwork_notes_app_sdk_generated::*;
+use std::collections::HashMap;
 
 
 let client = SdkworkAppClient::new(SdkworkConfig::new("/app/v3/api"))?;
 
 let outcome: Result<(), _> = async {
-    let body = CreateWorkspaceRequest {
-        tenant_id: "1".to_string(),
-        organization_id: "1".to_string(),
-        operator_id: "1".to_string(),
-        id: "1".to_string(),
-        owner_subject_type: Some("user".to_string()),
-        owner_subject_id: Some("1".to_string()),
-        name: "name".to_string(),
-        description: Some("description".to_string()),
-        drive_space_id: "1".to_string(),
-        default_page_content_type: Some("defaultpagecontenttype".to_string()),
-        default_page_schema_version: Some("defaultpageschemaversion".to_string()),
-        ai_index_policy_code: Some("ok".to_string()),
-        ..Default::default()
-    };
-    client.notes().workspaces_create(&body).await?;
+    let mut query = HashMap::new();
+    query.insert("page".to_string(), serde_json::json!(1));
+    query.insert("page_size".to_string(), serde_json::json!(2));
+    client.notes().workspaces_list(Some(&query)).await?;
     Ok(())
 }.await;
 

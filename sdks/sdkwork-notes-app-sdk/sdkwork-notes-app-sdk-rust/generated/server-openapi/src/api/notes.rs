@@ -4,7 +4,7 @@ use crate::api::base::{RequestHeaders};
 use crate::api::paths::app_path;
 use crate::api::paths::append_query_string;
 use crate::http::{SdkworkError, SdkworkHttpClient};
-use crate::models::{AiFeedback, AiFeedbackCreateRequest, AiJob, AiSuggestion, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, AiSuggestionPage, CreateAiJobRequest, CreatePageRequest, CreateWorkspaceRequest, DriveVersionPage, NoteRemoteApplyRequest, NoteRemoteApplyResult, Page, PageContent, PageSummaryPage, RestorePageVersionRequest, SearchResultPage, UpdatePageContentRequest, UpdatePageRequest, Workspace, WorkspaceBootstrap, WorkspacePage};
+use crate::models::{AiFeedbackCreateRequest, AiJobsCreateResponse202, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, AiSuggestionsAcceptResponse, AiSuggestionsApplyResponse, AiSuggestionsFeedbackCreateResponse, AiSuggestionsRejectResponse, CreateAiJobRequest, CreatePageRequest, CreateWorkspaceRequest, NoteRemoteApplyRequest, PagesAiSuggestionsListResponse, PagesListResponse, PagesVersionsListResponse, RestorePageVersionRequest, SdkWorkListResponse, SearchQueryResponse, UpdatePageContentRequest, UpdatePageRequest, WorkspacesBootstrapRetrieveResponse, WorkspacesCreateResponse201, WorkspacesListResponse};
 
 #[derive(Clone)]
 pub struct NotesApi {
@@ -17,11 +17,8 @@ impl NotesApi {
     }
 
     /// List Notes workspaces visible to the current app principal.
-    pub async fn workspaces_list(&self, tenant_id: &str, organization_id: &str, operator_id: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<WorkspacePage, SdkworkError> {
+    pub async fn workspaces_list(&self, page: Option<i64>, page_size: Option<i64>) -> Result<WorkspacesListResponse, SdkworkError> {
         let query = build_query_string(&[
-            QueryParameterSpec::new("tenantId", tenant_id, "form", true, false, None),
-            QueryParameterSpec::new("organizationId", organization_id, "form", true, false, None),
-            QueryParameterSpec::new("operatorId", operator_id, "form", true, false, None),
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
         ]);
@@ -30,28 +27,20 @@ impl NotesApi {
     }
 
     /// Create a Notes workspace and bind it to a Drive Notes space or compatible app-upload space.
-    pub async fn workspaces_create(&self, body: &CreateWorkspaceRequest) -> Result<Workspace, SdkworkError> {
+    pub async fn workspaces_create(&self, body: &CreateWorkspaceRequest) -> Result<WorkspacesCreateResponse201, SdkworkError> {
         let path = app_path(&"/notes/workspaces".to_string());
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Retrieve workspace bootstrap metadata for editor startup.
-    pub async fn workspaces_bootstrap_retrieve(&self, workspace_id: &str, tenant_id: &str, organization_id: &str, operator_id: Option<&str>) -> Result<WorkspaceBootstrap, SdkworkError> {
-        let query = build_query_string(&[
-            QueryParameterSpec::new("tenantId", tenant_id, "form", true, false, None),
-            QueryParameterSpec::new("organizationId", organization_id, "form", true, false, None),
-            QueryParameterSpec::new("operatorId", operator_id, "form", true, false, None),
-        ]);
-        let path = append_query_string(app_path(&format!("/notes/workspaces/{}/bootstrap", serialize_path_parameter(workspace_id, PathParameterSpec::new("workspaceId", "simple", false)))), &query);
+    pub async fn workspaces_bootstrap_retrieve(&self, workspace_id: &str) -> Result<WorkspacesBootstrapRetrieveResponse, SdkworkError> {
+        let path = app_path(&format!("/notes/workspaces/{}/bootstrap", serialize_path_parameter(workspace_id, PathParameterSpec::new("workspaceId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// List pages in a workspace.
-    pub async fn pages_list(&self, workspace_id: &str, tenant_id: &str, organization_id: &str, operator_id: Option<&str>, page: Option<i64>, page_size: Option<i64>, q: Option<&str>) -> Result<PageSummaryPage, SdkworkError> {
+    pub async fn pages_list(&self, workspace_id: &str, page: Option<i64>, page_size: Option<i64>, q: Option<&str>) -> Result<PagesListResponse, SdkworkError> {
         let query = build_query_string(&[
-            QueryParameterSpec::new("tenantId", tenant_id, "form", true, false, None),
-            QueryParameterSpec::new("organizationId", organization_id, "form", true, false, None),
-            QueryParameterSpec::new("operatorId", operator_id, "form", true, false, None),
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
             QueryParameterSpec::new("q", q, "form", true, false, None),
@@ -61,57 +50,44 @@ impl NotesApi {
     }
 
     /// Create a Drive-backed Notes page.
-    pub async fn pages_create(&self, workspace_id: &str, body: &CreatePageRequest) -> Result<Page, SdkworkError> {
+    pub async fn pages_create(&self, workspace_id: &str, body: &CreatePageRequest) -> Result<SdkWorkListResponse, SdkworkError> {
         let path = app_path(&format!("/notes/workspaces/{}/pages", serialize_path_parameter(workspace_id, PathParameterSpec::new("workspaceId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Retrieve Notes page metadata and Drive binding references.
-    pub async fn pages_retrieve(&self, page_id: &str, tenant_id: &str, organization_id: &str, operator_id: Option<&str>) -> Result<Page, SdkworkError> {
-        let query = build_query_string(&[
-            QueryParameterSpec::new("tenantId", tenant_id, "form", true, false, None),
-            QueryParameterSpec::new("organizationId", organization_id, "form", true, false, None),
-            QueryParameterSpec::new("operatorId", operator_id, "form", true, false, None),
-        ]);
-        let path = append_query_string(app_path(&format!("/notes/pages/{}", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false)))), &query);
+    pub async fn pages_retrieve(&self, page_id: &str) -> Result<SdkWorkListResponse, SdkworkError> {
+        let path = app_path(&format!("/notes/pages/{}", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// Update mutable Notes page metadata.
-    pub async fn pages_update(&self, page_id: &str, body: &UpdatePageRequest) -> Result<Page, SdkworkError> {
+    pub async fn pages_update(&self, page_id: &str, body: &UpdatePageRequest) -> Result<SdkWorkListResponse, SdkworkError> {
         let path = app_path(&format!("/notes/pages/{}", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.patch(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Apply a queued sync mutation to a Notes page.
-    pub async fn pages_remote_apply(&self, page_id: &str, body: &NoteRemoteApplyRequest) -> Result<NoteRemoteApplyResult, SdkworkError> {
+    pub async fn pages_remote_apply(&self, page_id: &str, body: &NoteRemoteApplyRequest) -> Result<SdkWorkListResponse, SdkworkError> {
         let path = app_path(&format!("/notes/pages/{}/remote_apply", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Retrieve Drive-backed page content through the Notes facade.
-    pub async fn pages_content_retrieve(&self, page_id: &str, tenant_id: &str, organization_id: &str, operator_id: Option<&str>) -> Result<PageContent, SdkworkError> {
-        let query = build_query_string(&[
-            QueryParameterSpec::new("tenantId", tenant_id, "form", true, false, None),
-            QueryParameterSpec::new("organizationId", organization_id, "form", true, false, None),
-            QueryParameterSpec::new("operatorId", operator_id, "form", true, false, None),
-        ]);
-        let path = append_query_string(app_path(&format!("/notes/pages/{}/content", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false)))), &query);
+    pub async fn pages_content_retrieve(&self, page_id: &str) -> Result<SdkWorkListResponse, SdkworkError> {
+        let path = app_path(&format!("/notes/pages/{}/content", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// Update Drive-backed page content and refresh Notes current version pointers.
-    pub async fn pages_content_update(&self, page_id: &str, body: &UpdatePageContentRequest) -> Result<PageContent, SdkworkError> {
+    pub async fn pages_content_update(&self, page_id: &str, body: &UpdatePageContentRequest) -> Result<SdkWorkListResponse, SdkworkError> {
         let path = app_path(&format!("/notes/pages/{}/content", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.put(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// List Drive node versions for a Notes page through the Notes business facade.
-    pub async fn pages_versions_list(&self, page_id: &str, tenant_id: &str, organization_id: &str, operator_id: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<DriveVersionPage, SdkworkError> {
+    pub async fn pages_versions_list(&self, page_id: &str, page: Option<i64>, page_size: Option<i64>) -> Result<PagesVersionsListResponse, SdkworkError> {
         let query = build_query_string(&[
-            QueryParameterSpec::new("tenantId", tenant_id, "form", true, false, None),
-            QueryParameterSpec::new("organizationId", organization_id, "form", true, false, None),
-            QueryParameterSpec::new("operatorId", operator_id, "form", true, false, None),
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
         ]);
@@ -120,11 +96,8 @@ impl NotesApi {
     }
 
     /// Search Notes page projections while preserving Drive version provenance.
-    pub async fn search_query(&self, tenant_id: &str, organization_id: &str, operator_id: Option<&str>, workspace_id: Option<&str>, q: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<SearchResultPage, SdkworkError> {
+    pub async fn search_query(&self, workspace_id: Option<&str>, q: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<SearchQueryResponse, SdkworkError> {
         let query = build_query_string(&[
-            QueryParameterSpec::new("tenantId", tenant_id, "form", true, false, None),
-            QueryParameterSpec::new("organizationId", organization_id, "form", true, false, None),
-            QueryParameterSpec::new("operatorId", operator_id, "form", true, false, None),
             QueryParameterSpec::new("workspace_id", workspace_id, "form", true, false, None),
             QueryParameterSpec::new("q", q, "form", true, false, None),
             QueryParameterSpec::new("page", page, "form", true, false, None),
@@ -135,7 +108,7 @@ impl NotesApi {
     }
 
     /// Create an auditable AI job for selected pages, collections, or workspace context.
-    pub async fn ai_jobs_create(&self, body: &CreateAiJobRequest, idempotency_key: &str) -> Result<AiJob, SdkworkError> {
+    pub async fn ai_jobs_create(&self, body: &CreateAiJobRequest, idempotency_key: &str) -> Result<AiJobsCreateResponse202, SdkworkError> {
         let path = app_path(&"/notes/ai_jobs".to_string());
         let headers = build_request_headers(
             &[
@@ -147,11 +120,8 @@ impl NotesApi {
     }
 
     /// List reviewable AI suggestions for a Notes page.
-    pub async fn pages_ai_suggestions_list(&self, page_id: &str, tenant_id: &str, organization_id: &str, operator_id: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<AiSuggestionPage, SdkworkError> {
+    pub async fn pages_ai_suggestions_list(&self, page_id: &str, page: Option<i64>, page_size: Option<i64>) -> Result<PagesAiSuggestionsListResponse, SdkworkError> {
         let query = build_query_string(&[
-            QueryParameterSpec::new("tenantId", tenant_id, "form", true, false, None),
-            QueryParameterSpec::new("organizationId", organization_id, "form", true, false, None),
-            QueryParameterSpec::new("operatorId", operator_id, "form", true, false, None),
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
         ]);
@@ -160,31 +130,31 @@ impl NotesApi {
     }
 
     /// Accept a reviewable AI suggestion for a Notes page.
-    pub async fn ai_suggestions_accept(&self, ai_suggestion_id: &str, body: &AiSuggestionDecisionRequest) -> Result<AiSuggestion, SdkworkError> {
+    pub async fn ai_suggestions_accept(&self, ai_suggestion_id: &str, body: &AiSuggestionDecisionRequest) -> Result<AiSuggestionsAcceptResponse, SdkworkError> {
         let path = app_path(&format!("/notes/ai_suggestions/{}/accept", serialize_path_parameter(ai_suggestion_id, PathParameterSpec::new("aiSuggestionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Reject a reviewable AI suggestion for a Notes page.
-    pub async fn ai_suggestions_reject(&self, ai_suggestion_id: &str, body: &AiSuggestionDecisionRequest) -> Result<AiSuggestion, SdkworkError> {
+    pub async fn ai_suggestions_reject(&self, ai_suggestion_id: &str, body: &AiSuggestionDecisionRequest) -> Result<AiSuggestionsRejectResponse, SdkworkError> {
         let path = app_path(&format!("/notes/ai_suggestions/{}/reject", serialize_path_parameter(ai_suggestion_id, PathParameterSpec::new("aiSuggestionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Apply an accepted AI suggestion to Drive-backed page content.
-    pub async fn ai_suggestions_apply(&self, ai_suggestion_id: &str, body: &AiSuggestionApplyRequest) -> Result<PageContent, SdkworkError> {
+    pub async fn ai_suggestions_apply(&self, ai_suggestion_id: &str, body: &AiSuggestionApplyRequest) -> Result<AiSuggestionsApplyResponse, SdkworkError> {
         let path = app_path(&format!("/notes/ai_suggestions/{}/apply", serialize_path_parameter(ai_suggestion_id, PathParameterSpec::new("aiSuggestionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Record user feedback for an AI suggestion quality loop.
-    pub async fn ai_suggestions_feedback_create(&self, ai_suggestion_id: &str, body: &AiFeedbackCreateRequest) -> Result<AiFeedback, SdkworkError> {
+    pub async fn ai_suggestions_feedback_create(&self, ai_suggestion_id: &str, body: &AiFeedbackCreateRequest) -> Result<AiSuggestionsFeedbackCreateResponse, SdkworkError> {
         let path = app_path(&format!("/notes/ai_suggestions/{}/feedback", serialize_path_parameter(ai_suggestion_id, PathParameterSpec::new("aiSuggestionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Restore a Drive-owned page content version through the Notes business facade.
-    pub async fn pages_versions_restore(&self, page_id: &str, drive_version_id: &str, body: &RestorePageVersionRequest) -> Result<PageContent, SdkworkError> {
+    pub async fn pages_versions_restore(&self, page_id: &str, drive_version_id: &str, body: &RestorePageVersionRequest) -> Result<SdkWorkListResponse, SdkworkError> {
         let path = app_path(&format!("/notes/pages/{}/versions/{}/restore", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false)), serialize_path_parameter(drive_version_id, PathParameterSpec::new("driveVersionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }

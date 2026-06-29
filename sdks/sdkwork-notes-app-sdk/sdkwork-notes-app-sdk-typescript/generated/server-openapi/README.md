@@ -27,21 +27,11 @@ client.setAuthToken('your-auth-token');
 client.setAccessToken('your-access-token');
 
 // Use the SDK
-const body = {
-  tenantId: 'tenantId',
-  organizationId: 'organizationId',
-  operatorId: 'operatorId',
-  id: 'id',
-  ownerSubjectType: 'user',
-  ownerSubjectId: 'ownerSubjectId',
-  name: 'name',
-  description: 'description',
-  driveSpaceId: 'driveSpaceId',
-  defaultPageContentType: 'defaultPageContentType',
-  defaultPageSchemaVersion: 'defaultPageSchemaVersion',
-  aiIndexPolicyCode: 'aiIndexPolicyCode',
+const params = {
+  page: 1,
+  page_size: 2,
 };
-const result = await client.notes.workspaces.create(body);
+const result = await client.notes.workspaces.list(params);
 ```
 
 ## Authentication
@@ -75,22 +65,12 @@ const client = new SdkworkAppClient({
 ### notes
 
 ```typescript
-// Create a Notes workspace and bind it to a Drive Notes space or compatible app-upload space.
-const body = {
-  tenantId: 'tenantId',
-  organizationId: 'organizationId',
-  operatorId: 'operatorId',
-  id: 'id',
-  ownerSubjectType: 'user',
-  ownerSubjectId: 'ownerSubjectId',
-  name: 'name',
-  description: 'description',
-  driveSpaceId: 'driveSpaceId',
-  defaultPageContentType: 'defaultPageContentType',
-  defaultPageSchemaVersion: 'defaultPageSchemaVersion',
-  aiIndexPolicyCode: 'aiIndexPolicyCode',
+// List Notes workspaces visible to the current app principal.
+const params = {
+  page: 1,
+  page_size: 2,
 };
-const result = await client.notes.workspaces.create(body);
+const result = await client.notes.workspaces.list(params);
 ```
 
 ## Error Handling
@@ -99,21 +79,11 @@ const result = await client.notes.workspaces.create(body);
 import { SdkworkAppClient, NetworkError, TimeoutError, AuthenticationError } from '@sdkwork-internal/notes-app-sdk-generated';
 
 try {
-  const body = {
-    tenantId: 'tenantId',
-    organizationId: 'organizationId',
-    operatorId: 'operatorId',
-    id: 'id',
-    ownerSubjectType: 'user',
-    ownerSubjectId: 'ownerSubjectId',
-    name: 'name',
-    description: 'description',
-    driveSpaceId: 'driveSpaceId',
-    defaultPageContentType: 'defaultPageContentType',
-    defaultPageSchemaVersion: 'defaultPageSchemaVersion',
-    aiIndexPolicyCode: 'aiIndexPolicyCode',
+  const params = {
+    page: 1,
+    page_size: 2,
   };
-  const result = await client.notes.workspaces.create(body);
+  const result = await client.notes.workspaces.list(params);
 } catch (error) {
   if (error instanceof AuthenticationError) {
     console.error('Authentication failed:', error.message);
