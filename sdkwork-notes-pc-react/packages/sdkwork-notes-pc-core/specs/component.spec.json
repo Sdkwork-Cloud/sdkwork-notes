@@ -23,6 +23,11 @@
   },
   "canonicalSpecs": [
     {
+      "file": "APP_COMPOSITION_SPEC.md",
+      "path": "../../../../sdkwork-specs/APP_COMPOSITION_SPEC.md",
+      "purpose": "Native-authority application composition and core-package import entrypoints."
+    },
+    {
       "file": "COMPONENT_SPEC.md",
       "path": "../../../../sdkwork-specs/COMPONENT_SPEC.md",
       "purpose": "Local component specs directory and manifest rules."
@@ -115,7 +120,12 @@
   ],
   "contracts": {
     "publicExports": [
-      "."
+      ".",
+      "./sdk",
+      "./modules",
+      "./host",
+      "./session",
+      "./composition"
     ],
     "runtimeEntrypoints": [
       "package.json#scripts.dev",
@@ -124,6 +134,38 @@
       "package.json#scripts.test"
     ],
     "sdkClients": [],
+    "sdkDependencies": [
+      {
+        "workspace": "@sdkwork-internal/notes-app-sdk-generated",
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      },
+      {
+        "workspace": "@sdkwork/drive-app-sdk",
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      },
+      {
+        "workspace": "@sdkwork/iam-app-sdk",
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      },
+      {
+        "workspace": "sdkwork-drive-app-sdk",
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      },
+      {
+        "workspace": "sdkwork-iam-app-sdk",
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      },
+      {
+        "workspace": "sdkwork-notes-app-sdk",
+        "surface": "app-api",
+        "credentialMode": "authenticated-app-api"
+      }
+    ],
     "events": [],
     "configKeys": [],
     "routeManifest": null

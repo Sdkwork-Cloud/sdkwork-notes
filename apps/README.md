@@ -8,15 +8,19 @@ Specs: APPLICATION_SPEC.md, SDKWORK_WORKSPACE_SPEC.md
 ## Primary App Surface
 
 The repository root is not the primary runnable app surface.
-This repository uses a hybrid layout. Primary runnable app surfaces currently live outside `apps/`:
+Notes uses a hybrid layout until migration to `apps/sdkwork-notes-pc/`:
 
 - `sdkwork-notes-pc-react/` with `sdkwork-notes-pc-react/sdkwork.app.config.json`
+
+Repository-root `pnpm-workspace.yaml` owns sibling package paths; do not add nested workspace files under client app roots.
 
 ## Directory Index
 
 | Directory | Surface role | Runnable | Purpose | Entry |
 | --- | --- | --- | --- | --- |
-| sdkwork-notes-pc | pc | yes | Run and deploy your AI Studio app | [README](sdkwork-notes-pc/README.md) |
+| sdkwork-notes-pc-react | pc-react | yes | Primary PC React + Tauri application | [README](../sdkwork-notes-pc-react/README.md) |
+
+Local-only prototypes under `apps/sdkwork-notes-pc/` are gitignored and must not be treated as production surfaces.
 
 ## Allowed Content
 
@@ -27,15 +31,18 @@ This repository uses a hybrid layout. Primary runnable app surfaces currently li
 
 - Repository-root API contracts, generated SDK workspaces, Rust crates, or deployment descriptors moved under `apps/`.
 - Runtime secrets, user-private state, generated SDK transport output, or cross-application copied business logic.
+- Nested `pnpm-workspace.yaml` files under client app roots.
 
 ## Related Specs
 
 - `../sdkwork-specs/APPLICATION_SPEC.md`
 - `../sdkwork-specs/SDKWORK_WORKSPACE_SPEC.md`
 - `../sdkwork-specs/APP_CLIENT_ARCHITECTURE_ALIGNMENT_SPEC.md`
+- `../sdkwork-specs/APP_COMPOSITION_SPEC.md`
 
 ## Verification
 
 ```bash
+pnpm run check:app-composition
 node ../sdkwork-specs/tools/check-apps-directory-index.mjs --root .
 ```

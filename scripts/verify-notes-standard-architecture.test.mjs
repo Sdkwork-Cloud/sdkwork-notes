@@ -122,7 +122,7 @@ test('integrates sdkwork-utils in HTTP route crates', () => {
 });
 
 test('integrates sdkwork-utils-typescript in PC React workspace', () => {
-  const workspace = read('sdkwork-notes-pc-react/pnpm-workspace.yaml');
+  const workspace = read('pnpm-workspace.yaml');
   assert.match(workspace, /sdkwork-utils-typescript/);
 
   const packageJson = readJson('sdkwork-notes-pc-react/package.json');
@@ -392,6 +392,13 @@ test('wires deploy validation into pnpm check', () => {
   const packageJson = readJson('package.json');
   assert.match(packageJson.scripts.check, /check:deploy-standard/);
   assert.match(packageJson.scripts['deploy:validate'], /check-deploy-standard\.mjs/);
+});
+
+test('wires native app composition verification into pnpm check and verify', () => {
+  const packageJson = readJson('package.json');
+  assert.match(packageJson.scripts.check, /check:app-composition/);
+  assert.match(packageJson.scripts.verify, /check:app-composition/);
+  assert.match(packageJson.scripts['check:app-composition'], /verify-repo\.mjs/);
 });
 
 test('integrates sdkwork-drive through generated Rust app SDK facade', () => {

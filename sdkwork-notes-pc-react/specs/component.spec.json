@@ -24,6 +24,11 @@
   },
   "canonicalSpecs": [
     {
+      "file": "APP_COMPOSITION_SPEC.md",
+      "path": "../../sdkwork-specs/APP_COMPOSITION_SPEC.md",
+      "purpose": "Native-authority application composition and core-package import entrypoints."
+    },
+    {
       "file": "APP_MANIFEST_SPEC.md",
       "path": "../../sdkwork-specs/APP_MANIFEST_SPEC.md",
       "purpose": "sdkwork.app.config.json application registration rules."

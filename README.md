@@ -1,4 +1,5 @@
 # sdkwork-notes
+repository-kind: application
 
 SDKWork Notes is a standalone workspace for the Notes product line.
 

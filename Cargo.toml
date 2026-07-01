@@ -16,6 +16,7 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace.dependencies]
+sdkwork-database-config = { path = "../../../sdkwork-database/crates/sdkwork-database-config" }
 async-trait = "0.1"
 axum = "0.8"
 http = "1.4"

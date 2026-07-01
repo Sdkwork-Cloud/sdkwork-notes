@@ -8,7 +8,7 @@ name = "sdkwork_routes_notes_app_api"
 path = "src/lib.rs"
 
 [dependencies]
-sdkwork-database-config = { path = "../../../sdkwork-database/crates/sdkwork-database-config" }
+sdkwork-database-config = { workspace = true }
 axum.workspace = true
 http.workspace = true
 serde.workspace = true

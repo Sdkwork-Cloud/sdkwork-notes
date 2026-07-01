@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "packageManager": "pnpm@10.30.2",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "app:update-create": "node ../../scripts/app-update-create.mjs",
     "dev": "vite",
@@ -45,11 +45,12 @@
     "react-dom": "catalog:",
     "react-i18next": "catalog:",
     "react-router-dom": "catalog:",
-    "sonner": "catalog:"
+    "sonner": "catalog:",
+    "tailwindcss": "catalog:",
+    "@tailwindcss/vite": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
-    "@tailwindcss/vite": "catalog:",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -58,7 +59,6 @@
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "jsdom": "^29.0.1",
-    "tailwindcss": "catalog:",
     "turbo": "^2.9.3",
     "typescript": "catalog:",
     "vite": "catalog:",

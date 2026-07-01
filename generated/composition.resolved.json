@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.composition.resolved",
+  "repository": "sdkwork-notes",
+  "integrations": [
+    {
+      "workspace": "@sdkwork-internal/notes-app-sdk-generated",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": null,
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/notes-pc-core",
+      "source": "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-core/specs/component.spec.json"
+    },
+    {
+      "workspace": "@sdkwork/drive-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": null,
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/notes-pc-core",
+      "source": "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-core/specs/component.spec.json"
+    },
+    {
+      "workspace": "@sdkwork/iam-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": null,
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/notes-pc-core",
+      "source": "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-core/specs/component.spec.json"
+    },
+    {
+      "workspace": "sdkwork-drive-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": "VITE_SDKWORK_DRIVE_APP_API_BASE_URL",
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/notes-pc-core",
+      "source": "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-core/specs/component.spec.json"
+    },
+    {
+      "workspace": "sdkwork-iam-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "platform",
+      "runtimeMode": "external-via-platform-gateway",
+      "mountStatus": null,
+      "envKey": "VITE_SDKWORK_APPBASE_APP_API_BASE_URL",
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/notes-pc-core",
+      "source": "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-core/specs/component.spec.json"
+    },
+    {
+      "workspace": "sdkwork-notes-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": "VITE_SDKWORK_NOTES_APP_API_BASE_URL",
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "@sdkwork/notes-pc-core",
+      "source": "sdkwork-notes-pc-react/packages/sdkwork-notes-pc-core/specs/component.spec.json"
+    },
+    {
+      "workspace": "sdkwork-iam-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "platform",
+      "runtimeMode": "external-via-platform-gateway",
+      "mountStatus": null,
+      "envKey": "VITE_SDKWORK_APPBASE_APP_API_BASE_URL",
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "sdkwork-notes",
+      "source": "specs/component.spec.json"
+    },
+    {
+      "workspace": "sdkwork-drive-app-sdk",
+      "surface": "app-api",
+      "apiPrefix": "/app/v3/api",
+      "connectivityPlane": "application",
+      "runtimeMode": "same-origin-embedded",
+      "mountStatus": null,
+      "envKey": "VITE_SDKWORK_DRIVE_APP_API_BASE_URL",
+      "forbidProductSameOriginFallback": false,
+      "corePackage": "sdkwork-notes",
+      "source": "specs/component.spec.json"
+    }
+  ],
+  "permissions": {
+    "inheritanceMode": "module-catalog-with-overrides",
+    "inheritedManifests": [
+      {
+        "workspace": "sdkwork-iam-app-sdk",
+        "manifestRef": "../sdkwork-iam/iam/modules/iam-kernel/iam.module.manifest.json",
+        "inheritPermissions": true
+      },
+      {
+        "workspace": "sdkwork-iam-app-sdk",
+        "manifestRef": "../sdkwork-iam/iam/modules/iam-kernel/iam.module.manifest.json",
+        "inheritPermissions": true
+      }
+    ]
+  },
+  "env": {},
+  "requiresPlatformGatewayProcess": true,
+  "issues": [],
+  "meta": {
+    "resolver": "sdkwork-specs/tools/lib/composition-resolver.mjs",
+    "credentialModes": {
+      "@sdkwork-internal/notes-app-sdk-generated": "authenticated-app-api",
+      "@sdkwork/drive-app-sdk": "authenticated-app-api",
+      "@sdkwork/iam-app-sdk": "authenticated-app-api",
+      "sdkwork-drive-app-sdk": "authenticated-app-api",
+      "sdkwork-iam-app-sdk": "authenticated-app-api",
+      "sdkwork-notes-app-sdk": "authenticated-app-api"
+    }
+  }
+}

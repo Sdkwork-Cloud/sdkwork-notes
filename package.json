@@ -3,9 +3,9 @@
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "type": "module",
-  "packageManager": "pnpm@10.30.2",
+  "packageManager": "pnpm@10.33.0",
   "dependencies": {
-    "@sdkwork/app-topology": "file:../sdkwork-app-topology"
+    "@sdkwork/app-topology": "workspace:*"
   },
   "scripts": {
     "dev": "node scripts/notes-dev.mjs --runtime-target browser --database postgres --service-layout unified-process --deployment-profile standalone",
@@ -17,11 +17,11 @@
     "gateway:run:standalone": "node scripts/run-notes-standalone-gateway.mjs",
     "build": "cargo build --workspace",
     "test": "pnpm topology:validate && pnpm test:topology && pnpm test:topology-baggage && pnpm test:contracts && pnpm test:iam-application-bootstrap-standard",
-    "check": "cargo check --workspace && pnpm check:pnpm-script-standard && pnpm check:architecture-alignment && pnpm check:deploy-standard && pnpm topology:validate && pnpm db:validate && pnpm api:check",
+    "check": "pnpm run check:app-composition && cargo check --workspace && pnpm check:pnpm-script-standard && pnpm check:architecture-alignment && pnpm check:deploy-standard && pnpm topology:validate && pnpm db:validate && pnpm api:check",
     "check:deploy-standard": "node ../sdkwork-specs/tools/check-deploy-standard.mjs",
     "deploy:validate": "node ../sdkwork-specs/tools/check-deploy-standard.mjs",
     "deploy:plan": "node ../sdkwork-specs/tools/deployctl.mjs plan --root .",
-    "verify": "cargo test --workspace && pnpm test",
+    "verify": "cargo test --workspace && pnpm test && pnpm run check:app-composition",
     "clean": "cargo clean",
     "check:pnpm-script-standard": "node ../sdkwork-specs/tools/check-pnpm-script-standard.mjs --root . --application-code-prefix notes",
     "check:architecture-alignment": "node --test scripts/verify-notes-standard-architecture.test.mjs",
@@ -39,7 +39,7 @@
     "test:topology-baggage": "node --test scripts/dev/sdkwork-notes-topology-baggage.test.mjs",
     "test:iam-application-bootstrap-standard": "node scripts/dev/sdkwork-notes-iam-application-bootstrap-standard.test.mjs",
     "test:contracts": "node --test --experimental-test-isolation=none scripts/verify-notes-contract-foundation.test.mjs && node --test --experimental-test-isolation=none scripts/verify-notes-rust-service-skeleton.test.mjs && node --test --experimental-test-isolation=none scripts/verify-notes-standard-architecture.test.mjs",
-    "db:materialize:contract": "node ../sdkwork-specs/tools/materialize-database-contract-from-baseline.mjs --root . --baseline database/ddl/baseline/postgres/0001_notes_legacy_baseline.sql --module-id notes --owner notes-platform --prefixes notes_ --engines postgres",
+    "db:materialize:contract": "node ../sdkwork-specs/tools/materialize-database-contract-from-baseline.mjs --root . --baseline database/ddl/baseline/postgres/0001_notes_baseline.sql --module-id notes --owner notes-platform --prefixes notes_ --engines postgres",
     "db:validate": "node ../sdkwork-specs/tools/check-database-framework-standard.mjs --root .",
     "db:plan": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . plan",
     "db:init": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . init",
@@ -51,6 +51,7 @@
     "db:bootstrap": "cargo run --manifest-path ../sdkwork-database/Cargo.toml -p sdkwork-database-cli -- --app-root . bootstrap",
     "test:contract:database": "node ../sdkwork-specs/tools/check-database-framework-standard.mjs --root .",
     "gateway:assembly:materialize": "node scripts/gateway/assembly-materialize.mjs",
-    "gateway:assembly:validate": "node scripts/gateway/assembly-validate.mjs"
+    "gateway:assembly:validate": "node scripts/gateway/assembly-validate.mjs",
+    "check:app-composition": "node ../sdkwork-specs/tools/verify-repo.mjs --root ."
   }
 }

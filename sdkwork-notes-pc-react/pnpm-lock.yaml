@@ -344,7 +344,7 @@ importers:
     dependencies:
       '@sdkwork/search-pc-react':
         specifier: workspace:*
-        version: link:../../../../../sdkwork-search/packages/pc-react/foundation/sdkwork-search-pc-react
+        version: link:../../../../../sdkwork-search/apps/sdkwork-search-pc/packages/sdkwork-search-pc-react
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -588,7 +588,7 @@ importers:
         version: link:../../../common/foundation/sdkwork-runtime-bootstrap
       '@sdkwork/search-pc-react':
         specifier: workspace:*
-        version: link:../../../../../sdkwork-search/packages/pc-react/foundation/sdkwork-search-pc-react
+        version: link:../../../../../sdkwork-search/apps/sdkwork-search-pc/packages/sdkwork-search-pc-react
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -703,13 +703,13 @@ importers:
         specifier: ^8.0.10
         version: 8.0.12(@types/node@25.7.0)(jiti@2.6.1)
 
-  ../../sdkwork-search/packages/common/search/sdkwork-search-contracts:
+  ../../sdkwork-search/apps/sdkwork-search-common/packages/sdkwork-search-contracts:
     dependencies:
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
 
-  ../../sdkwork-search/packages/common/search/sdkwork-search-service:
+  ../../sdkwork-search/apps/sdkwork-search-common/packages/sdkwork-search-service:
     dependencies:
       '@sdkwork/search-contracts':
         specifier: workspace:*
@@ -718,7 +718,7 @@ importers:
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
 
-  ../../sdkwork-search/packages/pc-react/foundation/sdkwork-search-pc-react:
+  ../../sdkwork-search/apps/sdkwork-search-pc/packages/sdkwork-search-pc-react:
     dependencies:
       '@sdkwork/search-contracts':
         specifier: workspace:*
