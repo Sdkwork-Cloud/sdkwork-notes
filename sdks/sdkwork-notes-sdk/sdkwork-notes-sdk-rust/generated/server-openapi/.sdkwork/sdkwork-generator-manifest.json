@@ -40,7 +40,7 @@
     },
     {
       "path": "sdkwork-sdk.json",
-      "sha256": "3d3668c657bb5f1311431abf374311a09522ead476bf532e794ff0b4cc200caa"
+      "sha256": "207795f90d795bc0cd353a046515a29df7728315dbe188b3fe2ec897e306f922"
     },
     {
       "path": "src/api/base.rs",

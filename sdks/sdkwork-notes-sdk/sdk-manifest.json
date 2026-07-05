@@ -42,5 +42,93 @@
   "standardProfile": "sdkwork-v3",
   "fixedSdkVersion": "0.1.0",
   "ownerOnlyOperationCount": 11,
-  "managedBy": "sdkwork-notes-contract-foundation"
+  "managedBy": "sdkwork-notes-contract-foundation",
+  "packageName": "@sdkwork/notes-sdk",
+  "transportPackageName": "sdkwork-notes-sdk-generated-typescript",
+  "typescript": {
+    "composedRoot": "sdkwork-notes-sdk-typescript",
+    "composedEntry": "sdkwork-notes-sdk-typescript/src/index.ts",
+    "transportRoot": "sdkwork-notes-sdk-typescript/generated/server-openapi",
+    "transportEntry": "sdkwork-notes-sdk-typescript/generated/server-openapi/src/index.ts"
+  },
+  "workspace": "sdkwork-notes-sdk",
+  "title": "SDKWork Notes Open API SDK",
+  "apiVersion": "0.1.0",
+  "openapiVersion": "3.1.2",
+  "authoritySpec": "../../apis/open-api/notes/notes-open-api.openapi.json",
+  "derivedSpecs": {
+    "default": "../../apis/open-api/notes/notes-open-api.openapi.json"
+  },
+  "discoverySurface": {
+    "sdkTarget": "custom",
+    "apiPrefix": "/notes/v3/api",
+    "schemaUrl": "/notes/v3/openapi.json",
+    "generatedProtocols": [
+      "http-openapi"
+    ],
+    "manualTransports": []
+  },
+  "languages": [
+    {
+      "language": "typescript",
+      "workspace": "sdkwork-notes-sdk-typescript",
+      "generationState": "generated",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-notes-sdk-typescript/generated/server-openapi",
+      "manifestPath": "sdkwork-notes-sdk-typescript/generated/server-openapi/package.json",
+      "name": "@sdkwork-internal/notes-sdk-generated",
+      "version": "0.1.0",
+      "description": "Generator-owned TypeScript transport SDK for sdkwork-notes open API.",
+      "consumerSurface": {
+        "primaryClient": "SdkworkNotesOpenClient",
+        "apiPrefix": "/notes/v3/api"
+      },
+      "consumerPackageName": "@sdkwork/notes-sdk",
+      "transportPackageName": "sdkwork-notes-sdk-generated-typescript"
+    },
+    {
+      "language": "rust",
+      "workspace": "sdkwork-notes-sdk-rust",
+      "generationState": "generated",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-notes-sdk-rust/generated/server-openapi",
+      "manifestPath": "sdkwork-notes-sdk-rust/generated/server-openapi/Cargo.toml",
+      "name": "sdkwork-notes-sdk-generated",
+      "version": "0.1.0",
+      "description": "Generator-owned Rust transport SDK for sdkwork-notes open API."
+    },
+    {
+      "language": "java",
+      "workspace": "sdkwork-notes-sdk-java",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-notes-sdk-java/generated/server-openapi",
+      "manifestPath": "sdkwork-notes-sdk-java/generated/server-openapi/pom.xml",
+      "name": "com.sdkwork:notes-sdk-generated",
+      "version": "0.1.0",
+      "description": "Generator-owned Java transport SDK for sdkwork-notes open API."
+    },
+    {
+      "language": "python",
+      "workspace": "sdkwork-notes-sdk-python",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-notes-sdk-python/generated/server-openapi",
+      "manifestPath": "sdkwork-notes-sdk-python/generated/server-openapi/pyproject.toml",
+      "name": "sdkwork-notes-sdk-generated",
+      "version": "0.1.0",
+      "description": "Generator-owned Python transport SDK for sdkwork-notes open API."
+    },
+    {
+      "language": "go",
+      "workspace": "sdkwork-notes-sdk-go",
+      "generationState": "declared",
+      "releaseState": "not_published",
+      "generatedPath": "sdkwork-notes-sdk-go/generated/server-openapi",
+      "manifestPath": "sdkwork-notes-sdk-go/generated/server-openapi/go.mod",
+      "name": "github.com/sdkwork/notes-sdk-generated",
+      "version": "0.1.0",
+      "description": "Generator-owned Go transport SDK for sdkwork-notes open API."
+    }
+  ]
 }

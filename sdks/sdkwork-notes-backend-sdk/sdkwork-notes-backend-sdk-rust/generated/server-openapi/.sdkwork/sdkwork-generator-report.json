@@ -10,158 +10,37 @@
   },
   "status": "ok",
   "mode": "apply",
-  "hasChanges": true,
+  "hasChanges": false,
   "hasDestructiveChanges": false,
-  "changeFingerprint": "c4c06f032f23c39bc62ce94cf7a6b6a9e27f06a60738426ddf34355343dd5a77",
+  "changeFingerprint": "9bd9e43b1fb91ef1ae36faba7292962af9d233d0bffecc997962b7c3888d6717",
   "changeImpact": {
     "schemaVersion": 1,
-    "areas": [
-      "api-surface",
-      "models"
-    ],
-    "details": [
-      {
-        "area": "api-surface",
-        "paths": [
-          "src/api/notes.rs"
-        ]
-      },
-      {
-        "area": "models",
-        "paths": [
-          "src/models/ai_jobs_admin_list_response.rs",
-          "src/models/ai_jobs_admin_retrieve_response.rs",
-          "src/models/ai_jobs_cancel_response.rs",
-          "src/models/ai_jobs_claim_response.rs",
-          "src/models/ai_jobs_complete_response.rs",
-          "src/models/ai_suggestion_apply_request.rs",
-          "src/models/ai_suggestion_decision_request.rs",
-          "src/models/ai_suggestions_accept_response.rs",
-          "src/models/ai_suggestions_apply_response.rs",
-          "src/models/ai_suggestions_feedback_list_response.rs",
-          "src/models/ai_suggestions_reject_response.rs",
-          "src/models/diagnostics_drive_orphans_list_response.rs",
-          "src/models/diagnostics_drive_orphans_repair_response202.rs",
-          "src/models/field_error.rs",
-          "src/models/index_jobs_create_response202.rs",
-          "src/models/index_jobs_list_response.rs",
-          "src/models/index_jobs_retrieve_response.rs",
-          "src/models/mod.rs",
-          "src/models/page_info.rs",
-          "src/models/problem_detail.rs",
-          "src/models/sdk_work_api_response.rs",
-          "src/models/sdk_work_command_data.rs",
-          "src/models/sdk_work_command_response.rs",
-          "src/models/sdk_work_list_response.rs",
-          "src/models/sdk_work_page_data.rs",
-          "src/models/sdk_work_resource_data.rs",
-          "src/models/sdk_work_resource_response.rs",
-          "src/models/workspace_admin.rs",
-          "src/models/workspaces_admin_list_response.rs",
-          "src/models/workspaces_admin_retrieve_response.rs",
-          "src/models/workspaces_admin_update_response.rs",
-          "src/models/workspaces_projection_rebuild_response202.rs"
-        ]
-      }
-    ],
-    "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, models. Verification is required."
+    "areas": [],
+    "details": [],
+    "requiresVerification": false,
+    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "medium",
-    "nextAction": "verify",
+    "riskLevel": "low",
+    "nextAction": "skip",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
-    "summary": "Changes have been applied. Run the required verification plan now.",
+    "summary": "No actionable changes were detected. No apply or verification step is required.",
     "reasons": [
-      "verification-required"
+      "no-actionable-changes"
     ]
   },
   "executionHandoff": {
     "schemaVersion": 1,
-    "summary": "Run the required verification commands now.",
-    "steps": [
-      {
-        "id": "verify-check",
-        "title": "Unified package check",
-        "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-rust\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "rust",
-          "--project-dir",
-          ".",
-          "--action",
-          "check"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
-      },
-      {
-        "id": "verify-build",
-        "title": "Unified package build",
-        "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-rust\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "rust",
-          "--project-dir",
-          ".",
-          "--action",
-          "build"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
-      }
-    ]
+    "summary": "No further commands are required.",
+    "steps": []
   },
   "verificationPlan": {
-    "shouldRun": true,
-    "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, models. Verification is required. Run the required verification commands now against the generated SDK output.",
-    "steps": [
-      {
-        "id": "check",
-        "title": "Unified package check",
-        "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-rust\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "rust",
-          "--project-dir",
-          ".",
-          "--action",
-          "check"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
-      },
-      {
-        "id": "build",
-        "title": "Unified package build",
-        "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-rust\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "rust",
-          "--project-dir",
-          ".",
-          "--action",
-          "build"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
-      }
-    ]
+    "shouldRun": false,
+    "runPhase": "skip",
+    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
+    "steps": []
   },
   "sdk": {
     "name": "sdkwork-notes-backend-sdk",
@@ -186,50 +65,15 @@
   "syncSummary": {
     "dryRun": false,
     "controlPlaneEnabled": true,
-    "writtenFiles": 33,
+    "writtenFiles": 0,
     "skippedScaffoldFiles": 1,
-    "skippedUnchangedGeneratedFiles": 33,
+    "skippedUnchangedGeneratedFiles": 66,
     "deletedGeneratedFiles": 0,
     "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
-    "changeFingerprint": "c4c06f032f23c39bc62ce94cf7a6b6a9e27f06a60738426ddf34355343dd5a77",
+    "changeFingerprint": "9bd9e43b1fb91ef1ae36faba7292962af9d233d0bffecc997962b7c3888d6717",
     "changes": {
-      "createdGeneratedFiles": [
-        "src/models/ai_jobs_admin_list_response.rs",
-        "src/models/ai_jobs_admin_retrieve_response.rs",
-        "src/models/ai_jobs_cancel_response.rs",
-        "src/models/ai_jobs_claim_response.rs",
-        "src/models/ai_jobs_complete_response.rs",
-        "src/models/ai_suggestions_accept_response.rs",
-        "src/models/ai_suggestions_apply_response.rs",
-        "src/models/ai_suggestions_feedback_list_response.rs",
-        "src/models/ai_suggestions_reject_response.rs",
-        "src/models/diagnostics_drive_orphans_list_response.rs",
-        "src/models/diagnostics_drive_orphans_repair_response202.rs",
-        "src/models/index_jobs_create_response202.rs",
-        "src/models/index_jobs_list_response.rs",
-        "src/models/index_jobs_retrieve_response.rs",
-        "src/models/sdk_work_api_response.rs",
-        "src/models/sdk_work_command_data.rs",
-        "src/models/sdk_work_command_response.rs",
-        "src/models/sdk_work_list_response.rs",
-        "src/models/sdk_work_page_data.rs",
-        "src/models/sdk_work_resource_data.rs",
-        "src/models/sdk_work_resource_response.rs",
-        "src/models/workspaces_admin_list_response.rs",
-        "src/models/workspaces_admin_retrieve_response.rs",
-        "src/models/workspaces_admin_update_response.rs",
-        "src/models/workspaces_projection_rebuild_response202.rs"
-      ],
-      "updatedGeneratedFiles": [
-        "src/api/notes.rs",
-        "src/models/ai_suggestion_apply_request.rs",
-        "src/models/ai_suggestion_decision_request.rs",
-        "src/models/field_error.rs",
-        "src/models/mod.rs",
-        "src/models/page_info.rs",
-        "src/models/problem_detail.rs",
-        "src/models/workspace_admin.rs"
-      ],
+      "createdGeneratedFiles": [],
+      "updatedGeneratedFiles": [],
       "unchangedGeneratedFiles": [
         "bin/publish-core.mjs",
         "bin/publish.ps1",
@@ -241,6 +85,7 @@
         "sdkwork-sdk.json",
         "src/api/base.rs",
         "src/api/mod.rs",
+        "src/api/notes.rs",
         "src/api/paths.rs",
         "src/client.rs",
         "src/http/client.rs",
@@ -251,19 +96,51 @@
         "src/models/ai_feedback.rs",
         "src/models/ai_job_page.rs",
         "src/models/ai_job.rs",
+        "src/models/ai_jobs_admin_list_response.rs",
+        "src/models/ai_jobs_admin_retrieve_response.rs",
+        "src/models/ai_jobs_cancel_response.rs",
+        "src/models/ai_jobs_claim_response.rs",
+        "src/models/ai_jobs_complete_response.rs",
+        "src/models/ai_suggestion_apply_request.rs",
+        "src/models/ai_suggestion_decision_request.rs",
         "src/models/ai_suggestion.rs",
+        "src/models/ai_suggestions_accept_response.rs",
+        "src/models/ai_suggestions_apply_response.rs",
+        "src/models/ai_suggestions_feedback_list_response.rs",
+        "src/models/ai_suggestions_reject_response.rs",
         "src/models/common.rs",
         "src/models/complete_ai_job_request.rs",
         "src/models/complete_ai_suggestion_input.rs",
         "src/models/create_index_job_request.rs",
+        "src/models/diagnostics_drive_orphans_list_response.rs",
+        "src/models/diagnostics_drive_orphans_repair_response202.rs",
         "src/models/drive_orphan_diagnostic_page.rs",
         "src/models/drive_orphan_diagnostic.rs",
+        "src/models/field_error.rs",
         "src/models/index_job_page.rs",
         "src/models/index_job.rs",
+        "src/models/index_jobs_create_response202.rs",
+        "src/models/index_jobs_list_response.rs",
+        "src/models/index_jobs_retrieve_response.rs",
+        "src/models/mod.rs",
         "src/models/page_content.rs",
+        "src/models/page_info.rs",
+        "src/models/problem_detail.rs",
         "src/models/rebuild_projection_request.rs",
         "src/models/repair_drive_orphans_request.rs",
-        "src/models/workspace_admin_page.rs"
+        "src/models/sdk_work_api_response.rs",
+        "src/models/sdk_work_command_data.rs",
+        "src/models/sdk_work_command_response.rs",
+        "src/models/sdk_work_list_response.rs",
+        "src/models/sdk_work_page_data.rs",
+        "src/models/sdk_work_resource_data.rs",
+        "src/models/sdk_work_resource_response.rs",
+        "src/models/workspace_admin_page.rs",
+        "src/models/workspace_admin.rs",
+        "src/models/workspaces_admin_list_response.rs",
+        "src/models/workspaces_admin_retrieve_response.rs",
+        "src/models/workspaces_admin_update_response.rs",
+        "src/models/workspaces_projection_rebuild_response202.rs"
       ],
       "deletedGeneratedFiles": [],
       "scaffoldedFiles": [],
@@ -274,110 +151,26 @@
     },
     "impact": {
       "schemaVersion": 1,
-      "areas": [
-        "api-surface",
-        "models"
-      ],
-      "details": [
-        {
-          "area": "api-surface",
-          "paths": [
-            "src/api/notes.rs"
-          ]
-        },
-        {
-          "area": "models",
-          "paths": [
-            "src/models/ai_jobs_admin_list_response.rs",
-            "src/models/ai_jobs_admin_retrieve_response.rs",
-            "src/models/ai_jobs_cancel_response.rs",
-            "src/models/ai_jobs_claim_response.rs",
-            "src/models/ai_jobs_complete_response.rs",
-            "src/models/ai_suggestion_apply_request.rs",
-            "src/models/ai_suggestion_decision_request.rs",
-            "src/models/ai_suggestions_accept_response.rs",
-            "src/models/ai_suggestions_apply_response.rs",
-            "src/models/ai_suggestions_feedback_list_response.rs",
-            "src/models/ai_suggestions_reject_response.rs",
-            "src/models/diagnostics_drive_orphans_list_response.rs",
-            "src/models/diagnostics_drive_orphans_repair_response202.rs",
-            "src/models/field_error.rs",
-            "src/models/index_jobs_create_response202.rs",
-            "src/models/index_jobs_list_response.rs",
-            "src/models/index_jobs_retrieve_response.rs",
-            "src/models/mod.rs",
-            "src/models/page_info.rs",
-            "src/models/problem_detail.rs",
-            "src/models/sdk_work_api_response.rs",
-            "src/models/sdk_work_command_data.rs",
-            "src/models/sdk_work_command_response.rs",
-            "src/models/sdk_work_list_response.rs",
-            "src/models/sdk_work_page_data.rs",
-            "src/models/sdk_work_resource_data.rs",
-            "src/models/sdk_work_resource_response.rs",
-            "src/models/workspace_admin.rs",
-            "src/models/workspaces_admin_list_response.rs",
-            "src/models/workspaces_admin_retrieve_response.rs",
-            "src/models/workspaces_admin_update_response.rs",
-            "src/models/workspaces_projection_rebuild_response202.rs"
-          ]
-        }
-      ],
-      "requiresVerification": true,
-      "summary": "Detected impact areas: api-surface, models. Verification is required."
+      "areas": [],
+      "details": [],
+      "requiresVerification": false,
+      "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
     },
     "verificationPlan": {
-      "shouldRun": true,
-      "runPhase": "now",
-      "summary": "Detected impact areas: api-surface, models. Verification is required. Run the required verification commands now against the generated SDK output.",
-      "steps": [
-        {
-          "id": "check",
-          "title": "Unified package check",
-          "required": true,
-          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models.",
-          "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-rust\\generated\\server-openapi",
-          "command": "node",
-          "args": [
-            "./bin/publish-core.mjs",
-            "--language",
-            "rust",
-            "--project-dir",
-            ".",
-            "--action",
-            "check"
-          ],
-          "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
-        },
-        {
-          "id": "build",
-          "title": "Unified package build",
-          "required": true,
-          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models.",
-          "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-rust\\generated\\server-openapi",
-          "command": "node",
-          "args": [
-            "./bin/publish-core.mjs",
-            "--language",
-            "rust",
-            "--project-dir",
-            ".",
-            "--action",
-            "build"
-          ],
-          "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
-        }
-      ]
+      "shouldRun": false,
+      "runPhase": "skip",
+      "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
+      "steps": []
     },
     "executionDecision": {
       "schemaVersion": 1,
-      "riskLevel": "medium",
-      "nextAction": "verify",
+      "riskLevel": "low",
+      "nextAction": "skip",
       "requiresManualReview": false,
       "applyRequiresExpectedFingerprint": false,
-      "summary": "Changes have been applied. Run the required verification plan now.",
+      "summary": "No actionable changes were detected. No apply or verification step is required.",
       "reasons": [
-        "verification-required"
+        "no-actionable-changes"
       ]
     },
     "backedUpFiles": [],

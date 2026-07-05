@@ -24,10 +24,10 @@
       "@sdkwork/notes-pc-sync": ["packages/sdkwork-notes-pc-sync/src/index.ts"],
       "@sdkwork/sdk-common": ["../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts"],
       "@sdkwork/appbase-pc-react": ["../../sdkwork-appbase/packages/pc-react/foundation/sdkwork-appbase-pc-react/src/index.ts"],
-      "@sdkwork/iam-app-sdk": ["../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/generated/server-openapi/src/index.ts"],
-      "@sdkwork/iam-backend-sdk": ["../../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/generated/server-openapi/src/index.ts"],
+      "@sdkwork/iam-app-sdk": ["../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/src/index.ts"],
+      "@sdkwork/iam-backend-sdk": ["../../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/src/index.ts"],
       "@sdkwork/auth-runtime-pc-react": ["../../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-auth-runtime-pc-react/src/index.ts"],
-      "@sdkwork-internal/notes-app-sdk-generated": ["../sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi/src/index.ts"]
+      "@sdkwork-internal/notes-app-sdk-generated": ["../sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/src/index.ts"]
     },
     "noEmit": true
   }

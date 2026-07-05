@@ -10,166 +10,37 @@
   },
   "status": "ok",
   "mode": "apply",
-  "hasChanges": true,
+  "hasChanges": false,
   "hasDestructiveChanges": false,
-  "changeFingerprint": "101033244a7f01ed88c571a41ac38f924ed6272faea1b13c613e2cdba94db4be",
+  "changeFingerprint": "8f968402448738ae72d18fa430fb2957932c3063bf90d5fbb3c5342cdea185f2",
   "changeImpact": {
     "schemaVersion": 1,
-    "areas": [
-      "api-surface",
-      "models",
-      "documentation"
-    ],
-    "details": [
-      {
-        "area": "api-surface",
-        "paths": [
-          "src/api/notes.rs"
-        ]
-      },
-      {
-        "area": "models",
-        "paths": [
-          "src/models/ai_feedback_create_request.rs",
-          "src/models/ai_jobs_create_response202.rs",
-          "src/models/ai_suggestion_apply_request.rs",
-          "src/models/ai_suggestion_decision_request.rs",
-          "src/models/ai_suggestions_accept_response.rs",
-          "src/models/ai_suggestions_apply_response.rs",
-          "src/models/ai_suggestions_feedback_create_response.rs",
-          "src/models/ai_suggestions_reject_response.rs",
-          "src/models/create_ai_job_request.rs",
-          "src/models/create_page_request.rs",
-          "src/models/create_workspace_request.rs",
-          "src/models/field_error.rs",
-          "src/models/mod.rs",
-          "src/models/note_remote_apply_request.rs",
-          "src/models/page_info.rs",
-          "src/models/pages_ai_suggestions_list_response.rs",
-          "src/models/pages_list_response.rs",
-          "src/models/pages_versions_list_response.rs",
-          "src/models/problem_detail.rs",
-          "src/models/restore_page_version_request.rs",
-          "src/models/sdk_work_api_response.rs",
-          "src/models/sdk_work_command_data.rs",
-          "src/models/sdk_work_command_response.rs",
-          "src/models/sdk_work_list_response.rs",
-          "src/models/sdk_work_page_data.rs",
-          "src/models/sdk_work_resource_data.rs",
-          "src/models/sdk_work_resource_response.rs",
-          "src/models/search_query_response.rs",
-          "src/models/update_page_content_request.rs",
-          "src/models/update_page_request.rs",
-          "src/models/workspaces_bootstrap_retrieve_response.rs",
-          "src/models/workspaces_create_response201.rs",
-          "src/models/workspaces_list_response.rs"
-        ]
-      },
-      {
-        "area": "documentation",
-        "paths": [
-          "README.md"
-        ]
-      }
-    ],
-    "requiresVerification": true,
-    "summary": "Detected impact areas: api-surface, models, documentation. Verification is required."
+    "areas": [],
+    "details": [],
+    "requiresVerification": false,
+    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "medium",
-    "nextAction": "verify",
+    "riskLevel": "low",
+    "nextAction": "skip",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
-    "summary": "Changes have been applied. Run the required verification plan now.",
+    "summary": "No actionable changes were detected. No apply or verification step is required.",
     "reasons": [
-      "verification-required"
+      "no-actionable-changes"
     ]
   },
   "executionHandoff": {
     "schemaVersion": 1,
-    "summary": "Run the required verification commands now.",
-    "steps": [
-      {
-        "id": "verify-check",
-        "title": "Unified package check",
-        "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, documentation.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "rust",
-          "--project-dir",
-          ".",
-          "--action",
-          "check"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
-      },
-      {
-        "id": "verify-build",
-        "title": "Unified package build",
-        "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, documentation.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "rust",
-          "--project-dir",
-          ".",
-          "--action",
-          "build"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
-      }
-    ]
+    "summary": "No further commands are required.",
+    "steps": []
   },
   "verificationPlan": {
-    "shouldRun": true,
-    "runPhase": "now",
-    "summary": "Detected impact areas: api-surface, models, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
-    "steps": [
-      {
-        "id": "check",
-        "title": "Unified package check",
-        "required": true,
-        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, documentation.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "rust",
-          "--project-dir",
-          ".",
-          "--action",
-          "check"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
-      },
-      {
-        "id": "build",
-        "title": "Unified package build",
-        "required": true,
-        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, documentation.",
-        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
-        "command": "node",
-        "args": [
-          "./bin/publish-core.mjs",
-          "--language",
-          "rust",
-          "--project-dir",
-          ".",
-          "--action",
-          "build"
-        ],
-        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
-      }
-    ]
+    "shouldRun": false,
+    "runPhase": "skip",
+    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
+    "steps": []
   },
   "sdk": {
     "name": "sdkwork-notes-app-sdk",
@@ -194,22 +65,67 @@
   "syncSummary": {
     "dryRun": false,
     "controlPlaneEnabled": true,
-    "writtenFiles": 35,
+    "writtenFiles": 0,
     "skippedScaffoldFiles": 1,
-    "skippedUnchangedGeneratedFiles": 34,
+    "skippedUnchangedGeneratedFiles": 69,
     "deletedGeneratedFiles": 0,
     "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
-    "changeFingerprint": "101033244a7f01ed88c571a41ac38f924ed6272faea1b13c613e2cdba94db4be",
+    "changeFingerprint": "8f968402448738ae72d18fa430fb2957932c3063bf90d5fbb3c5342cdea185f2",
     "changes": {
-      "createdGeneratedFiles": [
+      "createdGeneratedFiles": [],
+      "updatedGeneratedFiles": [],
+      "unchangedGeneratedFiles": [
+        "bin/publish-core.mjs",
+        "bin/publish.ps1",
+        "bin/publish.sh",
+        "Cargo.toml",
+        "CHANGELOG.md",
+        "LICENSE",
+        "README.md",
+        "sdkwork-sdk.json",
+        "src/api/base.rs",
+        "src/api/mod.rs",
+        "src/api/notes.rs",
+        "src/api/paths.rs",
+        "src/client.rs",
+        "src/http/client.rs",
+        "src/http/mod.rs",
+        "src/lib.rs",
+        "src/models/ai_feedback_create_request.rs",
+        "src/models/ai_feedback.rs",
+        "src/models/ai_job.rs",
         "src/models/ai_jobs_create_response202.rs",
+        "src/models/ai_suggestion_apply_request.rs",
+        "src/models/ai_suggestion_decision_request.rs",
+        "src/models/ai_suggestion_page.rs",
+        "src/models/ai_suggestion.rs",
         "src/models/ai_suggestions_accept_response.rs",
         "src/models/ai_suggestions_apply_response.rs",
         "src/models/ai_suggestions_feedback_create_response.rs",
         "src/models/ai_suggestions_reject_response.rs",
+        "src/models/common.rs",
+        "src/models/create_ai_job_request.rs",
+        "src/models/create_page_request.rs",
+        "src/models/create_workspace_request.rs",
+        "src/models/drive_version_page.rs",
+        "src/models/drive_version_summary.rs",
+        "src/models/field_error.rs",
+        "src/models/mod.rs",
+        "src/models/note_remote_apply_conflict.rs",
+        "src/models/note_remote_apply_mutation_patch.rs",
+        "src/models/note_remote_apply_request.rs",
+        "src/models/note_remote_apply_result.rs",
+        "src/models/object_type_summary.rs",
+        "src/models/page_content.rs",
+        "src/models/page_info.rs",
+        "src/models/page_summary_page.rs",
+        "src/models/page_summary.rs",
+        "src/models/page.rs",
         "src/models/pages_ai_suggestions_list_response.rs",
         "src/models/pages_list_response.rs",
         "src/models/pages_versions_list_response.rs",
+        "src/models/problem_detail.rs",
+        "src/models/restore_page_version_request.rs",
         "src/models/sdk_work_api_response.rs",
         "src/models/sdk_work_command_data.rs",
         "src/models/sdk_work_command_response.rs",
@@ -218,63 +134,16 @@
         "src/models/sdk_work_resource_data.rs",
         "src/models/sdk_work_resource_response.rs",
         "src/models/search_query_response.rs",
+        "src/models/search_result_page.rs",
+        "src/models/search_result.rs",
+        "src/models/update_page_content_request.rs",
+        "src/models/update_page_request.rs",
+        "src/models/workspace_bootstrap.rs",
+        "src/models/workspace_page.rs",
+        "src/models/workspace.rs",
         "src/models/workspaces_bootstrap_retrieve_response.rs",
         "src/models/workspaces_create_response201.rs",
         "src/models/workspaces_list_response.rs"
-      ],
-      "updatedGeneratedFiles": [
-        "README.md",
-        "src/api/notes.rs",
-        "src/models/ai_feedback_create_request.rs",
-        "src/models/ai_suggestion_apply_request.rs",
-        "src/models/ai_suggestion_decision_request.rs",
-        "src/models/create_ai_job_request.rs",
-        "src/models/create_page_request.rs",
-        "src/models/create_workspace_request.rs",
-        "src/models/field_error.rs",
-        "src/models/mod.rs",
-        "src/models/note_remote_apply_request.rs",
-        "src/models/page_info.rs",
-        "src/models/problem_detail.rs",
-        "src/models/restore_page_version_request.rs",
-        "src/models/update_page_content_request.rs",
-        "src/models/update_page_request.rs"
-      ],
-      "unchangedGeneratedFiles": [
-        "bin/publish-core.mjs",
-        "bin/publish.ps1",
-        "bin/publish.sh",
-        "Cargo.toml",
-        "CHANGELOG.md",
-        "LICENSE",
-        "sdkwork-sdk.json",
-        "src/api/base.rs",
-        "src/api/mod.rs",
-        "src/api/paths.rs",
-        "src/client.rs",
-        "src/http/client.rs",
-        "src/http/mod.rs",
-        "src/lib.rs",
-        "src/models/ai_feedback.rs",
-        "src/models/ai_job.rs",
-        "src/models/ai_suggestion_page.rs",
-        "src/models/ai_suggestion.rs",
-        "src/models/common.rs",
-        "src/models/drive_version_page.rs",
-        "src/models/drive_version_summary.rs",
-        "src/models/note_remote_apply_conflict.rs",
-        "src/models/note_remote_apply_mutation_patch.rs",
-        "src/models/note_remote_apply_result.rs",
-        "src/models/object_type_summary.rs",
-        "src/models/page_content.rs",
-        "src/models/page_summary_page.rs",
-        "src/models/page_summary.rs",
-        "src/models/page.rs",
-        "src/models/search_result_page.rs",
-        "src/models/search_result.rs",
-        "src/models/workspace_bootstrap.rs",
-        "src/models/workspace_page.rs",
-        "src/models/workspace.rs"
       ],
       "deletedGeneratedFiles": [],
       "scaffoldedFiles": [],
@@ -285,118 +154,26 @@
     },
     "impact": {
       "schemaVersion": 1,
-      "areas": [
-        "api-surface",
-        "models",
-        "documentation"
-      ],
-      "details": [
-        {
-          "area": "api-surface",
-          "paths": [
-            "src/api/notes.rs"
-          ]
-        },
-        {
-          "area": "models",
-          "paths": [
-            "src/models/ai_feedback_create_request.rs",
-            "src/models/ai_jobs_create_response202.rs",
-            "src/models/ai_suggestion_apply_request.rs",
-            "src/models/ai_suggestion_decision_request.rs",
-            "src/models/ai_suggestions_accept_response.rs",
-            "src/models/ai_suggestions_apply_response.rs",
-            "src/models/ai_suggestions_feedback_create_response.rs",
-            "src/models/ai_suggestions_reject_response.rs",
-            "src/models/create_ai_job_request.rs",
-            "src/models/create_page_request.rs",
-            "src/models/create_workspace_request.rs",
-            "src/models/field_error.rs",
-            "src/models/mod.rs",
-            "src/models/note_remote_apply_request.rs",
-            "src/models/page_info.rs",
-            "src/models/pages_ai_suggestions_list_response.rs",
-            "src/models/pages_list_response.rs",
-            "src/models/pages_versions_list_response.rs",
-            "src/models/problem_detail.rs",
-            "src/models/restore_page_version_request.rs",
-            "src/models/sdk_work_api_response.rs",
-            "src/models/sdk_work_command_data.rs",
-            "src/models/sdk_work_command_response.rs",
-            "src/models/sdk_work_list_response.rs",
-            "src/models/sdk_work_page_data.rs",
-            "src/models/sdk_work_resource_data.rs",
-            "src/models/sdk_work_resource_response.rs",
-            "src/models/search_query_response.rs",
-            "src/models/update_page_content_request.rs",
-            "src/models/update_page_request.rs",
-            "src/models/workspaces_bootstrap_retrieve_response.rs",
-            "src/models/workspaces_create_response201.rs",
-            "src/models/workspaces_list_response.rs"
-          ]
-        },
-        {
-          "area": "documentation",
-          "paths": [
-            "README.md"
-          ]
-        }
-      ],
-      "requiresVerification": true,
-      "summary": "Detected impact areas: api-surface, models, documentation. Verification is required."
+      "areas": [],
+      "details": [],
+      "requiresVerification": false,
+      "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
     },
     "verificationPlan": {
-      "shouldRun": true,
-      "runPhase": "now",
-      "summary": "Detected impact areas: api-surface, models, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
-      "steps": [
-        {
-          "id": "check",
-          "title": "Unified package check",
-          "required": true,
-          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, documentation.",
-          "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
-          "command": "node",
-          "args": [
-            "./bin/publish-core.mjs",
-            "--language",
-            "rust",
-            "--project-dir",
-            ".",
-            "--action",
-            "check"
-          ],
-          "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
-        },
-        {
-          "id": "build",
-          "title": "Unified package build",
-          "required": true,
-          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, documentation.",
-          "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-app-sdk\\sdkwork-notes-app-sdk-rust\\generated\\server-openapi",
-          "command": "node",
-          "args": [
-            "./bin/publish-core.mjs",
-            "--language",
-            "rust",
-            "--project-dir",
-            ".",
-            "--action",
-            "build"
-          ],
-          "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
-        }
-      ]
+      "shouldRun": false,
+      "runPhase": "skip",
+      "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
+      "steps": []
     },
     "executionDecision": {
       "schemaVersion": 1,
-      "riskLevel": "medium",
-      "nextAction": "verify",
+      "riskLevel": "low",
+      "nextAction": "skip",
       "requiresManualReview": false,
       "applyRequiresExpectedFingerprint": false,
-      "summary": "Changes have been applied. Run the required verification plan now.",
+      "summary": "No actionable changes were detected. No apply or verification step is required.",
       "reasons": [
-        "verification-required"
+        "no-actionable-changes"
       ]
     },
     "backedUpFiles": [],

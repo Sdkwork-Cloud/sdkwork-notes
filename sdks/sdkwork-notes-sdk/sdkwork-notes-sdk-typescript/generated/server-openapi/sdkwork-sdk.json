@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "language": "typescript",
   "sdkType": "custom",
-  "packageName": "@sdkwork-internal/notes-sdk-generated",
+  "packageName": "sdkwork-notes-sdk-generated-typescript",
+  "transportPackageName": "sdkwork-notes-sdk-generated-typescript",
+  "consumerPackageName": "@sdkwork/notes-sdk",
   "generator": "@sdkwork/sdk-generator",
   "capabilities": {
     "supportsGeneratedTests": true,
