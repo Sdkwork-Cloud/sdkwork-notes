@@ -168,7 +168,48 @@
     ],
     "events": [],
     "configKeys": [],
-    "routeManifest": null
+    "routeManifest": null,
+    "permissionComposition": {
+      "inheritanceMode": "module-catalog-with-overrides",
+      "applicationModule": {
+        "manifestRef": "../../../../specs/iam.module.manifest.json"
+      },
+      "moduleCatalogRefs": [
+        {
+          "moduleId": "drive",
+          "manifestRef": "../../../../../sdkwork-iam/iam/modules/drive/iam.module.manifest.json",
+          "inheritPermissions": true,
+          "inheritRoles": true
+        },
+        {
+          "moduleId": "iam-kernel",
+          "manifestRef": "../../../../../sdkwork-iam/iam/modules/iam-kernel/iam.module.manifest.json",
+          "inheritPermissions": true,
+          "inheritRoles": false
+        },
+        {
+          "moduleId": "notes",
+          "manifestRef": "../../../../specs/iam.module.manifest.json",
+          "inheritPermissions": true,
+          "inheritRoles": true
+        }
+      ],
+      "bootstrapAccessTokenScope": {
+        "inheritFrom": "sdkwork.app.config.json#backend.accessTokenPermissionScope",
+        "supplement": [],
+        "overrideReplace": false
+      },
+      "routePermissionHints": {
+        "inheritFromOpenApi": true,
+        "inheritFromModuleManifests": true,
+        "overrides": []
+      },
+      "consumerPolicy": {
+        "forbidLocalPermissionCatalogForDependencyDomains": true,
+        "allowExplicitOverridesOnly": true,
+        "allowFrontendHintsWithoutServerDuplication": true
+      }
+    }
   },
   "integration": {
     "authority": "Root SDKWork specs remain authoritative. Local specs may extend but must not contradict them.",

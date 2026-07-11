@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.iam.module",
+  "moduleId": "notes",
+  "domain": "notes",
+  "permissions": {
+    "catalog": [
+      {
+        "code": "notes.ai_jobs.write",
+        "description": "Permission notes.ai_jobs.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.ai_suggestions.feedback.write",
+        "description": "Permission notes.ai_suggestions.feedback.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.ai_suggestions.write",
+        "description": "Permission notes.ai_suggestions.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.ai_jobs.read",
+        "description": "Permission notes.backend.ai_jobs.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.ai_jobs.write",
+        "description": "Permission notes.backend.ai_jobs.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.ai_suggestions.feedback.read",
+        "description": "Permission notes.backend.ai_suggestions.feedback.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.ai_suggestions.write",
+        "description": "Permission notes.backend.ai_suggestions.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.diagnostics.read",
+        "description": "Permission notes.backend.diagnostics.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.diagnostics.write",
+        "description": "Permission notes.backend.diagnostics.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.index_jobs.read",
+        "description": "Permission notes.backend.index_jobs.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.index_jobs.write",
+        "description": "Permission notes.backend.index_jobs.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.projections.rebuild",
+        "description": "Permission notes.backend.projections.rebuild",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.workspaces.read",
+        "description": "Permission notes.backend.workspaces.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.backend.workspaces.write",
+        "description": "Permission notes.backend.workspaces.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.exports.read",
+        "description": "Permission notes.open.exports.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.exports.write",
+        "description": "Permission notes.open.exports.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.pages.content.read",
+        "description": "Permission notes.open.pages.content.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.pages.content.write",
+        "description": "Permission notes.open.pages.content.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.pages.read",
+        "description": "Permission notes.open.pages.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.pages.versions.read",
+        "description": "Permission notes.open.pages.versions.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.pages.versions.write",
+        "description": "Permission notes.open.pages.versions.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.pages.write",
+        "description": "Permission notes.open.pages.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.search.query",
+        "description": "Permission notes.open.search.query",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.open.workspaces.read",
+        "description": "Permission notes.open.workspaces.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.pages.ai_suggestions.read",
+        "description": "Permission notes.pages.ai_suggestions.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.pages.content.read",
+        "description": "Permission notes.pages.content.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.pages.content.write",
+        "description": "Permission notes.pages.content.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.pages.read",
+        "description": "Permission notes.pages.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.pages.versions.read",
+        "description": "Permission notes.pages.versions.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.pages.versions.write",
+        "description": "Permission notes.pages.versions.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.pages.write",
+        "description": "Permission notes.pages.write",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.search.query",
+        "description": "Permission notes.search.query",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.workspaces.read",
+        "description": "Permission notes.workspaces.read",
+        "source": "openapi"
+      },
+      {
+        "code": "notes.workspaces.write",
+        "description": "Permission notes.workspaces.write",
+        "source": "openapi"
+      }
+    ]
+  }
+}

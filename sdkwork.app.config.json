@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 3,
+  "kind": "sdkwork.app",
+  "app": {
+    "key": "sdkwork-notes",
+    "name": "sdkwork-notes"
+  },
+  "runtime": {
+    "supportedDeploymentProfiles": [
+      "standalone",
+      "cloud"
+    ],
+    "defaultDeploymentProfile": "cloud"
+  }
+}
