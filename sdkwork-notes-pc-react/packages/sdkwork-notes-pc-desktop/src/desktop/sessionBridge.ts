@@ -30,8 +30,8 @@ function hasSessionTokens(session?: AppSdkSessionTokens | null): boolean {
 }
 
 function resolveSessionMirrorStorage(): Storage {
-  if (typeof globalThis.sessionStorage !== 'undefined') {
-    return globalThis.sessionStorage;
+  if (typeof globalThis.localStorage !== 'undefined') {
+    return globalThis.localStorage;
   }
 
   return {

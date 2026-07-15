@@ -1,5 +1,4 @@
 use axum::Router;
-use tower_http::cors::CorsLayer;
 
 use crate::bootstrap::auth::build_protected_router;
 use crate::bootstrap::database::build_notes_service;
@@ -28,7 +27,10 @@ pub async fn build_router() -> Result<Router, Box<dyn std::error::Error + Send +
     let business = Router::new()
         .merge(iam_router)
         .merge(build_protected_router(protected).await)
-        .layer(CorsLayer::permissive());
+        .layer(sdkwork_web_bootstrap::application_cors_layer_from_env(
+            &["SDKWORK_NOTES_ENVIRONMENT"],
+            &["SDKWORK_NOTES_CORS_ALLOWED_ORIGINS", "SDKWORK_CORS_ALLOWED_ORIGINS"],
+        ));
 
     Ok(service_router(
         business,

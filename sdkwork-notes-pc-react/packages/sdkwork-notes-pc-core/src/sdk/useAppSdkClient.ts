@@ -343,11 +343,25 @@ function createMemoryStorage(): Storage {
 }
 
 function resolveSessionStorage(): Storage {
-  if (typeof globalThis.sessionStorage !== 'undefined') {
-    return globalThis.sessionStorage;
+  if (typeof globalThis.localStorage !== 'undefined') {
+    migrateLegacySessionStorage();
+    return globalThis.localStorage;
   }
 
   return createMemoryStorage();
+}
+
+function migrateLegacySessionStorage(): void {
+  if (typeof globalThis.sessionStorage === 'undefined' || typeof globalThis.localStorage === 'undefined') {
+    return;
+  }
+  const legacySession = globalThis.sessionStorage.getItem(APP_SDK_SESSION_STORAGE_KEY);
+  if (legacySession && !globalThis.localStorage.getItem(APP_SDK_SESSION_STORAGE_KEY)) {
+    globalThis.localStorage.setItem(APP_SDK_SESSION_STORAGE_KEY, legacySession);
+  }
+  if (legacySession) {
+    globalThis.sessionStorage.removeItem(APP_SDK_SESSION_STORAGE_KEY);
+  }
 }
 
 function resolveLocalStorage(): Storage | null {
@@ -452,14 +466,13 @@ function clearLegacyLocalStorageSession(): void {
 }
 
 const defaultAppSdkSessionStoreAdapter: AppSdkSessionStoreAdapter = {
-  kind: 'browser-session',
+  kind: 'browser-local',
   read() {
     const sessionStorageSnapshot = normalizeSessionTokens(
       readStorageSessionSnapshot(resolveSessionStorage()),
     );
     if (hasSessionTokens(sessionStorageSnapshot)) {
       sessionMemorySnapshot = sessionStorageSnapshot;
-      clearLegacyLocalStorageSession();
       return sessionStorageSnapshot;
     }
 
@@ -469,7 +482,6 @@ const defaultAppSdkSessionStoreAdapter: AppSdkSessionStoreAdapter = {
     if (hasSessionTokens(legacyLocalStorageSnapshot)) {
       sessionMemorySnapshot = legacyLocalStorageSnapshot;
       writeStorageSessionSnapshot(resolveSessionStorage(), legacyLocalStorageSnapshot);
-      clearLegacyLocalStorageSession();
       return legacyLocalStorageSnapshot;
     }
 
@@ -479,12 +491,10 @@ const defaultAppSdkSessionStoreAdapter: AppSdkSessionStoreAdapter = {
     const normalizedSession = normalizeSessionTokens(session);
     sessionMemorySnapshot = hasSessionTokens(normalizedSession) ? normalizedSession : null;
     writeStorageSessionSnapshot(resolveSessionStorage(), normalizedSession);
-    clearLegacyLocalStorageSession();
   },
   clear() {
     sessionMemorySnapshot = null;
     writeStorageSessionSnapshot(resolveSessionStorage(), {});
-    clearLegacyLocalStorageSession();
   },
 };
 
