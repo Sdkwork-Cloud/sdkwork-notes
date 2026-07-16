@@ -1391,15 +1391,13 @@ function dependencyApiExportsFrom(json) {
 
 async function verifySdkFamilyMetadata(rootDir, findings) {
   for (const expectation of SDK_FAMILY_EXPECTATIONS) {
-    const assemblyPath = `${expectation.familyDir}/.sdkwork-assembly.json`;
     const manifestPath = `${expectation.familyDir}/sdk-manifest.json`;
     const componentSpecPath = `${expectation.familyDir}/specs/component.spec.json`;
 
-    const assembly = await readOptionalJson(rootDir, assemblyPath);
     const manifest = await readOptionalJson(rootDir, manifestPath);
     const componentSpec = await readOptionalJson(rootDir, componentSpecPath);
 
-    if (!assembly || !manifest || !componentSpec) {
+    if (!manifest || !componentSpec) {
       continue;
     }
 
@@ -1407,32 +1405,32 @@ async function verifySdkFamilyMetadata(rootDir, findings) {
     const expectedFamily = expectedSdkFamily(expectation.domain, expectation.surface);
     const commonChecks = [
       {
-        file: assemblyPath,
-        actual: assembly.workspace,
+        file: manifestPath,
+        actual: manifest.workspace,
         expected: expectedFamily,
         label: 'workspace'
       },
       {
-        file: assemblyPath,
-        actual: assembly.sdkOwner,
+        file: manifestPath,
+        actual: manifest.sdkOwner,
         expected: 'sdkwork-notes',
         label: 'sdkOwner'
       },
       {
-        file: assemblyPath,
-        actual: assembly.sdkFamily ?? assembly.workspace,
+        file: manifestPath,
+        actual: manifest.sdkFamily ?? manifest.workspace,
         expected: expectedFamily,
         label: 'sdkFamily'
       },
       {
-        file: assemblyPath,
-        actual: assembly.apiAuthority,
+        file: manifestPath,
+        actual: manifest.apiAuthority,
         expected: expectedAuthority,
         label: 'apiAuthority'
       },
       {
-        file: assemblyPath,
-        actual: assembly.generationInputSpec,
+        file: manifestPath,
+        actual: manifest.generationInputSpec,
         expected: expectation.generationInputSpec,
         label: 'generationInputSpec'
       },
@@ -1506,7 +1504,7 @@ async function verifySdkFamilyMetadata(rootDir, findings) {
         findings,
         'SDK_DEPENDENCY_METADATA_MISMATCH',
         manifestPath,
-        `${expectation.sdkFamily} sdkDependencies must match .sdkwork-assembly.json exactly.`
+        `${expectation.sdkFamily} sdkDependencies must match sdk-manifest.json exactly.`
       );
     }
 
@@ -1515,7 +1513,7 @@ async function verifySdkFamilyMetadata(rootDir, findings) {
         findings,
         'SDK_DEPENDENCY_METADATA_MISMATCH',
         componentSpecPath,
-        `${expectation.sdkFamily} contracts.sdkDependencies must match .sdkwork-assembly.json exactly.`
+        `${expectation.sdkFamily} contracts.sdkDependencies must match sdk-manifest.json exactly.`
       );
     }
 
@@ -1524,7 +1522,7 @@ async function verifySdkFamilyMetadata(rootDir, findings) {
         findings,
         'SDK_DEPENDENCY_EXPORT_METADATA_MISMATCH',
         manifestPath,
-        `${expectation.sdkFamily} dependencyApiExports must match .sdkwork-assembly.json exactly.`
+        `${expectation.sdkFamily} dependencyApiExports must match sdk-manifest.json exactly.`
       );
     }
 
@@ -1533,7 +1531,7 @@ async function verifySdkFamilyMetadata(rootDir, findings) {
         findings,
         'SDK_DEPENDENCY_EXPORT_METADATA_MISMATCH',
         componentSpecPath,
-        `${expectation.sdkFamily} contracts.dependencyApiExports must match .sdkwork-assembly.json exactly.`
+        `${expectation.sdkFamily} contracts.dependencyApiExports must match sdk-manifest.json exactly.`
       );
     }
   }
@@ -1667,12 +1665,10 @@ async function checkDependencyLayer({ rootDir, findings, file, layer, workspace,
 
 async function verifySdkDependencies(rootDir, findings) {
   const appLayers = [
-    { file: 'sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json', layer: 'assembly' },
     { file: 'sdks/sdkwork-notes-app-sdk/sdk-manifest.json', layer: 'manifest' },
     { file: 'sdks/sdkwork-notes-app-sdk/specs/component.spec.json', layer: 'component' }
   ];
   const backendLayers = [
-    { file: 'sdks/sdkwork-notes-backend-sdk/.sdkwork-assembly.json', layer: 'assembly' },
     { file: 'sdks/sdkwork-notes-backend-sdk/sdk-manifest.json', layer: 'manifest' },
     { file: 'sdks/sdkwork-notes-backend-sdk/specs/component.spec.json', layer: 'component' }
   ];
@@ -1700,7 +1696,6 @@ async function verifySdkDependencies(rootDir, findings) {
   }
 
   const openMetadataFiles = [
-    { file: 'sdks/sdkwork-notes-sdk/.sdkwork-assembly.json', layer: 'assembly' },
     { file: 'sdks/sdkwork-notes-sdk/sdk-manifest.json', layer: 'manifest' },
     { file: 'sdks/sdkwork-notes-sdk/specs/component.spec.json', layer: 'component' }
   ];

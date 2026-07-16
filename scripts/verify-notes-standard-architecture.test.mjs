@@ -167,21 +167,21 @@ test('integrates sdkwork-database-repository entities in pages repository crate'
 test('declares canonical sdkgen transport output for typescript and rust SDK families', () => {
   const families = [
     {
-      assembly: 'sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json',
+      assembly: 'sdks/sdkwork-notes-app-sdk/sdk-manifest.json',
       typescriptManifest:
         'sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/generated/server-openapi/package.json',
       rustManifest:
         'sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-rust/generated/server-openapi/Cargo.toml',
     },
     {
-      assembly: 'sdks/sdkwork-notes-backend-sdk/.sdkwork-assembly.json',
+      assembly: 'sdks/sdkwork-notes-backend-sdk/sdk-manifest.json',
       typescriptManifest:
         'sdks/sdkwork-notes-backend-sdk/sdkwork-notes-backend-sdk-typescript/generated/server-openapi/package.json',
       rustManifest:
         'sdks/sdkwork-notes-backend-sdk/sdkwork-notes-backend-sdk-rust/generated/server-openapi/Cargo.toml',
     },
     {
-      assembly: 'sdks/sdkwork-notes-sdk/.sdkwork-assembly.json',
+      assembly: 'sdks/sdkwork-notes-sdk/sdk-manifest.json',
       typescriptManifest:
         'sdks/sdkwork-notes-sdk/sdkwork-notes-sdk-typescript/generated/server-openapi/package.json',
       rustManifest: 'sdks/sdkwork-notes-sdk/sdkwork-notes-sdk-rust/generated/server-openapi/Cargo.toml',
@@ -410,7 +410,7 @@ test('integrates sdkwork-drive through generated Rust app SDK facade', () => {
   assert.match(facade, /uploader_uploads_prepare/);
   assert.match(facade, /upload_sessions_complete/);
 
-  const appAssembly = readJson('sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json');
+  const appAssembly = readJson('sdks/sdkwork-notes-app-sdk/sdk-manifest.json');
   const driveDependency = appAssembly.sdkDependencies?.find(
     (item) => item.workspace === 'sdkwork-drive-app-sdk',
   );

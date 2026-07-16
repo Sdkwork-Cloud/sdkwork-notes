@@ -506,7 +506,7 @@
     "/notes/v3/api/search": {
       "get": {
         "summary": "Search page projections through Open API.",
-        "operationId": "search.query",
+        "operationId": "search.list",
         "tags": [
           "notes"
         ],
@@ -610,7 +610,7 @@
           }
         },
         "responses": {
-          "202": {
+          "201": {
             "description": "Accepted export job.",
             "content": {
               "application/json": {

@@ -428,7 +428,7 @@
           }
         },
         "responses": {
-          "202": {
+          "201": {
             "description": "Created index job.",
             "content": {
               "application/json": {
@@ -847,7 +847,7 @@
       },
       "post": {
         "summary": "Queue repair for Notes metadata records with inconsistent Drive bindings.",
-        "operationId": "diagnostics.driveOrphans.repair",
+        "operationId": "diagnostics.driveOrphans.create",
         "tags": [
           "notes"
         ],
@@ -868,7 +868,7 @@
           }
         },
         "responses": {
-          "202": {
+          "201": {
             "description": "Repair job.",
             "content": {
               "application/json": {

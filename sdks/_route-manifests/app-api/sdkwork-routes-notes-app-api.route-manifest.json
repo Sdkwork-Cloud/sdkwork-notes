@@ -446,7 +446,7 @@
     {
       "method": "GET",
       "path": "/app/v3/api/notes/search",
-      "operationId": "search.query",
+      "operationId": "search.list",
       "tags": [
         "notes"
       ],

@@ -8,7 +8,7 @@
     "@sdkwork/app-topology": "workspace:*"
   },
   "scripts": {
-    "dev": "node scripts/notes-dev.mjs --runtime-target browser --database postgres --service-layout unified-process --deployment-profile standalone",
+    "stop": "node ../sdkwork-specs/tools/stop-sdkwork-workspace-processes.mjs --workspace .",    "dev": "node scripts/notes-dev.mjs --runtime-target browser --database postgres --service-layout unified-process --deployment-profile standalone",
     "dev:browser": "node scripts/notes-dev.mjs --runtime-target browser --database postgres --service-layout unified-process --deployment-profile standalone",
     "dev:browser:cloud": "node scripts/notes-dev.mjs --runtime-target browser --database postgres --service-layout split-services --deployment-profile cloud",
     "dev:browser:split-services": "node scripts/notes-dev.mjs --runtime-target browser --database postgres --service-layout split-services --deployment-profile standalone",

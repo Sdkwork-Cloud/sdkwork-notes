@@ -96,7 +96,7 @@ function validateSdkFamily(surface, config) {
     console.warn(`[sdkwork-notes] SDK family directory not yet present: sdks/${config.sdkFamily}`);
     return false;
   }
-  const assemblyPath = resolve(familyRoot, '.sdkwork-assembly.json');
+  const assemblyPath = resolve(familyRoot, 'sdk-manifest.json');
   if (!existsSync(assemblyPath)) {
     console.warn(`[sdkwork-notes] Missing assembly manifest for ${config.sdkFamily}`);
     return false;

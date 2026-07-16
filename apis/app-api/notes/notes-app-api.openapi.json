@@ -714,7 +714,7 @@
     "/app/v3/api/notes/search": {
       "get": {
         "summary": "Search Notes page projections while preserving Drive version provenance.",
-        "operationId": "search.query",
+        "operationId": "search.list",
         "tags": [
           "notes"
         ],
@@ -820,7 +820,7 @@
           }
         },
         "responses": {
-          "202": {
+          "201": {
             "description": "Accepted AI job.",
             "content": {
               "application/json": {
@@ -1220,7 +1220,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Recorded AI feedback.",
             "content": {
               "application/json": {

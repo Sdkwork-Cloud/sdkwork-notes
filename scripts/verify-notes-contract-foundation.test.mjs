@@ -505,7 +505,7 @@ async function createFixture(options = {}) {
   );
 
   await writeJson(
-    path.join(rootDir, 'sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json'),
+    path.join(rootDir, 'sdks/sdkwork-notes-app-sdk/sdk-manifest.json'),
     {
       workspace: 'sdkwork-notes-app-sdk',
       sdkDependencies: options.omitAppDriveDependency ? [] : [
@@ -517,7 +517,7 @@ async function createFixture(options = {}) {
     }
   );
   await writeJson(
-    path.join(rootDir, 'sdks/sdkwork-notes-backend-sdk/.sdkwork-assembly.json'),
+    path.join(rootDir, 'sdks/sdkwork-notes-backend-sdk/sdk-manifest.json'),
     {
       workspace: 'sdkwork-notes-backend-sdk',
       sdkDependencies: options.omitBackendDriveDependency ? [] : [
@@ -529,7 +529,7 @@ async function createFixture(options = {}) {
     }
   );
   await writeJson(
-    path.join(rootDir, 'sdks/sdkwork-notes-sdk/.sdkwork-assembly.json'),
+    path.join(rootDir, 'sdks/sdkwork-notes-sdk/sdk-manifest.json'),
     {
       workspace: 'sdkwork-notes-sdk',
       sdkDependencies: []
@@ -792,7 +792,7 @@ test('rejects SDK family metadata that declares a historical authority alias as 
   const rootDir = await createFixture();
   try {
     await writeJson(
-      path.join(rootDir, 'sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json'),
+      path.join(rootDir, 'sdks/sdkwork-notes-app-sdk/sdk-manifest.json'),
       {
         workspace: 'sdkwork-notes-app-sdk',
         sdkOwner: 'sdkwork-notes',

@@ -87,7 +87,7 @@ function assertSdkgenEntrypoint(sdkgenEntrypoint) {
 
 function createGenerationPlans(rootDir, options) {
   const familyRoot = path.join(rootDir, 'sdks', options.sdkFamily);
-  const assemblyPath = path.join(familyRoot, '.sdkwork-assembly.json');
+  const assemblyPath = path.join(familyRoot, 'sdk-manifest.json');
   const assembly = readJson(assemblyPath);
   assert.equal(assembly.sdkOwner, 'sdkwork-notes');
   assert.equal(assembly.workspace, options.sdkFamily);
@@ -107,7 +107,7 @@ function createGenerationPlans(rootDir, options) {
 
   return [...requestedLanguages].map((language) => {
     const languageEntry = languages.get(language);
-    assert.ok(languageEntry, `${options.sdkFamily} must declare ${language} in .sdkwork-assembly.json.`);
+    assert.ok(languageEntry, `${options.sdkFamily} must declare ${language} in sdk-manifest.json.`);
     return {
       apiPrefix,
       fixedSdkVersion: String(languageEntry.version ?? assembly.apiVersion ?? '0.1.0'),

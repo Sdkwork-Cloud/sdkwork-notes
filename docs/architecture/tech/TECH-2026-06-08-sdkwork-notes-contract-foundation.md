@@ -44,15 +44,15 @@ Create:
 - `generated/openapi/notes-app-api.openapi.json`: App API skeleton authority.
 - `generated/openapi/notes-open-api.openapi.json`: Open API skeleton authority.
 - `generated/openapi/notes-backend-api.openapi.json`: Backend API skeleton authority.
-- `sdks/sdkwork-notes-app-sdk/.sdkwork-assembly.json`: App SDK family metadata.
+- `sdks/sdkwork-notes-app-sdk/sdk-manifest.json`: App SDK family metadata.
 - `sdks/sdkwork-notes-app-sdk/sdk-manifest.json`: App SDK generation manifest placeholder.
 - `sdks/sdkwork-notes-app-sdk/README.md`: App SDK family entrypoint.
 - `sdks/sdkwork-notes-app-sdk/specs/component.spec.json`: App SDK component contract.
-- `sdks/sdkwork-notes-sdk/.sdkwork-assembly.json`: Open SDK family metadata.
+- `sdks/sdkwork-notes-sdk/sdk-manifest.json`: Open SDK family metadata.
 - `sdks/sdkwork-notes-sdk/sdk-manifest.json`: Open SDK generation manifest placeholder.
 - `sdks/sdkwork-notes-sdk/README.md`: Open SDK family entrypoint.
 - `sdks/sdkwork-notes-sdk/specs/component.spec.json`: Open SDK component contract.
-- `sdks/sdkwork-notes-backend-sdk/.sdkwork-assembly.json`: Backend SDK family metadata.
+- `sdks/sdkwork-notes-backend-sdk/sdk-manifest.json`: Backend SDK family metadata.
 - `sdks/sdkwork-notes-backend-sdk/sdk-manifest.json`: Backend SDK generation manifest placeholder.
 - `sdks/sdkwork-notes-backend-sdk/README.md`: Backend SDK family entrypoint.
 - `sdks/sdkwork-notes-backend-sdk/specs/component.spec.json`: Backend SDK component contract.
