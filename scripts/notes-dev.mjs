@@ -7,7 +7,6 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 import {
-  API_GATEWAY_REPO,
   DEFAULT_DEV_PROFILE_ID,
   IAM_APPLICATION_BOOTSTRAP_ENV,
   listHealthSurfaces,
@@ -16,12 +15,9 @@ import {
   mergeRuntimeEnv,
   PC_REACT_ROOT,
   REPO_ROOT,
-  resolveCloudGatewayConfigPath,
   resolveDevProfileId,
-  resolveGatewayBind,
   resolveIamDevEnv,
   resolveSurfaceHttpUrl,
-  shouldAutostartGateway,
   waitForHttpHealthy,
 } from './lib/notes-topology.mjs';
 import { mergeRepoDevBootstrapAccessTokenEnv } from '../../sdkwork-iam/scripts/dev/create-dev-bootstrap-access-token-env.mjs';
@@ -149,41 +145,11 @@ function createNotesApiServerProcess(env) {
   };
 }
 
-function createPlatformGatewayProcess(env) {
-  const hosting = env.SDKWORK_NOTES_HOSTING ?? 'self-hosted';
-  const bind = resolveGatewayBind(env, hosting);
-  const gatewayConfig = resolveCloudGatewayConfigPath(env, 'development');
-  return {
-    label: 'sdkwork-api-cloud-gateway',
-    command: cargoCommand(),
-    args: [
-      'run',
-      '-p',
-      'sdkwork-api-cloud-gateway',
-      '--bin',
-      'sdkwork-api-cloud-gateway',
-      '--',
-      '--config',
-      gatewayConfig,
-    ],
-    cwd: API_GATEWAY_REPO,
-    env: {
-      ...env,
-      SDKWORK_API_CLOUD_GATEWAY_BIND: bind,
-      SDKWORK_API_CLOUD_GATEWAY_CONFIG: gatewayConfig,
-    },
-  };
-}
-
 function buildProcessesFromOrchestration(profileId, env, runtimeTarget) {
   const processes = [];
 
   for (const processDef of listOrchestrationProcesses(profileId)) {
     if (processDef.id === 'platform.api-gateway') {
-      if (!shouldAutostartGateway(env)) {
-        continue;
-      }
-      processes.push(createPlatformGatewayProcess(env));
       continue;
     }
 

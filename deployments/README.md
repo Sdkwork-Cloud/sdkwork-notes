@@ -21,8 +21,7 @@ Current deployment topology is declared in:
 
 - [../specs/topology.spec.json](../specs/topology.spec.json)
 - [../configs/topology/](../configs/topology/)
-- [../configs/sdkwork-api-cloud-gateway.notes.development.toml](../configs/sdkwork-api-cloud-gateway.notes.development.toml)
-- [../configs/sdkwork-api-cloud-gateway.notes.production.toml](../configs/sdkwork-api-cloud-gateway.notes.production.toml)
+- Platform ingress configuration is owned by the platform deployment authority; Notes publishes `sdkwork-api-notes-assembly`.
 
 ## Packaging
 

@@ -31,7 +31,6 @@ const skipPathFragments = [
 const allowlistPathFragments = [
   'specs/topology.spec.json',
   'configs/topology/',
-  'configs/sdkwork-api-cloud-gateway.notes.',
   'sdkwork-notes-pc-react/.env.development.local.example',
   'docs/架构/',
 ];

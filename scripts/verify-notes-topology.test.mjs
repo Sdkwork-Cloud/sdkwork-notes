@@ -110,10 +110,3 @@ test('notes standalone-gateway requires topology bind env without hardcoded fall
   assert.match(mainRs, /SDKWORK_NOTES_APPLICATION_PUBLIC_INGRESS_BIND/);
   assert.doesNotMatch(mainRs, /127\.0\.0\.1:8787/);
 });
-
-test('gateway cloud bundle script references topology packaging configs', async () => {
-  const bundleScript = await read('scripts/gateway-cloud-bundle.mjs');
-  assert.match(bundleScript, /NOTES_CLOUD_GATEWAY_CONFIGS/);
-  assert.match(bundleScript, /sdkwork-notes-api-gateway-config-/);
-  assert.doesNotMatch(bundleScript, /bridgeLegacyServiceEnv/);
-});

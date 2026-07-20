@@ -16,7 +16,6 @@ const __dirname = path.dirname(__filename);
 export const REPO_ROOT = path.resolve(__dirname, '..', '..');
 export const SPEC_PATH = path.join(REPO_ROOT, 'specs/topology.spec.json');
 export const PC_REACT_ROOT = path.join(REPO_ROOT, 'sdkwork-notes-pc-react');
-export const API_GATEWAY_REPO = path.resolve(REPO_ROOT, '..', 'sdkwork-api-cloud-gateway');
 export const IAM_REPO_ROOT = path.resolve(REPO_ROOT, '..', 'sdkwork-iam');
 
 export const IAM_APPLICATION_BOOTSTRAP_ENV = {
