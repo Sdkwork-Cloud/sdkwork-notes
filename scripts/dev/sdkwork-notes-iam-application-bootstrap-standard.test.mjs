@@ -12,10 +12,10 @@ function read(relativePath, root = repoRoot) {
 }
 
 const bootstrapSource = read(
-  'crates/sdkwork-notes-standalone-gateway/src/bootstrap/iam_application_bootstrap.rs',
+  'crates/sdkwork-api-notes-standalone-gateway/src/bootstrap/iam_application_bootstrap.rs',
 );
-const routersSource = read('crates/sdkwork-notes-standalone-gateway/src/bootstrap/routers.rs');
-const apiServerCargo = read('crates/sdkwork-notes-standalone-gateway/Cargo.toml');
+const routersSource = read('crates/sdkwork-api-notes-standalone-gateway/src/bootstrap/routers.rs');
+const apiServerCargo = read('crates/sdkwork-api-notes-standalone-gateway/Cargo.toml');
 const workspaceCargo = read('Cargo.toml');
 const topologySource = read('scripts/lib/notes-topology.mjs');
 const sharedBootstrapSource = read(

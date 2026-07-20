@@ -48,11 +48,11 @@ coverage = "notes-backend-api-upstream-routes"
 
 [[upstreams]]
 serviceId = "sdkwork-notes-app-api"
-baseUrl = "http://sdkwork-notes-standalone-gateway:8787"
+baseUrl = "http://sdkwork-api-notes-standalone-gateway:8787"
 
 [[upstreams]]
 serviceId = "sdkwork-notes-backend-api"
-baseUrl = "http://sdkwork-notes-standalone-gateway:8787"
+baseUrl = "http://sdkwork-api-notes-standalone-gateway:8787"
 
 [cors]
 allowAnyOrigin = false

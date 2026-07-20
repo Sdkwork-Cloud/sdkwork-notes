@@ -9,7 +9,7 @@ This repository adopts the shared SDKWork runtime topology framework.
 
 ## Archetype
 
-`application-http-gateway` — Notes exposes **application.public-ingress** through `sdkwork-notes-standalone-gateway`. Shared IAM and appbase SDKs use **platform.api-gateway**.
+`application-http-gateway` — Notes exposes **application.public-ingress** through `sdkwork-api-notes-standalone-gateway`. Shared IAM and appbase SDKs use **platform.api-gateway**.
 
 ## Default dev profile
 

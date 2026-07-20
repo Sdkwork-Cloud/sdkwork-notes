@@ -306,7 +306,7 @@ test('keeps Notes service source free of Drive-owned storage lifecycle terms', a
   ];
 
   const driveAdapterAllowlist = new Set([
-    'crates/sdkwork-notes-standalone-gateway/src/bootstrap/drive_app_sdk_facade.rs',
+    'crates/sdkwork-api-notes-standalone-gateway/src/bootstrap/drive_app_sdk_facade.rs',
   ]);
 
   const findings = [];

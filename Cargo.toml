@@ -1,14 +1,14 @@
 [workspace]
 members = [
     "crates/sdkwork-api-notes-assembly",
-    "crates/sdkwork-notes-gateway-assembly",
+    "crates/sdkwork-api-notes-assembly",
     "crates/sdkwork-notes-database-host",
     "crates/sdkwork-notes-pages-service",
     "crates/sdkwork-notes-pages-repository-sqlx",
     "crates/sdkwork-routes-notes-http-auth",
     "crates/sdkwork-routes-notes-app-api",
     "crates/sdkwork-routes-notes-backend-api",
-    "crates/sdkwork-notes-standalone-gateway",
+    "crates/sdkwork-api-notes-standalone-gateway",
 ]
 resolver = "2"
 

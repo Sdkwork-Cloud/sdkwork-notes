@@ -20,7 +20,7 @@ pub async fn build_router() -> Result<Router, Box<dyn std::error::Error + Send +
         .await
         .map_err(|error| -> Box<dyn std::error::Error + Send + Sync> { error.into() })?;
 
-    let domain = sdkwork_notes_gateway_assembly::assemble_application_business_router(service).router;
+    let domain = sdkwork_api_notes_assembly::assemble_api_router(service).router;
 
     let protected = build_protected_router(domain).await;
 

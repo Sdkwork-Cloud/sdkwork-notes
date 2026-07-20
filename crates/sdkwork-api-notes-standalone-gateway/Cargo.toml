@@ -1,14 +1,14 @@
 [package]
-name = "sdkwork-notes-standalone-gateway"
+name = "sdkwork-api-notes-standalone-gateway"
 version.workspace = true
 edition.workspace = true
 
 [[bin]]
-name = "sdkwork-notes-standalone-gateway"
+name = "sdkwork-api-notes-standalone-gateway"
 path = "src/main.rs"
 
 [dependencies]
-sdkwork_notes_gateway_assembly = { package = "sdkwork-notes-gateway-assembly", path = "../sdkwork-notes-gateway-assembly" }
+sdkwork_api_notes_assembly = { package = "sdkwork-api-notes-assembly", path = "../sdkwork-api-notes-assembly" }
 axum.workspace = true
 tokio.workspace = true
 serde_json.workspace = true
