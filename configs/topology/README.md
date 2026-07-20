@@ -8,10 +8,9 @@ Platform standard: `../../sdkwork-specs/APP_RUNTIME_TOPOLOGY_ADOPTION.md`
 
 | Profile id | Command |
 | --- | --- |
-| `standalone.split-services.development` | `pnpm dev:browser:split-services`, `pnpm dev:desktop` with `--service-layout split-services` |
-| `standalone.unified-process.development` | `pnpm dev`, `pnpm dev:browser`, `pnpm dev:desktop` |
-| `cloud.split-services.development` | `pnpm dev:browser:cloud`, `pnpm dev:desktop:cloud` |
-| `standalone.unified-process.production` | self-hosted production build |
-| `cloud.split-services.production` | cloud production deploy |
+| `standalone.development` | `pnpm dev`, `pnpm dev:browser`, `pnpm dev:desktop` |
+| `cloud.development` | `pnpm dev:browser:cloud`, `pnpm dev:desktop:cloud` |
+| `standalone.production` | self-hosted production build |
+| `cloud.production` | cloud production deploy |
 
 Loader: `scripts/lib/notes-topology.mjs` → `@sdkwork/app-topology`.

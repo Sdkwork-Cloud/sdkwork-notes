@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "kind": "sdkwork.component-deployment",
+  "application": "sdkwork-notes-pc-react",
+  "parentTopologySpec": "../../specs/topology.spec.json"
+}

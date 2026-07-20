@@ -13,14 +13,14 @@ This repository adopts the shared SDKWork runtime topology framework.
 
 ## Default dev profile
 
-`standalone.split-services.development`
+`standalone.development`
 
 ## Commands
 
 ```bash
-pnpm dev                       # standalone unified-process development (browser)
-pnpm dev:browser:cloud         # cloud split-services development
-pnpm dev:desktop               # standalone unified-process development (Tauri)
+pnpm dev                       # standalone development (browser)
+pnpm dev:browser:cloud         # cloud development
+pnpm dev:desktop               # standalone development (Tauri)
 pnpm gateway:run:standalone          # Notes standalone gateway only (topology profile env)
 pnpm topology:validate         # validate specs/topology.spec.json
 pnpm gateway:matrix            # print gateway packaging matrix

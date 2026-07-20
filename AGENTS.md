@@ -77,7 +77,7 @@ Build scripts, dev runners, and `pnpm clean` must follow `CODE_STYLE_SPEC.md` §
 
 Run commands from this repository root unless a command explicitly targets another path.
 
-- `pnpm dev`: start browser development with standalone unified-process topology.
+- `pnpm dev`: start browser development with the standalone topology.
 - `pnpm dev:desktop`: start Tauri desktop development.
 - `pnpm gateway:run:standalone`: run the Notes standalone gateway with topology profile env.
 - `pnpm build`: build the Rust workspace.
