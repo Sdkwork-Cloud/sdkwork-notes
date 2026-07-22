@@ -8,7 +8,7 @@ name = "sdkwork-api-notes-standalone-gateway"
 path = "src/main.rs"
 
 [dependencies]
-sdkwork_api_notes_assembly = { package = "sdkwork-api-notes-assembly", path = "../sdkwork-api-notes-assembly" }
+sdkwork-api-notes-assembly.workspace = true
 axum.workspace = true
 tokio.workspace = true
 serde_json.workspace = true
@@ -22,14 +22,13 @@ sdkwork-notes-pages-repository-sqlx.workspace = true
 sdkwork-web-core.workspace = true
 sdkwork-web-axum.workspace = true
 sdkwork-web-bootstrap.workspace = true
-sdkwork_iam_web_adapter.workspace = true
-sdkwork_iam_embedded_application_bootstrap.workspace = true
-sdkwork_iam_database_host.workspace = true
-sdkwork_routes_iam_app_api = { workspace = true }
+sdkwork-iam-web-adapter.workspace = true
+sdkwork-iam-embedded-application-bootstrap.workspace = true
+sdkwork-iam-database-host.workspace = true
+sdkwork-routes-iam-app-api.workspace = true
 sdkwork-database-config.workspace = true
 sdkwork-database-sqlx.workspace = true
 sdkwork-utils-rust.workspace = true
-sdkwork_drive_app_sdk_generated_rust.workspace = true
+sdkwork-drive-app-sdk-generated-rust.workspace = true
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 sha2 = "0.10"
-

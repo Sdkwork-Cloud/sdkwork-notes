@@ -12,6 +12,6 @@ path = "src/lib.rs"
 axum.workspace = true
 tokio.workspace = true
 sdkwork-notes-pages-service.workspace = true
-sdkwork_routes_notes_http_auth = { package = "sdkwork-routes-notes-http-auth", path = "../sdkwork-routes-notes-http-auth" }
+sdkwork-routes-notes-http-auth.workspace = true
 sdkwork-routes-notes-app-api.workspace = true
 sdkwork-routes-notes-backend-api.workspace = true

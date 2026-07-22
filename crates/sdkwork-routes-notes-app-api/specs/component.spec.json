@@ -6,7 +6,7 @@
     "displayName": "SDKWork Notes App API Router",
     "version": "0.1.0",
     "type": "rust-route-crate",
-    "root": "sdkwork-notes/crates/sdkwork-routes-notes-app-api",
+    "root": "crates/sdkwork-routes-notes-app-api",
     "domain": "notes",
     "capability": "notes",
     "surface": "app-api",
@@ -75,7 +75,7 @@
     "runtimeEntrypoints": [
       "sdkwork_routes_notes_app_api::routes::build_router"
     ],
-    "routeManifest": "../../../sdks/_route-manifests/app-api/sdkwork-routes-notes-app-api.route-manifest.json",
+    "routeManifest": "sdks/_route-manifests/app-api/sdkwork-routes-notes-app-api.route-manifest.json",
     "sdkClients": [],
     "sdkDependencies": [],
     "dependencyApiExports": [],
