@@ -24,7 +24,7 @@ Out of scope:
 
 ## Product Boundary
 
-`sdkwork-notes-pages-service` owns the suggestion decision state because `notes_ai_suggestion` is a Notes-owned AI governance ledger. Drive remains the content and version authority. Accepting a suggestion means “this suggestion was adopted by the Notes workflow�? a later phase can add a separate apply operation that writes page content through the existing Drive-backed page content port.
+`sdkwork-notes-pages-service` owns the suggestion decision state because `notes_ai_suggestion` is a Notes-owned AI governance ledger. Drive remains the content and version authority. Accepting a suggestion means “this suggestion was adopted by the Notes workflow” a later phase can add a separate apply operation that writes page content through the existing Drive-backed page content port.
 
 ## API Design
 
