@@ -13,7 +13,10 @@ import {
 } from '../../scripts/shared-sdk-mode';
 
 function resolveAppMode(mode: string): 'development' | 'test' | 'production' {
-  const normalizedMode = String(process.env.SDKWORK_NOTES_APP_MODE ?? mode).trim().toLowerCase();
+  const rawMode = String(process.env.SDKWORK_NOTES_APP_MODE ?? mode).trim().toLowerCase();
+  const normalizedMode = rawMode.includes('.')
+    ? rawMode.slice(rawMode.lastIndexOf('.') + 1)
+    : rawMode;
   if (normalizedMode === 'test') {
     return 'test';
   }
@@ -21,6 +24,11 @@ function resolveAppMode(mode: string): 'development' | 'test' | 'production' {
     return 'production';
   }
   return 'development';
+}
+
+function resolveEnvLoadMode(mode: string, appMode: 'development' | 'test' | 'production') {
+  const rawMode = String(process.env.SDKWORK_NOTES_APP_MODE ?? mode).trim().toLowerCase();
+  return rawMode.includes('.') ? rawMode : `standalone.${appMode}`;
 }
 
 function createRuntimeEnv(
@@ -40,8 +48,9 @@ export default defineConfig(({ command, mode }) => {
   const useSharedSdkSourceMode = isSharedSdkSourceMode(process.env);
   const workspaceRootDir = path.resolve(__dirname, '../..');
   const appMode = resolveAppMode(mode);
+  const envLoadMode = resolveEnvLoadMode(mode, appMode);
   const runtimeEnv = stripForbiddenCredentialEnvEntries(
-    createRuntimeEnv(loadEnv(appMode, workspaceRootDir, ''), appMode),
+    createRuntimeEnv(loadEnv(envLoadMode, workspaceRootDir, ''), appMode),
   );
   const monorepoRoot = path.resolve(__dirname, '../../../../..');
   const sharedSdkCommonSourceEntry = path.resolve(
@@ -61,7 +70,7 @@ export default defineConfig(({ command, mode }) => {
     plugins: [react(), tailwindcss()],
     define: {
       __SDKWORK_NOTES_ENV__: JSON.stringify(runtimeEnv),
-      ...buildSdkworkVitePrivateEnvDefine(loadEnv(appMode, workspaceRootDir, '')),
+      ...buildSdkworkVitePrivateEnvDefine(loadEnv(envLoadMode, workspaceRootDir, '')),
     },
     build: {
       rollupOptions: {

@@ -68,9 +68,9 @@ Step 03 之前，当前应用虽然已经支持 `.env`、Vite 环境变量和桌
 当前受版本管理的基线文件：
 
 - `.env.example`
-- `.env.development`
-- `.env.test`
-- `.env.production`
+- `.env.standalone.development`
+- `.env.standalone.test`
+- `.env.standalone.production`
 
 当前统一冻结事实：
 

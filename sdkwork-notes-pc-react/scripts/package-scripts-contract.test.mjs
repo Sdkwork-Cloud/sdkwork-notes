@@ -25,7 +25,7 @@ test('package scripts pin local desktop commands to source SDK mode and release 
   );
   assert.equal(
     scripts['build:test'],
-    'node scripts/run-with-app-mode.mjs test -- pnpm install:shared-sdk && pnpm build:packages && pnpm exec vite build --mode test',
+    'node scripts/run-with-app-mode.mjs test -- pnpm install:shared-sdk && pnpm build:packages && pnpm exec vite build --mode standalone.test',
   );
   assert.equal(
     scripts['build:packages'],
@@ -77,6 +77,6 @@ test('package scripts pin local desktop commands to source SDK mode and release 
   );
   assert.equal(
     desktopScripts['dev:desktop:test-runner'],
-    'node ../../scripts/run-with-app-mode.mjs test -- pnpm exec vite --host 127.0.0.1 --port 1430 --strictPort --mode test',
+    'node ../../scripts/run-with-app-mode.mjs test -- pnpm exec vite --host 127.0.0.1 --port 1430 --strictPort --mode standalone.test',
   );
 });

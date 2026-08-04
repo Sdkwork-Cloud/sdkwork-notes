@@ -15,8 +15,8 @@
   "scripts": {
     "dev": "vite",
     "dev:desktop": "vite --host 127.0.0.1 --port 1430 --strictPort",
-    "dev:desktop:test-runner": "node ../../scripts/run-with-app-mode.mjs test -- pnpm exec vite --host 127.0.0.1 --port 1430 --strictPort --mode test",
-    "build": "vite build --mode production",
+    "dev:desktop:test-runner": "node ../../scripts/run-with-app-mode.mjs test -- pnpm exec vite --host 127.0.0.1 --port 1430 --strictPort --mode standalone.test",
+    "build": "vite build --mode standalone.production",
     "build:desktop": "tauri icon src-tauri/app-icon.svg && tauri build",
     "build:desktop:icon": "tauri icon src-tauri/app-icon.svg",
     "check:desktop:toolchain": "tauri info",

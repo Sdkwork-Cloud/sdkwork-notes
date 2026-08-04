@@ -251,7 +251,7 @@ SDKWork Notes 不需要“推翻重做”。最优路径是：
   - `notes-core` 已冻结统一会话存储适配接口与运行时配置解析入口。
   - Web 会话默认进入 `sessionStorage`，旧 `localStorage` 键只做一次性迁移后清理。
   - Desktop 会话由 Tauri 命令桥接到 app data 目录中的 `desktop-session.json`，前端保留 `sessionStorage` 镜像。
-  - `.env.example` 与 `.env.development / .env.test / .env.production` 已显式声明 `VITE_APP_OWNER_MODE=tenant`。
+  - `.env.example` 与 `.env.standalone.development / .env.standalone.test / .env.standalone.production` 已显式声明 `VITE_APP_OWNER_MODE=tenant`。
 - 当前 `scripts/` 下共有 `38` 个文件，说明 workspace / desktop / release 合同门禁已经继续增强。
 - `pnpm.cmd test:workspace:contracts`、`pnpm.cmd test:desktop:contracts`、`pnpm.cmd test:desktop:rust`、`pnpm.cmd typecheck` 当前都可直接执行，`spawn EPERM` 已不再是有效阻塞项。
 - 当前工作树仍处于活跃演进中的中间态，后续 Step 04 及之后的实施仍必须坚持渐进式收敛，避免覆盖既有业务改动。

@@ -12,9 +12,9 @@ function read(relativePath) {
 test('workspace ships explicit development, test, production, and example env files', () => {
   for (const relativePath of [
     '.env.example',
-    '.env.development',
-    '.env.test',
-    '.env.production',
+    '.env.standalone.development',
+    '.env.standalone.test',
+    '.env.standalone.production',
     '.env.development.local.example',
   ]) {
     assert.equal(fs.existsSync(path.join(workspaceRoot, relativePath)), true, `${relativePath} is required`);
@@ -23,9 +23,9 @@ test('workspace ships explicit development, test, production, and example env fi
 
 test('workspace env defaults align topology surface urls with sdkwork-notes profiles', () => {
   const envExample = read('.env.example');
-  const envDevelopment = read('.env.development');
-  const envTest = read('.env.test');
-  const envProduction = read('.env.production');
+  const envDevelopment = read('.env.standalone.development');
+  const envTest = read('.env.standalone.test');
+  const envProduction = read('.env.standalone.production');
 
   for (const envText of [envExample, envDevelopment, envTest, envProduction]) {
     assert.match(envText, /VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL=/);

@@ -158,9 +158,9 @@
 
 当前已区分：
 
-- `.env.development`
-- `.env.test`
-- `.env.production`
+- `.env.standalone.development`
+- `.env.standalone.test`
+- `.env.standalone.production`
 
 当前环境目标 API：
 
@@ -192,7 +192,7 @@
 - SDK client 配置源并非只来自 `import.meta.env`，而是按 `process.env -> import.meta.env -> __SDKWORK_NOTES_ENV__` 合并，并以 `__SDKWORK_NOTES_ENV__ > import.meta.env > process.env` 作为最终优先级口径。
 - SDK client 当前会优先读取显式 `VITE_APP_OWNER_MODE / VITE_OWNER_MODE / SDKWORK_OWNER_MODE`，否则再根据租户/组织相关 API base URL 或 access token 变量推断 `ownerMode = root / tenant / organization`，进而决定 `baseUrl / accessToken` 的作用域选择；`tenantId / organizationId` 必须来自双 token JWT claims，不得通过 `VITE_TENANT_ID` 等环境变量注入。
 - Web 开发入口默认监听 `127.0.0.1:4178`；Desktop 包内嵌 Vite dev server 默认监听 `127.0.0.1:1430` 且 `strictPort = true`。
-- `.env.example` 与 `.env.development / .env.test / .env.production` 已明确声明 `VITE_APP_OWNER_MODE=tenant`，`VITE_APP_PLATFORM` 仍保留为可选覆盖，未覆盖时由 Web / Desktop 各自入口注入默认值。
+- `.env.example` 与 `.env.standalone.development / .env.standalone.test / .env.standalone.production` 已明确声明 `VITE_APP_OWNER_MODE=tenant`，`VITE_APP_PLATFORM` 仍保留为可选覆盖，未覆盖时由 Web / Desktop 各自入口注入默认值。
 
 ---
 

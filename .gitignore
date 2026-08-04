@@ -65,6 +65,7 @@ config/*.local.toml
 .env.*
 !.env.example
 !.env.*.example
+!.env.standalone.*
 **/build/
 *.log
 .DS_Store
