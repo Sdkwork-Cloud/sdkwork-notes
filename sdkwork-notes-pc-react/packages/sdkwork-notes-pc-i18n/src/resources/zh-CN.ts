@@ -102,7 +102,7 @@ export const zhCN = {
     settingsSaveFailed: '无法保存你的偏好设置。',
     signOut: '退出登录',
     theme: '主题',
-    themeDesc: '沿用 Claw 风格的主题控制，并针对长时间写作优化视觉体验。',
+    themeDesc: '沿用 Cloud 风格的主题控制，并针对长时间写作优化视觉体验。',
     themeColorHint: '主题色仅保存在当前设备上，主题模式和语言会同步到远端。',
     language: '语言',
     languageDesc: '无需离开写作流即可切换界面语言。',

@@ -32,7 +32,7 @@ describe('desktop layout contracts', () => {
     expect(accountPageSource).toMatch(/className="h-full overflow-y-auto scrollbar-hide"/);
   });
 
-  it('ships the claw-style scrollbar utilities needed by the desktop shell', () => {
+  it('ships the cloud-style scrollbar utilities needed by the desktop shell', () => {
     const shellStylesSource = read('packages/sdkwork-notes-pc-shell/src/styles/index.css');
 
     expect(shellStylesSource).toMatch(/scrollbar-width:\s*thin/);

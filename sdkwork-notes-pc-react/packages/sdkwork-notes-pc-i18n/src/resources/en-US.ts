@@ -7,7 +7,7 @@ export const enUS = {
   },
   shell: {
     scaffold: {
-      title: 'The Claw-inspired Notes desktop workspace is being delivered package by package.',
+      title: 'The Cloud-inspired Notes desktop workspace is being delivered package by package.',
       description:
         'The app shell, auth, theme, account center, and migrated notes domain are being rebuilt around a clean pnpm workspace.',
       packageHint: 'This package now has a clear responsibility and the implementation is being filled in.',
@@ -108,7 +108,7 @@ export const enUS = {
     settingsSaveFailed: 'Unable to save your preferences.',
     signOut: 'Sign out',
     theme: 'Theme',
-    themeDesc: 'Keep the Claw-style theme controls while tuning the app for long writing sessions.',
+    themeDesc: 'Keep the Cloud-style theme controls while tuning the app for long writing sessions.',
     themeColorHint: 'Accent color stays local to this device while theme mode and language sync remotely.',
     language: 'Language',
     languageDesc: 'Switch UI language without leaving your writing flow.',

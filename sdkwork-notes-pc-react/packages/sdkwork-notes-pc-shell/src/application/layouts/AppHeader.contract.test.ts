@@ -9,7 +9,7 @@ function read(relativePath: string) {
 }
 
 describe('desktop app header contracts', () => {
-  it('uses a claw-style fixed-height custom header with brand on the left and window controls on the right', () => {
+  it('uses a cloud-style fixed-height custom header with brand on the left and window controls on the right', () => {
     const appHeaderSource = read('packages/sdkwork-notes-pc-shell/src/application/layouts/AppHeader.tsx');
     const shellLayoutSource = read('packages/sdkwork-notes-pc-shell/src/application/layouts/ShellLayout.tsx');
 
