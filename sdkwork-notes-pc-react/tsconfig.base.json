@@ -3,32 +3,24 @@
     "target": "ES2022",
     "useDefineForClassFields": false,
     "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": [
+      "vite/client"
+    ],
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "strict": true,
-    "ignoreDeprecations": "6.0",
-    "baseUrl": ".",
-    "paths": {
-      "@sdkwork/notes-pc-local": ["packages/sdkwork-notes-pc-local/src/index.ts"],
-      "@sdkwork/notes-pc-observability": ["packages/sdkwork-notes-pc-observability/src/index.ts"],
-      "@sdkwork/notes-pc-search": ["packages/sdkwork-notes-pc-search/src/index.ts"],
-      "@sdkwork/notes-pc-sync": ["packages/sdkwork-notes-pc-sync/src/index.ts"],
-      "@sdkwork/sdk-common": ["../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript/src/index.ts"],
-      "@sdkwork/appbase-pc-react": ["../../sdkwork-appbase/packages/pc-react/foundation/sdkwork-appbase-pc-react/src/index.ts"],
-      "@sdkwork/iam-app-sdk": ["../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript/src/index.ts"],
-      "@sdkwork/iam-backend-sdk": ["../../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript/src/index.ts"],
-      "@sdkwork/auth-runtime-pc-react": ["../../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-auth-runtime-pc-react/src/index.ts"],
-      "@sdkwork-internal/notes-app-sdk-generated": ["../sdks/sdkwork-notes-app-sdk/sdkwork-notes-app-sdk-typescript/src/index.ts"]
-    },
     "noEmit": true
   }
 }
