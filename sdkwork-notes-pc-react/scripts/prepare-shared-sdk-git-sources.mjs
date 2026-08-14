@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 export const SHARED_SDK_COMMON_REPO_URL_ENV_VAR = 'SDKWORK_SHARED_SDK_COMMON_REPO_URL';
 export const SHARED_SDK_GIT_REF_ENV_VAR = 'SDKWORK_SHARED_SDK_GIT_REF';
 export const SHARED_SDK_GIT_FORCE_SYNC_ENV_VAR = 'SDKWORK_SHARED_SDK_GIT_FORCE_SYNC';
-export const DEFAULT_SHARED_SDK_COMMON_REPO_URL = 'https://github.com/Sdkwork-Cloud/sdkwork-sdk-commons.git';
+export const DEFAULT_SHARED_SDK_COMMON_REPO_URL = 'https://github.com/sdkwork-ai/sdkwork-sdk-commons.git';
 
 function run(command, args, { cwd = process.cwd(), captureStdout = false } = {}) {
   const result = spawnSync(command, args, {

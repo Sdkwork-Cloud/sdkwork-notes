@@ -211,7 +211,7 @@ GitHub Actions 已支持：
 
 当前 workflow 触发与治理细节还包括：
 
-- 通过根目录 `.github/workflows/package.yml` 委托 `Sdkwork-Cloud/sdkwork-github-workflow` 可复用打包流程
+- 通过根目录 `.github/workflows/package.yml` 委托 `sdkwork-ai/sdkwork-github-workflow` 可复用打包流程
 - 打包配置权威文件为仓库根目录 `sdkwork.workflow.json`
 - 桌面发布目标 ID 遵循 `*-standalone-desktop-*` 命名（见 `NAMING_SPEC.md` / `GITHUB_WORKFLOW_SPEC.md`）
 

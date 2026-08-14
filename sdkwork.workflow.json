@@ -4,7 +4,7 @@
   "app": {
     "id": "sdkwork-notes-pc-react",
     "name": "SDKWork Notes PC React",
-    "repository": "Sdkwork-Cloud/sdkwork-notes",
+    "repository": "sdkwork-ai/sdkwork-notes",
     "sourcePath": "sdkwork-notes-pc-react",
     "configPath": "sdkwork-notes-pc-react/sdkwork.app.config.json"
   },
@@ -38,7 +38,7 @@
         "env": {
           "SDKWORK_SHARED_SDK_MODE": "git",
           "SDKWORK_SHARED_SDK_GIT_REF": "main",
-          "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/Sdkwork-Cloud/sdkwork-sdk-commons.git"
+          "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/sdkwork-ai/sdkwork-sdk-commons.git"
         },
         "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\nnode scripts/prepare-shared-sdk-git-sources.mjs\npnpm install --frozen-lockfile"
       }
@@ -50,7 +50,7 @@
         "env": {
           "SDKWORK_SHARED_SDK_MODE": "git",
           "SDKWORK_SHARED_SDK_GIT_REF": "main",
-          "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/Sdkwork-Cloud/sdkwork-sdk-commons.git"
+          "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/sdkwork-ai/sdkwork-sdk-commons.git"
         },
         "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\npnpm install:shared-sdk\npnpm test:desktop:contracts\npnpm --filter @sdkwork/notes-pc-shell test\npnpm --filter @sdkwork/notes-pc-desktop test\npnpm test:desktop:rust\npnpm typecheck\npnpm build"
       }
@@ -63,7 +63,7 @@
           "CMAKE_GENERATOR": "Visual Studio 17 2022",
           "HOST_CMAKE_GENERATOR": "Visual Studio 17 2022",
           "SDKWORK_SHARED_SDK_GIT_REF": "main",
-          "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/Sdkwork-Cloud/sdkwork-sdk-commons.git"
+          "SDKWORK_SHARED_SDK_COMMON_REPO_URL": "https://github.com/sdkwork-ai/sdkwork-sdk-commons.git"
         },
         "run": "$ErrorActionPreference = \"Stop\"\n$PSNativeCommandUseErrorActionPreference = $true\n$targetKey = \"$env:SDKWORK_PACKAGE_PLATFORM/$env:SDKWORK_PACKAGE_ARCHITECTURE\"\n$rustTarget = switch ($targetKey) {\n  \"windows/x64\" { \"x86_64-pc-windows-msvc\" }\n  \"windows/arm64\" { \"aarch64-pc-windows-msvc\" }\n  \"linux/x64\" { \"x86_64-unknown-linux-gnu\" }\n  \"linux/arm64\" { \"aarch64-unknown-linux-gnu\" }\n  \"macos/x64\" { \"x86_64-apple-darwin\" }\n  \"macos/arm64\" { \"aarch64-apple-darwin\" }\n  default { throw \"Unsupported SDKWork Notes desktop target $targetKey\" }\n}\npnpm release:desktop -- --target $rustTarget\nif ($env:SDKWORK_PACKAGE_PLATFORM -eq \"macos\") {\n  $bundleDir = \"packages/sdkwork-notes-pc-desktop/src-tauri/target/$rustTarget/release/bundle/macos\"\n  $appBundle = Get-ChildItem -Path $bundleDir -Directory -Filter \"*.app\" -ErrorAction SilentlyContinue | Select-Object -First 1\n  if (-not $appBundle) {\n    throw \"Missing macOS .app bundle in $bundleDir\"\n  }\n  Get-ChildItem -Path $bundleDir -File -Filter \"*.app.tar.gz\" -ErrorAction SilentlyContinue | Remove-Item -Force\n  $archivePath = Join-Path $bundleDir \"sdkwork-notes-$env:SDKWORK_PACKAGE_VERSION-$env:SDKWORK_PACKAGE_ARCHITECTURE.app.tar.gz\"\n  tar -C $bundleDir -czf $archivePath $appBundle.Name\n  if (-not (Test-Path -LiteralPath $archivePath -PathType Leaf)) {\n    throw \"Missing macOS app archive: $archivePath\"\n  }\n}"
       }
