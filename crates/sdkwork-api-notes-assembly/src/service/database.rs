@@ -7,7 +7,7 @@ use sdkwork_notes_pages_service::service::NotesService;
 
 use super::drive_port::NotesApiDrivePort;
 
-pub async fn build_notes_service(
+pub async fn assemble_notes_service_from_env(
 ) -> Result<NotesService<SqlNotesStore, NotesApiDrivePort>, String> {
     sqlx::any::install_default_drivers();
     let config = DatabaseConfig::from_env("notes")
