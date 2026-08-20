@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::api::paths::custom_path;
 use crate::api::paths::append_query_string;
 use crate::http::{SdkworkError, SdkworkHttpClient};
-use crate::models::{CreateExportRequest, CreatePageRequest, ExportsCreateResponse202, ExportsRetrieveResponse, PagesListResponse, PagesVersionsListResponse, RestorePageVersionRequest, SdkWorkListResponse, SearchQueryResponse, UpdatePageContentRequest, UpdatePageRequest, WorkspacesListResponse};
+use crate::models::{CreateExportRequest, CreatePageRequest, ExportJob, RestorePageVersionRequest, SdkWorkPageData, UpdatePageContentRequest, UpdatePageRequest};
 
 #[derive(Clone)]
 pub struct NotesApi {
@@ -16,7 +16,7 @@ impl NotesApi {
     }
 
     /// List workspaces available to the API key context.
-    pub async fn workspaces_list(&self, page: Option<i64>, page_size: Option<i64>) -> Result<WorkspacesListResponse, SdkworkError> {
+    pub async fn workspaces_list(&self, page: Option<i64>, page_size: Option<i64>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
@@ -26,7 +26,7 @@ impl NotesApi {
     }
 
     /// List pages available to the API key context.
-    pub async fn pages_list(&self, workspace_id: Option<&str>, q: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<PagesListResponse, SdkworkError> {
+    pub async fn pages_list(&self, workspace_id: Option<&str>, q: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("workspace_id", workspace_id, "form", true, false, None),
             QueryParameterSpec::new("q", q, "form", true, false, None),
@@ -38,37 +38,37 @@ impl NotesApi {
     }
 
     /// Create a Drive-backed page through Open API.
-    pub async fn pages_create(&self, body: &CreatePageRequest) -> Result<SdkWorkListResponse, SdkworkError> {
+    pub async fn pages_create(&self, body: &CreatePageRequest) -> Result<SdkWorkPageData, SdkworkError> {
         let path = custom_path(&"/pages".to_string());
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Retrieve page metadata through Open API.
-    pub async fn pages_retrieve(&self, page_id: &str) -> Result<SdkWorkListResponse, SdkworkError> {
+    pub async fn pages_retrieve(&self, page_id: &str) -> Result<SdkWorkPageData, SdkworkError> {
         let path = custom_path(&format!("/pages/{}", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// Update page metadata through Open API.
-    pub async fn pages_update(&self, page_id: &str, body: &UpdatePageRequest) -> Result<SdkWorkListResponse, SdkworkError> {
+    pub async fn pages_update(&self, page_id: &str, body: &UpdatePageRequest) -> Result<SdkWorkPageData, SdkworkError> {
         let path = custom_path(&format!("/pages/{}", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.patch(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Retrieve Drive-backed page content through the Notes Open API facade.
-    pub async fn pages_content_retrieve(&self, page_id: &str) -> Result<SdkWorkListResponse, SdkworkError> {
+    pub async fn pages_content_retrieve(&self, page_id: &str) -> Result<SdkWorkPageData, SdkworkError> {
         let path = custom_path(&format!("/pages/{}/content", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// Update Drive-backed page content through Open API.
-    pub async fn pages_content_update(&self, page_id: &str, body: &UpdatePageContentRequest) -> Result<SdkWorkListResponse, SdkworkError> {
+    pub async fn pages_content_update(&self, page_id: &str, body: &UpdatePageContentRequest) -> Result<SdkWorkPageData, SdkworkError> {
         let path = custom_path(&format!("/pages/{}/content", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false))));
         self.client.put(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// List Drive node versions for a Notes page.
-    pub async fn pages_versions_list(&self, page_id: &str, page: Option<i64>, page_size: Option<i64>) -> Result<PagesVersionsListResponse, SdkworkError> {
+    pub async fn pages_versions_list(&self, page_id: &str, page: Option<i64>, page_size: Option<i64>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
@@ -78,7 +78,7 @@ impl NotesApi {
     }
 
     /// Search page projections through Open API.
-    pub async fn search_query(&self, workspace_id: Option<&str>, q: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<SearchQueryResponse, SdkworkError> {
+    pub async fn search_list(&self, workspace_id: Option<&str>, q: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("workspace_id", workspace_id, "form", true, false, None),
             QueryParameterSpec::new("q", q, "form", true, false, None),
@@ -90,19 +90,19 @@ impl NotesApi {
     }
 
     /// Create an export job for pages, collections, or a workspace.
-    pub async fn exports_create(&self, body: &CreateExportRequest) -> Result<ExportsCreateResponse202, SdkworkError> {
+    pub async fn exports_create(&self, body: &CreateExportRequest) -> Result<ExportJob, SdkworkError> {
         let path = custom_path(&"/exports".to_string());
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Retrieve export job status.
-    pub async fn exports_retrieve(&self, export_id: &str) -> Result<ExportsRetrieveResponse, SdkworkError> {
+    pub async fn exports_retrieve(&self, export_id: &str) -> Result<ExportJob, SdkworkError> {
         let path = custom_path(&format!("/exports/{}", serialize_path_parameter(export_id, PathParameterSpec::new("exportId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// Restore a Drive-owned page content version through Open API.
-    pub async fn pages_versions_restore(&self, page_id: &str, drive_version_id: &str, body: &RestorePageVersionRequest) -> Result<SdkWorkListResponse, SdkworkError> {
+    pub async fn pages_versions_restore(&self, page_id: &str, drive_version_id: &str, body: &RestorePageVersionRequest) -> Result<SdkWorkPageData, SdkworkError> {
         let path = custom_path(&format!("/pages/{}/versions/{}/restore", serialize_path_parameter(page_id, PathParameterSpec::new("pageId", "simple", false)), serialize_path_parameter(drive_version_id, PathParameterSpec::new("driveVersionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }

@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "language": "rust",
   "sdkType": "app",
-  "packageName": "sdkwork-notes-app-sdk-generated-typescript",
-  "transportPackageName": "sdkwork-notes-app-sdk-generated-typescript",
-  "consumerPackageName": "@sdkwork/notes-app-sdk",
+  "packageName": "sdkwork-notes-app-sdk-generated",
+  "transportPackageName": "sdkwork-notes-app-sdk-generated",
+  "consumerPackageName": "sdkwork-notes-app-sdk-generated",
   "generator": "@sdkwork/sdk-generator",
   "capabilities": {
     "supportsGeneratedTests": true,

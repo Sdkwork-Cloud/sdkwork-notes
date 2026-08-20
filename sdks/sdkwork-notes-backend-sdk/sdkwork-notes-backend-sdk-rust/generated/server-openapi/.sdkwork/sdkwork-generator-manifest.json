@@ -12,7 +12,7 @@
   "generatedFiles": [
     {
       "path": "bin/publish-core.mjs",
-      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+      "sha256": "a47e95119bf3eafcbcb2102f7024c147f967924e4e3f343d1a29effb4b6765df"
     },
     {
       "path": "bin/publish.ps1",
@@ -24,7 +24,7 @@
     },
     {
       "path": "Cargo.toml",
-      "sha256": "36c922df8c6eef7f6f8ebbfc83848917f5abd34a4334e299fa3448379fa60f13"
+      "sha256": "cfa93610df0f3dbcf90e950ce088a2af550dba73a1533f2306fa122ca10a2394"
     },
     {
       "path": "CHANGELOG.md",
@@ -40,7 +40,7 @@
     },
     {
       "path": "sdkwork-sdk.json",
-      "sha256": "3b488dfd074ed2b495c5b8977128a691bdd48cfd103e2e4142cf3e3405cb0c29"
+      "sha256": "cb9e01f2b32968b6636148518119742d973f930822999902212042d429bc07b7"
     },
     {
       "path": "src/api/base.rs",
@@ -52,7 +52,7 @@
     },
     {
       "path": "src/api/notes.rs",
-      "sha256": "09ed419c70eb3919105430adc14f498da98f2b6828c910e378f06ab1c219cfed"
+      "sha256": "444256627cbcf548ee8ca6b73134a7a52bcafca8ae86b1cb8ff4e7c1c2108d7c"
     },
     {
       "path": "src/api/paths.rs",
@@ -60,15 +60,15 @@
     },
     {
       "path": "src/client.rs",
-      "sha256": "0ca0298be9fd5f46977678a9612c022fae3fdfca3762319482f6e164c45249ba"
+      "sha256": "440739c29dd2e0efc7eb21a7f5f288118a26f4a516d47bf05f9b58482966362c"
     },
     {
       "path": "src/http/client.rs",
-      "sha256": "ffd88587750661cd174b1d0bae02a876d24f8537acdccaa67e297a549d0a927e"
+      "sha256": "6744c77f8c5d27ea5f0d35340b928589e8ed15c946174c184f67dd17a98b58ed"
     },
     {
       "path": "src/http/mod.rs",
-      "sha256": "fdf16d487ebd9180fb423d5630d4401ff18180721b86636dec085ad83940bb3d"
+      "sha256": "d09ef1f29c3fa0e631fc4f7287fc93dc7d3cee7e7261ac85091852a09243e90a"
     },
     {
       "path": "src/lib.rs",
@@ -159,12 +159,12 @@
       "sha256": "2fee1beabbeb44f107d4b3d13d3de8d3cacbb488710cff9ca590bc7965169d70"
     },
     {
-      "path": "src/models/diagnostics_drive_orphans_list_response.rs",
-      "sha256": "331276d361ca90510e6b3c9a16ead67382bc44604282ea18004f51d66f823bc6"
+      "path": "src/models/diagnostics_drive_orphans_create_response201.rs",
+      "sha256": "e1d07809ef3c601a008833df6404b99bed3690f12c00fec117e677eb33b79411"
     },
     {
-      "path": "src/models/diagnostics_drive_orphans_repair_response202.rs",
-      "sha256": "bbdaa2a4c4d8840965b7bbd2bef0037c6b97e4193320a56e6f8ef5e884970927"
+      "path": "src/models/diagnostics_drive_orphans_list_response.rs",
+      "sha256": "331276d361ca90510e6b3c9a16ead67382bc44604282ea18004f51d66f823bc6"
     },
     {
       "path": "src/models/drive_orphan_diagnostic_page.rs",
@@ -187,8 +187,8 @@
       "sha256": "ffe1b7e13a5d3a0b6fbe7ca811d98915e5908543d5c09be42ec67f2169ffdda3"
     },
     {
-      "path": "src/models/index_jobs_create_response202.rs",
-      "sha256": "bc191f1c29a20d725f099f58d347a5bf4d9de2e8cef095cc62624b8c90441f12"
+      "path": "src/models/index_jobs_create_response201.rs",
+      "sha256": "ee1955eb445de2a9d02c45077dade4f79eac42224853e6b7186a80cca330dfe1"
     },
     {
       "path": "src/models/index_jobs_list_response.rs",
@@ -200,7 +200,7 @@
     },
     {
       "path": "src/models/mod.rs",
-      "sha256": "3a3aac6cab559265b9c85ff10555a63943ea69938df0c8c4210d5bbbbc012eb0"
+      "sha256": "c18137e3d6d5663803d6718351172bd7d6fdf9fe22913bd7f26d6c8ac5a26ab5"
     },
     {
       "path": "src/models/page_content.rs",

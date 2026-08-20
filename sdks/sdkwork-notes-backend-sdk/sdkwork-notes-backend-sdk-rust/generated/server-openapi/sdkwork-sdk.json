@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "language": "rust",
   "sdkType": "backend",
-  "packageName": "sdkwork-notes-backend-sdk-generated-typescript",
-  "transportPackageName": "sdkwork-notes-backend-sdk-generated-typescript",
-  "consumerPackageName": "@sdkwork/notes-backend-sdk",
+  "packageName": "sdkwork-notes-backend-sdk-generated",
+  "transportPackageName": "sdkwork-notes-backend-sdk-generated",
+  "consumerPackageName": "sdkwork-notes-backend-sdk-generated",
   "generator": "@sdkwork/sdk-generator",
   "capabilities": {
     "supportsGeneratedTests": true,

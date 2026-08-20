@@ -12,7 +12,7 @@
   "generatedFiles": [
     {
       "path": "bin/publish-core.mjs",
-      "sha256": "98ad0918a78bfbe22bf8f12fec709b0bed545b9e01edd40f5e4abf31a23378a5"
+      "sha256": "a47e95119bf3eafcbcb2102f7024c147f967924e4e3f343d1a29effb4b6765df"
     },
     {
       "path": "bin/publish.ps1",
@@ -24,7 +24,7 @@
     },
     {
       "path": "Cargo.toml",
-      "sha256": "3d952460b00faa8635cb0ebce659bac5d24f74d35db8247fd903b8069fcff47d"
+      "sha256": "92af028f2139195a6892ff22842707d6219f1d46a30fcb290694eb7a68e53bd1"
     },
     {
       "path": "CHANGELOG.md",
@@ -40,7 +40,7 @@
     },
     {
       "path": "sdkwork-sdk.json",
-      "sha256": "02506d53ca56b2e6da4900b1d05600a7d733aa31c68af6cb8cde0a839fbc0faf"
+      "sha256": "2995f8313798aeb910fe1ca843d2733f0ea5c0f2db33c5e557e8fc3feb9a2970"
     },
     {
       "path": "src/api/base.rs",
@@ -52,7 +52,7 @@
     },
     {
       "path": "src/api/notes.rs",
-      "sha256": "388a3d42ef83e7f9a2ce8f566b4a61117bd13488664b59910f5b3f891880d052"
+      "sha256": "b6bccd32d891d4a52767aa0986bdf2e13c0d803198ae42e6632b7724a91bcafc"
     },
     {
       "path": "src/api/paths.rs",
@@ -60,15 +60,15 @@
     },
     {
       "path": "src/client.rs",
-      "sha256": "9c66d81f28ec96f57ceea2afc432ad1a9a9b34cb3ab1f583c276e157153c48e1"
+      "sha256": "4df7ea4693c180a8887b61b3ec6b256b125e384c55bf895eda5f97ffa2c1c21d"
     },
     {
       "path": "src/http/client.rs",
-      "sha256": "ffd88587750661cd174b1d0bae02a876d24f8537acdccaa67e297a549d0a927e"
+      "sha256": "6744c77f8c5d27ea5f0d35340b928589e8ed15c946174c184f67dd17a98b58ed"
     },
     {
       "path": "src/http/mod.rs",
-      "sha256": "fdf16d487ebd9180fb423d5630d4401ff18180721b86636dec085ad83940bb3d"
+      "sha256": "d09ef1f29c3fa0e631fc4f7287fc93dc7d3cee7e7261ac85091852a09243e90a"
     },
     {
       "path": "src/lib.rs",
@@ -87,8 +87,8 @@
       "sha256": "dc13383a06a00bc6c49bc5967a23f8995aa8a83073bf1b1e1c4deb44924181b1"
     },
     {
-      "path": "src/models/ai_jobs_create_response202.rs",
-      "sha256": "869485a868a85631d5edde0901abccfd48ae3ecb7beeb3ffc4ad45cd8c89fc53"
+      "path": "src/models/ai_jobs_create_response201.rs",
+      "sha256": "884032892abcdc925c83cd4213c5f76ba262b818b9a2c924d84030087f758345"
     },
     {
       "path": "src/models/ai_suggestion_apply_request.rs",
@@ -115,8 +115,8 @@
       "sha256": "bbbf1c9f50d7be77c7008aed28ea8f8b58af5dbf92f92d30532a9157f3d54b55"
     },
     {
-      "path": "src/models/ai_suggestions_feedback_create_response.rs",
-      "sha256": "7c2e4772781e032eb760b6c206e64b635dc90dbbe821794e895567f41ac5af1d"
+      "path": "src/models/ai_suggestions_feedback_create_response201.rs",
+      "sha256": "6bf83752ee2efd948b18124471a5652fb5214778dbd14ed8ed6b3dda74cca41f"
     },
     {
       "path": "src/models/ai_suggestions_reject_response.rs",
@@ -152,7 +152,7 @@
     },
     {
       "path": "src/models/mod.rs",
-      "sha256": "14164f74ad9f3548e51a6eba812e63c94510c3a96bdd8351a3fb1b9b2563e20f"
+      "sha256": "ea5cedfe4de2651d467d0e75f134ae914076508507a77a2e9e8426353cd23ea8"
     },
     {
       "path": "src/models/note_remote_apply_conflict.rs",
@@ -243,8 +243,8 @@
       "sha256": "a16ff12f0418a861ef9a744a53676071b75f036536d35a0f310c9f875025a203"
     },
     {
-      "path": "src/models/search_query_response.rs",
-      "sha256": "a96f6c1701627d07a7c6652a9683f5e2ea39f9d698061a66a2b968bb65641454"
+      "path": "src/models/search_list_response.rs",
+      "sha256": "2490be402b7ecfd38a76befe1a5a48139b0fc005cc356874a3880c633413fbda"
     },
     {
       "path": "src/models/search_result_page.rs",

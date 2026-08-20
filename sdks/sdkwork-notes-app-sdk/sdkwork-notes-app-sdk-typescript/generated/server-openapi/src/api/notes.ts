@@ -1,5 +1,5 @@
 import { appApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { AiFeedback, AiFeedbackCreateRequest, AiJob, AiSuggestion, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, CreateAiJobRequest, CreatePageRequest, CreateWorkspaceRequest, DriveVersionSummary, NoteRemoteApplyRequest, PageContent, PageInfo, PageSummary, RestorePageVersionRequest, SdkWorkPageData, SearchResult, UpdatePageContentRequest, UpdatePageRequest, Workspace, WorkspaceBootstrap } from '../types';
 
@@ -13,8 +13,8 @@ export class NotesAiSuggestionsFeedbackApi {
 
 
 /** Record user feedback for an AI suggestion quality loop. */
-  async create(aiSuggestionId: string, body: AiFeedbackCreateRequest): Promise<AiFeedback> {
-    return this.client.post<AiFeedback>(appApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/feedback`), body, undefined, undefined, 'application/json');
+  async create(aiSuggestionId: string, body: AiFeedbackCreateRequest, requestOptions?: ApiRequestOptions): Promise<AiFeedback> {
+    return this.client.request<AiFeedback>(appApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/feedback`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -29,18 +29,18 @@ export class NotesAiSuggestionsApi {
 
 
 /** Accept a reviewable AI suggestion for a Notes page. */
-  async accept(aiSuggestionId: string, body: AiSuggestionDecisionRequest): Promise<AiSuggestion> {
-    return this.client.post<AiSuggestion>(appApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/accept`), body, undefined, undefined, 'application/json');
+  async accept(aiSuggestionId: string, body: AiSuggestionDecisionRequest, requestOptions?: ApiRequestOptions): Promise<AiSuggestion> {
+    return this.client.request<AiSuggestion>(appApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/accept`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** Reject a reviewable AI suggestion for a Notes page. */
-  async reject(aiSuggestionId: string, body: AiSuggestionDecisionRequest): Promise<AiSuggestion> {
-    return this.client.post<AiSuggestion>(appApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/reject`), body, undefined, undefined, 'application/json');
+  async reject(aiSuggestionId: string, body: AiSuggestionDecisionRequest, requestOptions?: ApiRequestOptions): Promise<AiSuggestion> {
+    return this.client.request<AiSuggestion>(appApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/reject`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** Apply an accepted AI suggestion to Drive-backed page content. */
-  async apply(aiSuggestionId: string, body: AiSuggestionApplyRequest): Promise<PageContent> {
-    return this.client.post<PageContent>(appApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/apply`), body, undefined, undefined, 'application/json');
+  async apply(aiSuggestionId: string, body: AiSuggestionApplyRequest, requestOptions?: ApiRequestOptions): Promise<PageContent> {
+    return this.client.request<PageContent>(appApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/apply`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -57,18 +57,18 @@ export class NotesAiJobsApi {
 
 
 /** Create an auditable AI job for selected pages, collections, or workspace context. */
-  async create(body: CreateAiJobRequest, params: NotesAiJobsCreateParams): Promise<AiJob> {
+  async create(body: CreateAiJobRequest, params: NotesAiJobsCreateParams, requestOptions?: ApiRequestOptions): Promise<AiJob> {
     const requestHeaders = buildRequestHeaders(
       {
         'Idempotency-Key': { value: params.idempotencyKey, style: 'simple', explode: false },
       },
       {}
     );
-    return this.client.post<AiJob>(appApiPath(`/notes/ai_jobs`), body, undefined, requestHeaders, 'application/json');
+    return this.client.request<AiJob>(appApiPath(`/notes/ai_jobs`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', ...(requestHeaders !== undefined ? { headers: requestHeaders } : {}), sdkworkUnwrapKind: 'item' });
   }
 }
 
-export interface NotesSearchQueryParams {
+export interface NotesSearchListParams {
   workspaceId?: string;
   q?: string;
   page?: number;
@@ -84,14 +84,14 @@ export class NotesSearchApi {
 
 
 /** Search Notes page projections while preserving Drive version provenance. */
-  async query(params?: NotesSearchQueryParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesSearchListParams, requestOptions?: ApiRequestOptions): Promise<{ items: SearchResult[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/search`), query));
+    return this.client.request<{ items: SearchResult[]; pageInfo: PageInfo; }>(appendQueryString(appApiPath(`/notes/search`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -109,12 +109,12 @@ export class NotesPagesAiSuggestionsApi {
 
 
 /** List reviewable AI suggestions for a Notes page. */
-  async list(pageId: string, params?: NotesPagesAiSuggestionsListParams): Promise<Record<string, unknown>> {
+  async list(pageId: string, params?: NotesPagesAiSuggestionsListParams, requestOptions?: ApiRequestOptions): Promise<{ items: AiSuggestion[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/ai_suggestions`), query));
+    return this.client.request<{ items: AiSuggestion[]; pageInfo: PageInfo; }>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/ai_suggestions`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -132,17 +132,17 @@ export class NotesPagesVersionsApi {
 
 
 /** List Drive node versions for a Notes page through the Notes business facade. */
-  async list(pageId: string, params?: NotesPagesVersionsListParams): Promise<Record<string, unknown>> {
+  async list(pageId: string, params?: NotesPagesVersionsListParams, requestOptions?: ApiRequestOptions): Promise<{ items: DriveVersionSummary[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions`), query));
+    return this.client.request<{ items: DriveVersionSummary[]; pageInfo: PageInfo; }>(appendQueryString(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Restore a Drive-owned page content version through the Notes business facade. */
-  async restore(pageId: string, driveVersionId: string, body: RestorePageVersionRequest): Promise<SdkWorkPageData> {
-    return this.client.post<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions/${serializePathParameter(driveVersionId, { name: 'driveVersionId', style: 'simple', explode: false })}/restore`), body, undefined, undefined, 'application/json');
+  async restore(pageId: string, driveVersionId: string, body: RestorePageVersionRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions/${serializePathParameter(driveVersionId, { name: 'driveVersionId', style: 'simple', explode: false })}/restore`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -155,13 +155,13 @@ export class NotesPagesContentApi {
 
 
 /** Retrieve Drive-backed page content through the Notes facade. */
-  async retrieve(pageId: string): Promise<SdkWorkPageData> {
-    return this.client.get<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`));
+  async retrieve(pageId: string, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Update Drive-backed page content and refresh Notes current version pointers. */
-  async update(pageId: string, body: UpdatePageContentRequest): Promise<SdkWorkPageData> {
-    return this.client.put<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), body, undefined, undefined, 'application/json');
+  async update(pageId: string, body: UpdatePageContentRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PUT' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -186,33 +186,33 @@ export class NotesPagesApi {
 
 
 /** List pages in a workspace. */
-  async list(workspaceId: string, params?: NotesPagesListParams): Promise<Record<string, unknown>> {
+  async list(workspaceId: string, params?: NotesPagesListParams, requestOptions?: ApiRequestOptions): Promise<{ items: PageSummary[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/pages`), query));
+    return this.client.request<{ items: PageSummary[]; pageInfo: PageInfo; }>(appendQueryString(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/pages`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Create a Drive-backed Notes page. */
-  async create(workspaceId: string, body: CreatePageRequest): Promise<SdkWorkPageData> {
-    return this.client.post<SdkWorkPageData>(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/pages`), body, undefined, undefined, 'application/json');
+  async create(workspaceId: string, body: CreatePageRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/pages`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 
 /** Retrieve Notes page metadata and Drive binding references. */
-  async retrieve(pageId: string): Promise<SdkWorkPageData> {
-    return this.client.get<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`));
+  async retrieve(pageId: string, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Update mutable Notes page metadata. */
-  async update(pageId: string, body: UpdatePageRequest): Promise<SdkWorkPageData> {
-    return this.client.patch<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(pageId: string, body: UpdatePageRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 
 /** Apply a queued sync mutation to a Notes page. */
-  async remoteApply(pageId: string, body: NoteRemoteApplyRequest): Promise<SdkWorkPageData> {
-    return this.client.post<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/remote_apply`), body, undefined, undefined, 'application/json');
+  async remoteApply(pageId: string, body: NoteRemoteApplyRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(appApiPath(`/notes/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/remote_apply`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -225,8 +225,8 @@ export class NotesWorkspacesBootstrapApi {
 
 
 /** Retrieve workspace bootstrap metadata for editor startup. */
-  async retrieve(workspaceId: string): Promise<WorkspaceBootstrap> {
-    return this.client.get<WorkspaceBootstrap>(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/bootstrap`));
+  async retrieve(workspaceId: string, requestOptions?: ApiRequestOptions): Promise<WorkspaceBootstrap> {
+    return this.client.request<WorkspaceBootstrap>(appApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/bootstrap`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -246,22 +246,21 @@ export class NotesWorkspacesApi {
 
 
 /** List Notes workspaces visible to the current app principal. */
-  async list(params?: NotesWorkspacesListParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesWorkspacesListParams, requestOptions?: ApiRequestOptions): Promise<{ items: Workspace[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(appApiPath(`/notes/workspaces`), query));
+    return this.client.request<{ items: Workspace[]; pageInfo: PageInfo; }>(appendQueryString(appApiPath(`/notes/workspaces`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Create a Notes workspace and bind it to a Drive Notes space or compatible app-upload space. */
-  async create(body: CreateWorkspaceRequest): Promise<Workspace> {
-    return this.client.post<Workspace>(appApiPath(`/notes/workspaces`), body, undefined, undefined, 'application/json');
+  async create(body: CreateWorkspaceRequest, requestOptions?: ApiRequestOptions): Promise<Workspace> {
+    return this.client.request<Workspace>(appApiPath(`/notes/workspaces`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class NotesApi {
-  private client: HttpClient;
   public readonly workspaces: NotesWorkspacesApi;
   public readonly pages: NotesPagesApi;
   public readonly search: NotesSearchApi;
@@ -269,7 +268,6 @@ export class NotesApi {
   public readonly aiSuggestions: NotesAiSuggestionsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.workspaces = new NotesWorkspacesApi(client);
     this.pages = new NotesPagesApi(client);
     this.search = new NotesSearchApi(client);

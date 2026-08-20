@@ -9,26 +9,31 @@
     "protocol": "http",
     "packageName": "sdkwork-notes-backend-sdk-generated"
   },
-  "changeFingerprint": "9bd9e43b1fb91ef1ae36faba7292962af9d233d0bffecc997962b7c3888d6717",
+  "changeFingerprint": "3f11eb51760bc894ed796283b17b823b852339beb770f2189b2c9f8ce95b7694",
   "changes": {
-    "createdGeneratedFiles": [],
-    "updatedGeneratedFiles": [],
-    "unchangedGeneratedFiles": [
+    "createdGeneratedFiles": [
+      "src/models/diagnostics_drive_orphans_create_response201.rs",
+      "src/models/index_jobs_create_response201.rs"
+    ],
+    "updatedGeneratedFiles": [
       "bin/publish-core.mjs",
-      "bin/publish.ps1",
-      "bin/publish.sh",
       "Cargo.toml",
-      "CHANGELOG.md",
-      "LICENSE",
-      "README.md",
       "sdkwork-sdk.json",
-      "src/api/base.rs",
-      "src/api/mod.rs",
       "src/api/notes.rs",
-      "src/api/paths.rs",
       "src/client.rs",
       "src/http/client.rs",
       "src/http/mod.rs",
+      "src/models/mod.rs"
+    ],
+    "unchangedGeneratedFiles": [
+      "bin/publish.ps1",
+      "bin/publish.sh",
+      "CHANGELOG.md",
+      "LICENSE",
+      "README.md",
+      "src/api/base.rs",
+      "src/api/mod.rs",
+      "src/api/paths.rs",
       "src/lib.rs",
       "src/models/admin_update_workspace_request.rs",
       "src/models/ai_feedback_page.rs",
@@ -52,16 +57,13 @@
       "src/models/complete_ai_suggestion_input.rs",
       "src/models/create_index_job_request.rs",
       "src/models/diagnostics_drive_orphans_list_response.rs",
-      "src/models/diagnostics_drive_orphans_repair_response202.rs",
       "src/models/drive_orphan_diagnostic_page.rs",
       "src/models/drive_orphan_diagnostic.rs",
       "src/models/field_error.rs",
       "src/models/index_job_page.rs",
       "src/models/index_job.rs",
-      "src/models/index_jobs_create_response202.rs",
       "src/models/index_jobs_list_response.rs",
       "src/models/index_jobs_retrieve_response.rs",
-      "src/models/mod.rs",
       "src/models/page_content.rs",
       "src/models/page_info.rs",
       "src/models/problem_detail.rs",
@@ -81,7 +83,10 @@
       "src/models/workspaces_admin_update_response.rs",
       "src/models/workspaces_projection_rebuild_response202.rs"
     ],
-    "deletedGeneratedFiles": [],
+    "deletedGeneratedFiles": [
+      "src/models/diagnostics_drive_orphans_repair_response202.rs",
+      "src/models/index_jobs_create_response202.rs"
+    ],
     "scaffoldedFiles": [],
     "preservedScaffoldFiles": [
       "custom/README.md"
@@ -90,26 +95,116 @@
   },
   "impact": {
     "schemaVersion": 1,
-    "areas": [],
-    "details": [],
-    "requiresVerification": false,
-    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
+    "areas": [
+      "api-surface",
+      "models",
+      "runtime",
+      "build-metadata",
+      "publish-workflow",
+      "unknown"
+    ],
+    "details": [
+      {
+        "area": "api-surface",
+        "paths": [
+          "src/api/notes.rs"
+        ]
+      },
+      {
+        "area": "models",
+        "paths": [
+          "src/models/diagnostics_drive_orphans_create_response201.rs",
+          "src/models/diagnostics_drive_orphans_repair_response202.rs",
+          "src/models/index_jobs_create_response201.rs",
+          "src/models/index_jobs_create_response202.rs",
+          "src/models/mod.rs"
+        ]
+      },
+      {
+        "area": "runtime",
+        "paths": [
+          "src/http/client.rs",
+          "src/http/mod.rs"
+        ]
+      },
+      {
+        "area": "build-metadata",
+        "paths": [
+          "Cargo.toml",
+          "sdkwork-sdk.json"
+        ]
+      },
+      {
+        "area": "publish-workflow",
+        "paths": [
+          "bin/publish-core.mjs"
+        ]
+      },
+      {
+        "area": "unknown",
+        "paths": [
+          "src/client.rs"
+        ]
+      }
+    ],
+    "requiresVerification": true,
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, unknown. Verification is required."
   },
   "verificationPlan": {
-    "shouldRun": false,
-    "runPhase": "skip",
-    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
-    "steps": []
+    "shouldRun": true,
+    "runPhase": "now",
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, unknown. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "steps": [
+      {
+        "id": "check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, unknown.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-rust\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "rust",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action check"
+      },
+      {
+        "id": "build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, unknown.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-rust\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "rust",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language rust --project-dir . --action build"
+      }
+    ]
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "low",
-    "nextAction": "skip",
+    "riskLevel": "high",
+    "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
-    "summary": "No actionable changes were detected. No apply or verification step is required.",
+    "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "no-actionable-changes"
+      "deleted-generated-files",
+      "manual-review-required",
+      "unknown-impact",
+      "verification-required"
     ]
   },
   "preservedLegacyFiles": false

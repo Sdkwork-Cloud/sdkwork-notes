@@ -29,6 +29,6 @@ export type { SdkWorkCommandResponse } from './sdk-work-command-response';
 export type { WorkspacesListResponse } from './workspaces-list-response';
 export type { PagesListResponse } from './pages-list-response';
 export type { PagesVersionsListResponse } from './pages-versions-list-response';
-export type { SearchQueryResponse } from './search-query-response';
-export type { ExportsCreateResponse202 } from './exports-create-response202';
+export type { SearchListResponse } from './search-list-response';
+export type { ExportsCreateResponse201 } from './exports-create-response201';
 export type { ExportsRetrieveResponse } from './exports-retrieve-response';

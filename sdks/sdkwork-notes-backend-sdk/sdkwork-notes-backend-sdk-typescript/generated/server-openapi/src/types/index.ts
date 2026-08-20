@@ -35,13 +35,13 @@ export type { WorkspacesAdminRetrieveResponse } from './workspaces-admin-retriev
 export type { WorkspacesAdminUpdateResponse } from './workspaces-admin-update-response';
 export type { WorkspacesProjectionRebuildResponse202 } from './workspaces-projection-rebuild-response202';
 export type { IndexJobsListResponse } from './index-jobs-list-response';
-export type { IndexJobsCreateResponse202 } from './index-jobs-create-response202';
+export type { IndexJobsCreateResponse201 } from './index-jobs-create-response201';
 export type { IndexJobsRetrieveResponse } from './index-jobs-retrieve-response';
 export type { AiJobsAdminListResponse } from './ai-jobs-admin-list-response';
 export type { AiJobsAdminRetrieveResponse } from './ai-jobs-admin-retrieve-response';
 export type { AiJobsCancelResponse } from './ai-jobs-cancel-response';
 export type { DiagnosticsDriveOrphansListResponse } from './diagnostics-drive-orphans-list-response';
-export type { DiagnosticsDriveOrphansRepairResponse202 } from './diagnostics-drive-orphans-repair-response202';
+export type { DiagnosticsDriveOrphansCreateResponse201 } from './diagnostics-drive-orphans-create-response201';
 export type { AiJobsClaimResponse } from './ai-jobs-claim-response';
 export type { AiJobsCompleteResponse } from './ai-jobs-complete-response';
 export type { AiSuggestionsAcceptResponse } from './ai-suggestions-accept-response';

@@ -1,5 +1,5 @@
 import { customApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { CreateExportRequest, CreatePageRequest, DriveVersionSummary, ExportJob, PageInfo, PageSummary, RestorePageVersionRequest, SdkWorkPageData, SearchResult, UpdatePageContentRequest, UpdatePageRequest, Workspace } from '../types';
 
@@ -13,17 +13,17 @@ export class NotesExportsApi {
 
 
 /** Create an export job for pages, collections, or a workspace. */
-  async create(body: CreateExportRequest): Promise<ExportJob> {
-    return this.client.post<ExportJob>(customApiPath(`/exports`), body, undefined, undefined, 'application/json');
+  async create(body: CreateExportRequest, requestOptions?: ApiRequestOptions): Promise<ExportJob> {
+    return this.client.request<ExportJob>(customApiPath(`/exports`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** Retrieve export job status. */
-  async retrieve(exportId: string): Promise<ExportJob> {
-    return this.client.get<ExportJob>(customApiPath(`/exports/${serializePathParameter(exportId, { name: 'exportId', style: 'simple', explode: false })}`));
+  async retrieve(exportId: string, requestOptions?: ApiRequestOptions): Promise<ExportJob> {
+    return this.client.request<ExportJob>(customApiPath(`/exports/${serializePathParameter(exportId, { name: 'exportId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
-export interface NotesSearchQueryParams {
+export interface NotesSearchListParams {
   workspaceId?: string;
   q?: string;
   page?: number;
@@ -39,14 +39,14 @@ export class NotesSearchApi {
 
 
 /** Search page projections through Open API. */
-  async query(params?: NotesSearchQueryParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesSearchListParams, requestOptions?: ApiRequestOptions): Promise<{ items: SearchResult[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(customApiPath(`/search`), query));
+    return this.client.request<{ items: SearchResult[]; pageInfo: PageInfo; }>(appendQueryString(customApiPath(`/search`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -64,17 +64,17 @@ export class NotesPagesVersionsApi {
 
 
 /** List Drive node versions for a Notes page. */
-  async list(pageId: string, params?: NotesPagesVersionsListParams): Promise<Record<string, unknown>> {
+  async list(pageId: string, params?: NotesPagesVersionsListParams, requestOptions?: ApiRequestOptions): Promise<{ items: DriveVersionSummary[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions`), query));
+    return this.client.request<{ items: DriveVersionSummary[]; pageInfo: PageInfo; }>(appendQueryString(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Restore a Drive-owned page content version through Open API. */
-  async restore(pageId: string, driveVersionId: string, body: RestorePageVersionRequest): Promise<SdkWorkPageData> {
-    return this.client.post<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions/${serializePathParameter(driveVersionId, { name: 'driveVersionId', style: 'simple', explode: false })}/restore`), body, undefined, undefined, 'application/json');
+  async restore(pageId: string, driveVersionId: string, body: RestorePageVersionRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/versions/${serializePathParameter(driveVersionId, { name: 'driveVersionId', style: 'simple', explode: false })}/restore`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -87,13 +87,13 @@ export class NotesPagesContentApi {
 
 
 /** Retrieve Drive-backed page content through the Notes Open API facade. */
-  async retrieve(pageId: string): Promise<SdkWorkPageData> {
-    return this.client.get<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`));
+  async retrieve(pageId: string, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Update Drive-backed page content through Open API. */
-  async update(pageId: string, body: UpdatePageContentRequest): Promise<SdkWorkPageData> {
-    return this.client.put<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), body, undefined, undefined, 'application/json');
+  async update(pageId: string, body: UpdatePageContentRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}/content`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PUT' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -117,29 +117,29 @@ export class NotesPagesApi {
 
 
 /** List pages available to the API key context. */
-  async list(params?: NotesPagesListParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesPagesListParams, requestOptions?: ApiRequestOptions): Promise<{ items: PageSummary[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(customApiPath(`/pages`), query));
+    return this.client.request<{ items: PageSummary[]; pageInfo: PageInfo; }>(appendQueryString(customApiPath(`/pages`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Create a Drive-backed page through Open API. */
-  async create(body: CreatePageRequest): Promise<SdkWorkPageData> {
-    return this.client.post<SdkWorkPageData>(customApiPath(`/pages`), body, undefined, undefined, 'application/json');
+  async create(body: CreatePageRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(customApiPath(`/pages`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 
 /** Retrieve page metadata through Open API. */
-  async retrieve(pageId: string): Promise<SdkWorkPageData> {
-    return this.client.get<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`));
+  async retrieve(pageId: string, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Update page metadata through Open API. */
-  async update(pageId: string, body: UpdatePageRequest): Promise<SdkWorkPageData> {
-    return this.client.patch<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(pageId: string, body: UpdatePageRequest, requestOptions?: ApiRequestOptions): Promise<SdkWorkPageData> {
+    return this.client.request<SdkWorkPageData>(customApiPath(`/pages/${serializePathParameter(pageId, { name: 'pageId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -157,24 +157,22 @@ export class NotesWorkspacesApi {
 
 
 /** List workspaces available to the API key context. */
-  async list(params?: NotesWorkspacesListParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesWorkspacesListParams, requestOptions?: ApiRequestOptions): Promise<{ items: Workspace[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(customApiPath(`/workspaces`), query));
+    return this.client.request<{ items: Workspace[]; pageInfo: PageInfo; }>(appendQueryString(customApiPath(`/workspaces`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
 export class NotesApi {
-  private client: HttpClient;
   public readonly workspaces: NotesWorkspacesApi;
   public readonly pages: NotesPagesApi;
   public readonly search: NotesSearchApi;
   public readonly exports: NotesExportsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.workspaces = new NotesWorkspacesApi(client);
     this.pages = new NotesPagesApi(client);
     this.search = new NotesSearchApi(client);

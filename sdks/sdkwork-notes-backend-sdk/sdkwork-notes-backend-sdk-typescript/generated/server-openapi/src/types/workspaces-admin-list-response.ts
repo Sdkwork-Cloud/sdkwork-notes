@@ -3,7 +3,7 @@ import type { WorkspaceAdmin } from './workspace-admin';
 
 export interface WorkspacesAdminListResponse {
   code: 0;
-  data: unknown & Record<string, unknown>;
+  data: unknown & { items: WorkspaceAdmin[]; pageInfo: PageInfo; };
   /** Server-owned request correlation id. */
   traceId: string;
 }

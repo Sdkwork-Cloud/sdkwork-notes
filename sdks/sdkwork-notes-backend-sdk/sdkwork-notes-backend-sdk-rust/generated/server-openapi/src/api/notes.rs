@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::api::paths::backend_path;
 use crate::api::paths::append_query_string;
 use crate::http::{SdkworkError, SdkworkHttpClient};
-use crate::models::{AdminUpdateWorkspaceRequest, AiJobsAdminListResponse, AiJobsAdminRetrieveResponse, AiJobsCancelResponse, AiJobsClaimResponse, AiJobsCompleteResponse, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, AiSuggestionsAcceptResponse, AiSuggestionsApplyResponse, AiSuggestionsFeedbackListResponse, AiSuggestionsRejectResponse, CompleteAiJobRequest, CreateIndexJobRequest, DiagnosticsDriveOrphansListResponse, DiagnosticsDriveOrphansRepairResponse202, IndexJobsCreateResponse202, IndexJobsListResponse, IndexJobsRetrieveResponse, RebuildProjectionRequest, RepairDriveOrphansRequest, WorkspacesAdminListResponse, WorkspacesAdminRetrieveResponse, WorkspacesAdminUpdateResponse, WorkspacesProjectionRebuildResponse202};
+use crate::models::{AdminUpdateWorkspaceRequest, AiJob, AiSuggestion, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, CompleteAiJobRequest, CreateIndexJobRequest, IndexJob, PageContent, RebuildProjectionRequest, RepairDriveOrphansRequest, WorkspaceAdmin};
 
 #[derive(Clone)]
 pub struct NotesApi {
@@ -16,7 +16,7 @@ impl NotesApi {
     }
 
     /// List Notes workspaces for backend-admin governance.
-    pub async fn workspaces_admin_list(&self, page: Option<i64>, page_size: Option<i64>, q: Option<&str>) -> Result<WorkspacesAdminListResponse, SdkworkError> {
+    pub async fn workspaces_admin_list(&self, page: Option<i64>, page_size: Option<i64>, q: Option<&str>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
@@ -27,25 +27,25 @@ impl NotesApi {
     }
 
     /// Retrieve backend-admin workspace diagnostics.
-    pub async fn workspaces_admin_retrieve(&self, workspace_id: &str) -> Result<WorkspacesAdminRetrieveResponse, SdkworkError> {
+    pub async fn workspaces_admin_retrieve(&self, workspace_id: &str) -> Result<WorkspaceAdmin, SdkworkError> {
         let path = backend_path(&format!("/notes/workspaces/{}", serialize_path_parameter(workspace_id, PathParameterSpec::new("workspaceId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// Update backend-admin workspace governance fields.
-    pub async fn workspaces_admin_update(&self, workspace_id: &str, body: &AdminUpdateWorkspaceRequest) -> Result<WorkspacesAdminUpdateResponse, SdkworkError> {
+    pub async fn workspaces_admin_update(&self, workspace_id: &str, body: &AdminUpdateWorkspaceRequest) -> Result<WorkspaceAdmin, SdkworkError> {
         let path = backend_path(&format!("/notes/workspaces/{}", serialize_path_parameter(workspace_id, PathParameterSpec::new("workspaceId", "simple", false))));
         self.client.patch(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Queue a projection rebuild for a Notes workspace.
-    pub async fn workspaces_projection_rebuild(&self, workspace_id: &str, body: &RebuildProjectionRequest) -> Result<WorkspacesProjectionRebuildResponse202, SdkworkError> {
+    pub async fn workspaces_projection_rebuild(&self, workspace_id: &str, body: &RebuildProjectionRequest) -> Result<IndexJob, SdkworkError> {
         let path = backend_path(&format!("/notes/workspaces/{}/projection_rebuild", serialize_path_parameter(workspace_id, PathParameterSpec::new("workspaceId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// List Notes index and projection jobs.
-    pub async fn index_jobs_list(&self, page: Option<i64>, page_size: Option<i64>, workspace_id: Option<&str>) -> Result<IndexJobsListResponse, SdkworkError> {
+    pub async fn index_jobs_list(&self, page: Option<i64>, page_size: Option<i64>, workspace_id: Option<&str>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
@@ -56,19 +56,19 @@ impl NotesApi {
     }
 
     /// Create an index or projection job.
-    pub async fn index_jobs_create(&self, body: &CreateIndexJobRequest) -> Result<IndexJobsCreateResponse202, SdkworkError> {
+    pub async fn index_jobs_create(&self, body: &CreateIndexJobRequest) -> Result<IndexJob, SdkworkError> {
         let path = backend_path(&"/notes/index_jobs".to_string());
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Retrieve an index or projection job.
-    pub async fn index_jobs_retrieve(&self, index_job_id: &str) -> Result<IndexJobsRetrieveResponse, SdkworkError> {
+    pub async fn index_jobs_retrieve(&self, index_job_id: &str) -> Result<IndexJob, SdkworkError> {
         let path = backend_path(&format!("/notes/index_jobs/{}", serialize_path_parameter(index_job_id, PathParameterSpec::new("indexJobId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// List AI jobs for backend-admin review.
-    pub async fn ai_jobs_admin_list(&self, page: Option<i64>, page_size: Option<i64>, workspace_id: Option<&str>) -> Result<AiJobsAdminListResponse, SdkworkError> {
+    pub async fn ai_jobs_admin_list(&self, page: Option<i64>, page_size: Option<i64>, workspace_id: Option<&str>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),
@@ -79,19 +79,19 @@ impl NotesApi {
     }
 
     /// Retrieve backend-admin AI job details.
-    pub async fn ai_jobs_admin_retrieve(&self, ai_job_id: &str) -> Result<AiJobsAdminRetrieveResponse, SdkworkError> {
+    pub async fn ai_jobs_admin_retrieve(&self, ai_job_id: &str) -> Result<AiJob, SdkworkError> {
         let path = backend_path(&format!("/notes/ai_jobs/{}", serialize_path_parameter(ai_job_id, PathParameterSpec::new("aiJobId", "simple", false))));
         self.client.get(&path, None, None).await
     }
 
     /// Cancel a running AI job through backend-admin controls.
-    pub async fn ai_jobs_cancel(&self, ai_job_id: &str) -> Result<AiJobsCancelResponse, SdkworkError> {
+    pub async fn ai_jobs_cancel(&self, ai_job_id: &str) -> Result<AiJob, SdkworkError> {
         let path = backend_path(&format!("/notes/ai_jobs/{}/cancel", serialize_path_parameter(ai_job_id, PathParameterSpec::new("aiJobId", "simple", false))));
         self.client.post(&path, Option::<&serde_json::Value>::None, None, None, None).await
     }
 
     /// List Notes metadata records with missing or inconsistent Drive bindings.
-    pub async fn diagnostics_drive_orphans_list(&self, workspace_id: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<DiagnosticsDriveOrphansListResponse, SdkworkError> {
+    pub async fn diagnostics_drive_orphans_list(&self, workspace_id: Option<&str>, page: Option<i64>, page_size: Option<i64>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("workspace_id", workspace_id, "form", true, false, None),
             QueryParameterSpec::new("page", page, "form", true, false, None),
@@ -102,43 +102,43 @@ impl NotesApi {
     }
 
     /// Queue repair for Notes metadata records with inconsistent Drive bindings.
-    pub async fn diagnostics_drive_orphans_repair(&self, body: &RepairDriveOrphansRequest) -> Result<DiagnosticsDriveOrphansRepairResponse202, SdkworkError> {
+    pub async fn diagnostics_drive_orphans_create(&self, body: &RepairDriveOrphansRequest) -> Result<IndexJob, SdkworkError> {
         let path = backend_path(&"/notes/diagnostics/drive_orphans".to_string());
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Claim a queued AI job for backend worker execution.
-    pub async fn ai_jobs_claim(&self, ai_job_id: &str) -> Result<AiJobsClaimResponse, SdkworkError> {
+    pub async fn ai_jobs_claim(&self, ai_job_id: &str) -> Result<AiJob, SdkworkError> {
         let path = backend_path(&format!("/notes/ai_jobs/{}/claim", serialize_path_parameter(ai_job_id, PathParameterSpec::new("aiJobId", "simple", false))));
         self.client.post(&path, Option::<&serde_json::Value>::None, None, None, None).await
     }
 
     /// Complete a running AI job and persist reviewable suggestions.
-    pub async fn ai_jobs_complete(&self, ai_job_id: &str, body: &CompleteAiJobRequest) -> Result<AiJobsCompleteResponse, SdkworkError> {
+    pub async fn ai_jobs_complete(&self, ai_job_id: &str, body: &CompleteAiJobRequest) -> Result<AiJob, SdkworkError> {
         let path = backend_path(&format!("/notes/ai_jobs/{}/complete", serialize_path_parameter(ai_job_id, PathParameterSpec::new("aiJobId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Accept an AI suggestion through backend-admin controls.
-    pub async fn ai_suggestions_accept(&self, ai_suggestion_id: &str, body: &AiSuggestionDecisionRequest) -> Result<AiSuggestionsAcceptResponse, SdkworkError> {
+    pub async fn ai_suggestions_accept(&self, ai_suggestion_id: &str, body: &AiSuggestionDecisionRequest) -> Result<AiSuggestion, SdkworkError> {
         let path = backend_path(&format!("/notes/ai_suggestions/{}/accept", serialize_path_parameter(ai_suggestion_id, PathParameterSpec::new("aiSuggestionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Reject an AI suggestion through backend-admin controls.
-    pub async fn ai_suggestions_reject(&self, ai_suggestion_id: &str, body: &AiSuggestionDecisionRequest) -> Result<AiSuggestionsRejectResponse, SdkworkError> {
+    pub async fn ai_suggestions_reject(&self, ai_suggestion_id: &str, body: &AiSuggestionDecisionRequest) -> Result<AiSuggestion, SdkworkError> {
         let path = backend_path(&format!("/notes/ai_suggestions/{}/reject", serialize_path_parameter(ai_suggestion_id, PathParameterSpec::new("aiSuggestionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// Apply an accepted AI suggestion through backend-admin controls.
-    pub async fn ai_suggestions_apply(&self, ai_suggestion_id: &str, body: &AiSuggestionApplyRequest) -> Result<AiSuggestionsApplyResponse, SdkworkError> {
+    pub async fn ai_suggestions_apply(&self, ai_suggestion_id: &str, body: &AiSuggestionApplyRequest) -> Result<PageContent, SdkworkError> {
         let path = backend_path(&format!("/notes/ai_suggestions/{}/apply", serialize_path_parameter(ai_suggestion_id, PathParameterSpec::new("aiSuggestionId", "simple", false))));
         self.client.post(&path, Some(body), None, None, Some("application/json")).await
     }
 
     /// List AI suggestion feedback for backend-admin quality review.
-    pub async fn ai_suggestions_feedback_list(&self, ai_suggestion_id: &str, page: Option<i64>, page_size: Option<i64>) -> Result<AiSuggestionsFeedbackListResponse, SdkworkError> {
+    pub async fn ai_suggestions_feedback_list(&self, ai_suggestion_id: &str, page: Option<i64>, page_size: Option<i64>) -> Result<serde_json::Value, SdkworkError> {
         let query = build_query_string(&[
             QueryParameterSpec::new("page", page, "form", true, false, None),
             QueryParameterSpec::new("page_size", page_size, "form", true, false, None),

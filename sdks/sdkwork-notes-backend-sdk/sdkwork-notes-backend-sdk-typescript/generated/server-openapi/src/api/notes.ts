@@ -1,5 +1,5 @@
 import { backendApiPath } from './paths';
-import type { HttpClient } from '../http/client';
+import type { ApiRequestOptions, HttpClient } from '../http/client';
 
 import type { AdminUpdateWorkspaceRequest, AiFeedback, AiJob, AiSuggestion, AiSuggestionApplyRequest, AiSuggestionDecisionRequest, CompleteAiJobRequest, CreateIndexJobRequest, DriveOrphanDiagnostic, IndexJob, PageContent, PageInfo, RebuildProjectionRequest, RepairDriveOrphansRequest, WorkspaceAdmin } from '../types';
 
@@ -18,12 +18,12 @@ export class NotesAiSuggestionsFeedbackApi {
 
 
 /** List AI suggestion feedback for backend-admin quality review. */
-  async list(aiSuggestionId: string, params?: NotesAiSuggestionsFeedbackListParams): Promise<Record<string, unknown>> {
+  async list(aiSuggestionId: string, params?: NotesAiSuggestionsFeedbackListParams, requestOptions?: ApiRequestOptions): Promise<{ items: AiFeedback[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/feedback`), query));
+    return this.client.request<{ items: AiFeedback[]; pageInfo: PageInfo; }>(appendQueryString(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/feedback`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 }
 
@@ -38,18 +38,18 @@ export class NotesAiSuggestionsApi {
 
 
 /** Accept an AI suggestion through backend-admin controls. */
-  async accept(aiSuggestionId: string, body: AiSuggestionDecisionRequest): Promise<AiSuggestion> {
-    return this.client.post<AiSuggestion>(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/accept`), body, undefined, undefined, 'application/json');
+  async accept(aiSuggestionId: string, body: AiSuggestionDecisionRequest, requestOptions?: ApiRequestOptions): Promise<AiSuggestion> {
+    return this.client.request<AiSuggestion>(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/accept`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** Reject an AI suggestion through backend-admin controls. */
-  async reject(aiSuggestionId: string, body: AiSuggestionDecisionRequest): Promise<AiSuggestion> {
-    return this.client.post<AiSuggestion>(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/reject`), body, undefined, undefined, 'application/json');
+  async reject(aiSuggestionId: string, body: AiSuggestionDecisionRequest, requestOptions?: ApiRequestOptions): Promise<AiSuggestion> {
+    return this.client.request<AiSuggestion>(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/reject`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** Apply an accepted AI suggestion through backend-admin controls. */
-  async apply(aiSuggestionId: string, body: AiSuggestionApplyRequest): Promise<PageContent> {
-    return this.client.post<PageContent>(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/apply`), body, undefined, undefined, 'application/json');
+  async apply(aiSuggestionId: string, body: AiSuggestionApplyRequest, requestOptions?: ApiRequestOptions): Promise<PageContent> {
+    return this.client.request<PageContent>(backendApiPath(`/notes/ai_suggestions/${serializePathParameter(aiSuggestionId, { name: 'aiSuggestionId', style: 'simple', explode: false })}/apply`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -68,27 +68,25 @@ export class NotesDiagnosticsDriveOrphansApi {
 
 
 /** List Notes metadata records with missing or inconsistent Drive bindings. */
-  async list(params?: NotesDiagnosticsDriveOrphansListParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesDiagnosticsDriveOrphansListParams, requestOptions?: ApiRequestOptions): Promise<{ items: DriveOrphanDiagnostic[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/diagnostics/drive_orphans`), query));
+    return this.client.request<{ items: DriveOrphanDiagnostic[]; pageInfo: PageInfo; }>(appendQueryString(backendApiPath(`/notes/diagnostics/drive_orphans`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Queue repair for Notes metadata records with inconsistent Drive bindings. */
-  async repair(body: RepairDriveOrphansRequest): Promise<IndexJob> {
-    return this.client.post<IndexJob>(backendApiPath(`/notes/diagnostics/drive_orphans`), body, undefined, undefined, 'application/json');
+  async create(body: RepairDriveOrphansRequest, requestOptions?: ApiRequestOptions): Promise<IndexJob> {
+    return this.client.request<IndexJob>(backendApiPath(`/notes/diagnostics/drive_orphans`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class NotesDiagnosticsApi {
-  private client: HttpClient;
   public readonly driveOrphans: NotesDiagnosticsDriveOrphansApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.driveOrphans = new NotesDiagnosticsDriveOrphansApi(client);
   }
 
@@ -109,18 +107,18 @@ export class NotesAiJobsAdminApi {
 
 
 /** List AI jobs for backend-admin review. */
-  async list(params?: NotesAiJobsAdminListParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesAiJobsAdminListParams, requestOptions?: ApiRequestOptions): Promise<{ items: AiJob[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/ai_jobs`), query));
+    return this.client.request<{ items: AiJob[]; pageInfo: PageInfo; }>(appendQueryString(backendApiPath(`/notes/ai_jobs`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Retrieve backend-admin AI job details. */
-  async retrieve(aiJobId: string): Promise<AiJob> {
-    return this.client.get<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}`));
+  async retrieve(aiJobId: string, requestOptions?: ApiRequestOptions): Promise<AiJob> {
+    return this.client.request<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -135,18 +133,18 @@ export class NotesAiJobsApi {
 
 
 /** Cancel a running AI job through backend-admin controls. */
-  async cancel(aiJobId: string): Promise<AiJob> {
-    return this.client.post<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/cancel`));
+  async cancel(aiJobId: string, requestOptions?: ApiRequestOptions): Promise<AiJob> {
+    return this.client.request<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/cancel`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** Claim a queued AI job for backend worker execution. */
-  async claim(aiJobId: string): Promise<AiJob> {
-    return this.client.post<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/claim`));
+  async claim(aiJobId: string, requestOptions?: ApiRequestOptions): Promise<AiJob> {
+    return this.client.request<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/claim`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** Complete a running AI job and persist reviewable suggestions. */
-  async complete(aiJobId: string, body: CompleteAiJobRequest): Promise<AiJob> {
-    return this.client.post<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/complete`), body, undefined, undefined, 'application/json');
+  async complete(aiJobId: string, body: CompleteAiJobRequest, requestOptions?: ApiRequestOptions): Promise<AiJob> {
+    return this.client.request<AiJob>(backendApiPath(`/notes/ai_jobs/${serializePathParameter(aiJobId, { name: 'aiJobId', style: 'simple', explode: false })}/complete`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -165,23 +163,23 @@ export class NotesIndexJobsApi {
 
 
 /** List Notes index and projection jobs. */
-  async list(params?: NotesIndexJobsListParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesIndexJobsListParams, requestOptions?: ApiRequestOptions): Promise<{ items: IndexJob[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'workspace_id', value: params?.workspaceId, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/index_jobs`), query));
+    return this.client.request<{ items: IndexJob[]; pageInfo: PageInfo; }>(appendQueryString(backendApiPath(`/notes/index_jobs`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Create an index or projection job. */
-  async create(body: CreateIndexJobRequest): Promise<IndexJob> {
-    return this.client.post<IndexJob>(backendApiPath(`/notes/index_jobs`), body, undefined, undefined, 'application/json');
+  async create(body: CreateIndexJobRequest, requestOptions?: ApiRequestOptions): Promise<IndexJob> {
+    return this.client.request<IndexJob>(backendApiPath(`/notes/index_jobs`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 
 /** Retrieve an index or projection job. */
-  async retrieve(indexJobId: string): Promise<IndexJob> {
-    return this.client.get<IndexJob>(backendApiPath(`/notes/index_jobs/${serializePathParameter(indexJobId, { name: 'indexJobId', style: 'simple', explode: false })}`));
+  async retrieve(indexJobId: string, requestOptions?: ApiRequestOptions): Promise<IndexJob> {
+    return this.client.request<IndexJob>(backendApiPath(`/notes/index_jobs/${serializePathParameter(indexJobId, { name: 'indexJobId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -194,8 +192,8 @@ export class NotesWorkspacesProjectionApi {
 
 
 /** Queue a projection rebuild for a Notes workspace. */
-  async rebuild(workspaceId: string, body: RebuildProjectionRequest): Promise<IndexJob> {
-    return this.client.post<IndexJob>(backendApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/projection_rebuild`), body, undefined, undefined, 'application/json');
+  async rebuild(workspaceId: string, body: RebuildProjectionRequest, requestOptions?: ApiRequestOptions): Promise<IndexJob> {
+    return this.client.request<IndexJob>(backendApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}/projection_rebuild`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'POST' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
@@ -214,33 +212,31 @@ export class NotesWorkspacesAdminApi {
 
 
 /** List Notes workspaces for backend-admin governance. */
-  async list(params?: NotesWorkspacesAdminListParams): Promise<Record<string, unknown>> {
+  async list(params?: NotesWorkspacesAdminListParams, requestOptions?: ApiRequestOptions): Promise<{ items: WorkspaceAdmin[]; pageInfo: PageInfo; }> {
     const query = buildQueryString([
       { name: 'page', value: params?.page, style: 'form', explode: true, allowReserved: false },
       { name: 'page_size', value: params?.pageSize, style: 'form', explode: true, allowReserved: false },
       { name: 'q', value: params?.q, style: 'form', explode: true, allowReserved: false },
     ]);
-    return this.client.get<Record<string, unknown>>(appendQueryString(backendApiPath(`/notes/workspaces`), query));
+    return this.client.request<{ items: WorkspaceAdmin[]; pageInfo: PageInfo; }>(appendQueryString(backendApiPath(`/notes/workspaces`), query), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'page' });
   }
 
 /** Retrieve backend-admin workspace diagnostics. */
-  async retrieve(workspaceId: string): Promise<WorkspaceAdmin> {
-    return this.client.get<WorkspaceAdmin>(backendApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}`));
+  async retrieve(workspaceId: string, requestOptions?: ApiRequestOptions): Promise<WorkspaceAdmin> {
+    return this.client.request<WorkspaceAdmin>(backendApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'GET' as any, sdkworkUnwrapKind: 'item' });
   }
 
 /** Update backend-admin workspace governance fields. */
-  async update(workspaceId: string, body: AdminUpdateWorkspaceRequest): Promise<WorkspaceAdmin> {
-    return this.client.patch<WorkspaceAdmin>(backendApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}`), body, undefined, undefined, 'application/json');
+  async update(workspaceId: string, body: AdminUpdateWorkspaceRequest, requestOptions?: ApiRequestOptions): Promise<WorkspaceAdmin> {
+    return this.client.request<WorkspaceAdmin>(backendApiPath(`/notes/workspaces/${serializePathParameter(workspaceId, { name: 'workspaceId', style: 'simple', explode: false })}`), { ...(requestOptions?.signal !== undefined ? { signal: requestOptions.signal } : {}), ...(requestOptions?.timeout !== undefined ? { timeout: requestOptions.timeout } : {}), method: 'PATCH' as any, body, contentType: 'application/json', sdkworkUnwrapKind: 'item' });
   }
 }
 
 export class NotesWorkspacesApi {
-  private client: HttpClient;
   public readonly admin: NotesWorkspacesAdminApi;
   public readonly projection: NotesWorkspacesProjectionApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.admin = new NotesWorkspacesAdminApi(client);
     this.projection = new NotesWorkspacesProjectionApi(client);
   }
@@ -248,7 +244,6 @@ export class NotesWorkspacesApi {
 }
 
 export class NotesApi {
-  private client: HttpClient;
   public readonly workspaces: NotesWorkspacesApi;
   public readonly indexJobs: NotesIndexJobsApi;
   public readonly aiJobs: NotesAiJobsApi;
@@ -256,7 +251,6 @@ export class NotesApi {
   public readonly aiSuggestions: NotesAiSuggestionsApi;
 
   constructor(client: HttpClient) {
-    this.client = client;
     this.workspaces = new NotesWorkspacesApi(client);
     this.indexJobs = new NotesIndexJobsApi(client);
     this.aiJobs = new NotesAiJobsApi(client);

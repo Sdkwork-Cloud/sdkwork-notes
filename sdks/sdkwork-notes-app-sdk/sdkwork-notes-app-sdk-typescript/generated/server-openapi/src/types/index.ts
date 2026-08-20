@@ -44,10 +44,10 @@ export type { WorkspacesCreateResponse201 } from './workspaces-create-response20
 export type { WorkspacesBootstrapRetrieveResponse } from './workspaces-bootstrap-retrieve-response';
 export type { PagesListResponse } from './pages-list-response';
 export type { PagesVersionsListResponse } from './pages-versions-list-response';
-export type { SearchQueryResponse } from './search-query-response';
-export type { AiJobsCreateResponse202 } from './ai-jobs-create-response202';
+export type { SearchListResponse } from './search-list-response';
+export type { AiJobsCreateResponse201 } from './ai-jobs-create-response201';
 export type { PagesAiSuggestionsListResponse } from './pages-ai-suggestions-list-response';
 export type { AiSuggestionsAcceptResponse } from './ai-suggestions-accept-response';
 export type { AiSuggestionsRejectResponse } from './ai-suggestions-reject-response';
 export type { AiSuggestionsApplyResponse } from './ai-suggestions-apply-response';
-export type { AiSuggestionsFeedbackCreateResponse } from './ai-suggestions-feedback-create-response';
+export type { AiSuggestionsFeedbackCreateResponse201 } from './ai-suggestions-feedback-create-response201';

@@ -1,8 +1,8 @@
 import type { IndexJob } from './index-job';
 
-export interface IndexJobsCreateResponse202 {
+export interface DiagnosticsDriveOrphansCreateResponse201 {
   code: 0;
-  data: unknown & Record<string, unknown>;
+  data: unknown & { item: IndexJob; };
   /** Server-owned request correlation id. */
   traceId: string;
 }

@@ -10,37 +10,180 @@
   },
   "status": "ok",
   "mode": "apply",
-  "hasChanges": false,
-  "hasDestructiveChanges": false,
-  "changeFingerprint": "a9837f8db754adb718eaac5a2b998fcba483411a349ce6541d4be8136180aae6",
+  "hasChanges": true,
+  "hasDestructiveChanges": true,
+  "changeFingerprint": "1f04097b20fc6e09085572d4c7ef9c418cef5c621d93413997727a11929a55b1",
   "changeImpact": {
     "schemaVersion": 1,
-    "areas": [],
-    "details": [],
-    "requiresVerification": false,
-    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
+    "areas": [
+      "api-surface",
+      "models",
+      "runtime",
+      "build-metadata",
+      "publish-workflow",
+      "documentation"
+    ],
+    "details": [
+      {
+        "area": "api-surface",
+        "paths": [
+          "src/api/base.ts",
+          "src/api/notes.ts",
+          "src/http/client.ts"
+        ]
+      },
+      {
+        "area": "models",
+        "paths": [
+          "src/types/ai-jobs-admin-list-response.ts",
+          "src/types/ai-jobs-admin-retrieve-response.ts",
+          "src/types/ai-jobs-cancel-response.ts",
+          "src/types/ai-jobs-claim-response.ts",
+          "src/types/ai-jobs-complete-response.ts",
+          "src/types/ai-suggestions-accept-response.ts",
+          "src/types/ai-suggestions-apply-response.ts",
+          "src/types/ai-suggestions-feedback-list-response.ts",
+          "src/types/ai-suggestions-reject-response.ts",
+          "src/types/diagnostics-drive-orphans-create-response201.ts",
+          "src/types/diagnostics-drive-orphans-list-response.ts",
+          "src/types/diagnostics-drive-orphans-repair-response202.ts",
+          "src/types/index-jobs-create-response201.ts",
+          "src/types/index-jobs-create-response202.ts",
+          "src/types/index-jobs-list-response.ts",
+          "src/types/index-jobs-retrieve-response.ts",
+          "src/types/index.ts",
+          "src/types/workspaces-admin-list-response.ts",
+          "src/types/workspaces-admin-retrieve-response.ts",
+          "src/types/workspaces-admin-update-response.ts",
+          "src/types/workspaces-projection-rebuild-response202.ts"
+        ]
+      },
+      {
+        "area": "runtime",
+        "paths": [
+          "src/http/client.ts"
+        ]
+      },
+      {
+        "area": "build-metadata",
+        "paths": [
+          "package.json"
+        ]
+      },
+      {
+        "area": "publish-workflow",
+        "paths": [
+          "bin/publish-core.mjs"
+        ]
+      },
+      {
+        "area": "documentation",
+        "paths": [
+          "README.md"
+        ]
+      }
+    ],
+    "requiresVerification": true,
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation. Verification is required."
   },
   "executionDecision": {
     "schemaVersion": 1,
-    "riskLevel": "low",
-    "nextAction": "skip",
+    "riskLevel": "high",
+    "nextAction": "verify",
     "requiresManualReview": false,
     "applyRequiresExpectedFingerprint": false,
-    "summary": "No actionable changes were detected. No apply or verification step is required.",
+    "summary": "Changes have been applied. Run the required verification plan now.",
     "reasons": [
-      "no-actionable-changes"
+      "backed-up-generated-files",
+      "deleted-generated-files",
+      "manual-review-required",
+      "verification-required"
     ]
   },
   "executionHandoff": {
     "schemaVersion": 1,
-    "summary": "No further commands are required.",
-    "steps": []
+    "summary": "Run the required verification commands now.",
+    "steps": [
+      {
+        "id": "verify-check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
+      },
+      {
+        "id": "verify-build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
+      }
+    ]
   },
   "verificationPlan": {
-    "shouldRun": false,
-    "runPhase": "skip",
-    "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
-    "steps": []
+    "shouldRun": true,
+    "runPhase": "now",
+    "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+    "steps": [
+      {
+        "id": "check",
+        "title": "Unified package check",
+        "required": true,
+        "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "check"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
+      },
+      {
+        "id": "build",
+        "title": "Unified package build",
+        "required": true,
+        "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation.",
+        "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-typescript\\generated\\server-openapi",
+        "command": "node",
+        "args": [
+          "./bin/publish-core.mjs",
+          "--language",
+          "typescript",
+          "--project-dir",
+          ".",
+          "--action",
+          "build"
+        ],
+        "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
+      }
+    ]
   },
   "sdk": {
     "name": "sdkwork-notes-backend-sdk",
@@ -65,32 +208,53 @@
   "syncSummary": {
     "dryRun": false,
     "controlPlaneEnabled": true,
-    "writtenFiles": 0,
+    "writtenFiles": 25,
     "skippedScaffoldFiles": 2,
-    "skippedUnchangedGeneratedFiles": 71,
-    "deletedGeneratedFiles": 0,
+    "skippedUnchangedGeneratedFiles": 46,
+    "deletedGeneratedFiles": 2,
     "changeSummaryPath": ".sdkwork/sdkwork-generator-changes.json",
-    "changeFingerprint": "a9837f8db754adb718eaac5a2b998fcba483411a349ce6541d4be8136180aae6",
+    "changeFingerprint": "1f04097b20fc6e09085572d4c7ef9c418cef5c621d93413997727a11929a55b1",
     "changes": {
-      "createdGeneratedFiles": [],
-      "updatedGeneratedFiles": [],
-      "unchangedGeneratedFiles": [
+      "createdGeneratedFiles": [
+        "src/types/diagnostics-drive-orphans-create-response201.ts",
+        "src/types/index-jobs-create-response201.ts"
+      ],
+      "updatedGeneratedFiles": [
         "bin/publish-core.mjs",
+        "package.json",
+        "README.md",
+        "src/api/base.ts",
+        "src/api/notes.ts",
+        "src/http/client.ts",
+        "src/types/ai-jobs-admin-list-response.ts",
+        "src/types/ai-jobs-admin-retrieve-response.ts",
+        "src/types/ai-jobs-cancel-response.ts",
+        "src/types/ai-jobs-claim-response.ts",
+        "src/types/ai-jobs-complete-response.ts",
+        "src/types/ai-suggestions-accept-response.ts",
+        "src/types/ai-suggestions-apply-response.ts",
+        "src/types/ai-suggestions-feedback-list-response.ts",
+        "src/types/ai-suggestions-reject-response.ts",
+        "src/types/diagnostics-drive-orphans-list-response.ts",
+        "src/types/index-jobs-list-response.ts",
+        "src/types/index-jobs-retrieve-response.ts",
+        "src/types/index.ts",
+        "src/types/workspaces-admin-list-response.ts",
+        "src/types/workspaces-admin-retrieve-response.ts",
+        "src/types/workspaces-admin-update-response.ts",
+        "src/types/workspaces-projection-rebuild-response202.ts"
+      ],
+      "unchangedGeneratedFiles": [
         "bin/publish.ps1",
         "bin/publish.sh",
         "bin/sdk-gen.bat",
         "bin/sdk-gen.sh",
         "CHANGELOG.md",
         "LICENSE",
-        "package.json",
-        "README.md",
         "sdkwork-sdk.json",
-        "src/api/base.ts",
         "src/api/index.ts",
-        "src/api/notes.ts",
         "src/api/paths.ts",
         "src/auth/index.ts",
-        "src/http/client.ts",
         "src/http/index.ts",
         "src/index.ts",
         "src/sdk.ts",
@@ -99,33 +263,18 @@
         "src/types/ai-feedback.ts",
         "src/types/ai-job-page.ts",
         "src/types/ai-job.ts",
-        "src/types/ai-jobs-admin-list-response.ts",
-        "src/types/ai-jobs-admin-retrieve-response.ts",
-        "src/types/ai-jobs-cancel-response.ts",
-        "src/types/ai-jobs-claim-response.ts",
-        "src/types/ai-jobs-complete-response.ts",
         "src/types/ai-suggestion-apply-request.ts",
         "src/types/ai-suggestion-decision-request.ts",
         "src/types/ai-suggestion.ts",
-        "src/types/ai-suggestions-accept-response.ts",
-        "src/types/ai-suggestions-apply-response.ts",
-        "src/types/ai-suggestions-feedback-list-response.ts",
-        "src/types/ai-suggestions-reject-response.ts",
         "src/types/common.ts",
         "src/types/complete-ai-job-request.ts",
         "src/types/complete-ai-suggestion-input.ts",
         "src/types/create-index-job-request.ts",
-        "src/types/diagnostics-drive-orphans-list-response.ts",
-        "src/types/diagnostics-drive-orphans-repair-response202.ts",
         "src/types/drive-orphan-diagnostic-page.ts",
         "src/types/drive-orphan-diagnostic.ts",
         "src/types/field-error.ts",
         "src/types/index-job-page.ts",
         "src/types/index-job.ts",
-        "src/types/index-jobs-create-response202.ts",
-        "src/types/index-jobs-list-response.ts",
-        "src/types/index-jobs-retrieve-response.ts",
-        "src/types/index.ts",
         "src/types/page-content.ts",
         "src/types/page-info.ts",
         "src/types/problem-detail.ts",
@@ -141,45 +290,154 @@
         "src/types/sdk-work-resource-response.ts",
         "src/types/workspace-admin-page.ts",
         "src/types/workspace-admin.ts",
-        "src/types/workspaces-admin-list-response.ts",
-        "src/types/workspaces-admin-retrieve-response.ts",
-        "src/types/workspaces-admin-update-response.ts",
-        "src/types/workspaces-projection-rebuild-response202.ts",
         "tsconfig.json"
       ],
-      "deletedGeneratedFiles": [],
+      "deletedGeneratedFiles": [
+        "src/types/diagnostics-drive-orphans-repair-response202.ts",
+        "src/types/index-jobs-create-response202.ts"
+      ],
       "scaffoldedFiles": [],
       "preservedScaffoldFiles": [
         "custom/build-runtime.mjs",
         "custom/README.md"
       ],
-      "backedUpFiles": []
+      "backedUpFiles": [
+        "package.json"
+      ]
     },
     "impact": {
       "schemaVersion": 1,
-      "areas": [],
-      "details": [],
-      "requiresVerification": false,
-      "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped."
+      "areas": [
+        "api-surface",
+        "models",
+        "runtime",
+        "build-metadata",
+        "publish-workflow",
+        "documentation"
+      ],
+      "details": [
+        {
+          "area": "api-surface",
+          "paths": [
+            "src/api/base.ts",
+            "src/api/notes.ts",
+            "src/http/client.ts"
+          ]
+        },
+        {
+          "area": "models",
+          "paths": [
+            "src/types/ai-jobs-admin-list-response.ts",
+            "src/types/ai-jobs-admin-retrieve-response.ts",
+            "src/types/ai-jobs-cancel-response.ts",
+            "src/types/ai-jobs-claim-response.ts",
+            "src/types/ai-jobs-complete-response.ts",
+            "src/types/ai-suggestions-accept-response.ts",
+            "src/types/ai-suggestions-apply-response.ts",
+            "src/types/ai-suggestions-feedback-list-response.ts",
+            "src/types/ai-suggestions-reject-response.ts",
+            "src/types/diagnostics-drive-orphans-create-response201.ts",
+            "src/types/diagnostics-drive-orphans-list-response.ts",
+            "src/types/diagnostics-drive-orphans-repair-response202.ts",
+            "src/types/index-jobs-create-response201.ts",
+            "src/types/index-jobs-create-response202.ts",
+            "src/types/index-jobs-list-response.ts",
+            "src/types/index-jobs-retrieve-response.ts",
+            "src/types/index.ts",
+            "src/types/workspaces-admin-list-response.ts",
+            "src/types/workspaces-admin-retrieve-response.ts",
+            "src/types/workspaces-admin-update-response.ts",
+            "src/types/workspaces-projection-rebuild-response202.ts"
+          ]
+        },
+        {
+          "area": "runtime",
+          "paths": [
+            "src/http/client.ts"
+          ]
+        },
+        {
+          "area": "build-metadata",
+          "paths": [
+            "package.json"
+          ]
+        },
+        {
+          "area": "publish-workflow",
+          "paths": [
+            "bin/publish-core.mjs"
+          ]
+        },
+        {
+          "area": "documentation",
+          "paths": [
+            "README.md"
+          ]
+        }
+      ],
+      "requiresVerification": true,
+      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation. Verification is required."
     },
     "verificationPlan": {
-      "shouldRun": false,
-      "runPhase": "skip",
-      "summary": "No generated, scaffold, or backup changes detected. Verification can be skipped.",
-      "steps": []
+      "shouldRun": true,
+      "runPhase": "now",
+      "summary": "Detected impact areas: api-surface, models, runtime, build-metadata, publish-workflow, documentation. Verification is required. Run the required verification commands now against the generated SDK output.",
+      "steps": [
+        {
+          "id": "check",
+          "title": "Unified package check",
+          "required": true,
+          "rationale": "Validate the generated package with the unified publish helper. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation.",
+          "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-typescript\\generated\\server-openapi",
+          "command": "node",
+          "args": [
+            "./bin/publish-core.mjs",
+            "--language",
+            "typescript",
+            "--project-dir",
+            ".",
+            "--action",
+            "check"
+          ],
+          "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action check"
+        },
+        {
+          "id": "build",
+          "title": "Unified package build",
+          "required": true,
+          "rationale": "Run the full package build because this language uses a lighter check path than the final build. Triggered by: api-surface, models, runtime, build-metadata, publish-workflow, documentation.",
+          "workingDirectory": "E:\\sdkwork-space\\sdkwork-notes\\sdks\\sdkwork-notes-backend-sdk\\sdkwork-notes-backend-sdk-typescript\\generated\\server-openapi",
+          "command": "node",
+          "args": [
+            "./bin/publish-core.mjs",
+            "--language",
+            "typescript",
+            "--project-dir",
+            ".",
+            "--action",
+            "build"
+          ],
+          "displayCommand": "node ./bin/publish-core.mjs --language typescript --project-dir . --action build"
+        }
+      ]
     },
     "executionDecision": {
       "schemaVersion": 1,
-      "riskLevel": "low",
-      "nextAction": "skip",
+      "riskLevel": "high",
+      "nextAction": "verify",
       "requiresManualReview": false,
       "applyRequiresExpectedFingerprint": false,
-      "summary": "No actionable changes were detected. No apply or verification step is required.",
+      "summary": "Changes have been applied. Run the required verification plan now.",
       "reasons": [
-        "no-actionable-changes"
+        "backed-up-generated-files",
+        "deleted-generated-files",
+        "manual-review-required",
+        "verification-required"
       ]
     },
-    "backedUpFiles": [],
+    "backedUpFiles": [
+      "package.json"
+    ],
     "preservedLegacyFiles": false
   }
 }

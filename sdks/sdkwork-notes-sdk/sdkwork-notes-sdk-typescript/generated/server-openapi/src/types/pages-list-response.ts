@@ -3,7 +3,7 @@ import type { PageSummary } from './page-summary';
 
 export interface PagesListResponse {
   code: 0;
-  data: unknown & Record<string, unknown>;
+  data: unknown & { items: PageSummary[]; pageInfo: PageInfo; };
   /** Server-owned request correlation id. */
   traceId: string;
 }

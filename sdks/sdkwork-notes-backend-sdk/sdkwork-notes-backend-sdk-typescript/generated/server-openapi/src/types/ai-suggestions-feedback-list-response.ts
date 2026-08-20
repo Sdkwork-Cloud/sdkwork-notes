@@ -3,7 +3,7 @@ import type { PageInfo } from './page-info';
 
 export interface AiSuggestionsFeedbackListResponse {
   code: 0;
-  data: unknown & Record<string, unknown>;
+  data: unknown & { items: AiFeedback[]; pageInfo: PageInfo; };
   /** Server-owned request correlation id. */
   traceId: string;
 }
