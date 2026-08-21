@@ -296,7 +296,7 @@ test('OpenAPI authorities declare x-sdkwork-request-context and x-sdkwork-api-su
 
 test('declares topology and gateway deployment profiles', () => {
   assert.equal(exists('specs/topology.spec.json'), true);
-  assert.equal(exists('configs/topology/standalone.split-services.development.env'), true);
+  assert.equal(exists('etc/topology/standalone.development.env'), true);
 
   const topology = readJson('specs/topology.spec.json');
   assert.equal(topology.database?.appPrefix, 'SDKWORK_NOTES');
@@ -382,8 +382,8 @@ test('schema registry documents Notes-owned tables', () => {
 test('declares SDKWORK_DEPLOY_SPEC deployments/deploy.yaml', () => {
   assert.equal(exists('deployments/deploy.yaml'), true);
   const deploy = read('deployments/deploy.yaml');
-  assert.match(deploy, /^version:\s*1/m);
-  assert.match(deploy, /defaultProfile:\s*cloud\.split-services\.production/);
+  assert.match(deploy, /^version:\s*2/m);
+  assert.match(deploy, /defaultProfile:\s*cloud\.production/);
   assert.match(deploy, /domain:\s*notes\.sdkwork\.com/);
 });
 
@@ -418,8 +418,8 @@ test('integrates sdkwork-drive through generated Rust app SDK facade', () => {
 
 test('production topology profiles configure Drive facade instead of memory drive', () => {
   for (const profilePath of [
-    'configs/topology/cloud.split-services.production.env',
-    'configs/topology/standalone.unified-process.production.env',
+    'etc/topology/cloud.production.env',
+    'etc/topology/standalone.production.env',
   ]) {
     const profileEnv = read(profilePath);
     assert.match(profileEnv, /SDKWORK_NOTES_USE_MEMORY_DRIVE=0/);

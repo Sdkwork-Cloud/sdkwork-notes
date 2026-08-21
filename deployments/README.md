@@ -6,7 +6,7 @@ Deployment manifests, release topology handoff, and environment-specific deploym
 
 Per `SDKWORK_DEPLOY_SPEC.md`, this repository owns a single deployment contract:
 
-- [deploy.yaml](deploy.yaml) — multi-profile deploy manifest (`cloud.split-services.production` default)
+- [deploy.yaml](deploy.yaml) — multi-profile deploy manifest (`cloud.production` default)
 
 Validate:
 
@@ -20,7 +20,7 @@ pnpm deploy:plan
 Current deployment topology is declared in:
 
 - [../specs/topology.spec.json](../specs/topology.spec.json)
-- [../configs/topology/](../configs/topology/)
+- [../etc/topology/](../etc/topology/)
 - Platform ingress configuration is owned by the platform deployment authority; Notes publishes `sdkwork-api-notes-assembly`.
 
 ## Packaging

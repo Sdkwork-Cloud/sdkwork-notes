@@ -25,26 +25,26 @@ async function readJson(relativePath) {
   return JSON.parse(await read(relativePath));
 }
 
-test('declares v2 topology spec and profile env files for sdkwork-notes', async () => {
+test('declares v5 topology spec and profile env files for sdkwork-notes', async () => {
   assert.equal(await exists('specs/topology.spec.json'), true);
   assert.equal(await exists('scripts/lib/notes-topology.mjs'), true);
   assert.equal(await exists('scripts/notes-dev.mjs'), true);
   assert.equal(await exists('docs/topology-standard.md'), true);
 
   const spec = await readJson('specs/topology.spec.json');
-  assert.equal(spec.schemaVersion, 2);
+  assert.equal(spec.schemaVersion, 5);
   assert.equal(spec.kind, 'sdkwork.app.topology');
   assert.equal(spec.appId, 'sdkwork-notes');
   assert.equal(spec.archetype, 'application-http-gateway');
-  assert.equal(spec.defaults.developmentProfileId, 'standalone.split-services.development');
+  assert.equal(spec.defaults.developmentProfileId, 'standalone.development');
   assert.ok(spec.surfaces['application.public-ingress']);
   assert.ok(spec.surfaces['platform.api-gateway']);
 
   for (const profileId of [
-    'standalone.split-services.development',
-    'standalone.unified-process.production',
-    'cloud.split-services.development',
-    'cloud.split-services.production',
+    'standalone.development',
+    'standalone.production',
+    'cloud.development',
+    'cloud.production',
   ]) {
     const profilePath = spec.profileFiles[profileId];
     assert.equal(await exists(profilePath), true, `${profilePath} should exist`);
@@ -57,9 +57,8 @@ test('declares v2 topology spec and profile env files for sdkwork-notes', async 
 
 test('root package.json wires @sdkwork/app-topology and standard dev scripts', async () => {
   const packageJson = await readJson('package.json');
-  assert.equal(packageJson.dependencies['@sdkwork/app-topology'], 'file:../sdkwork-app-topology');
-  assert.match(packageJson.scripts.dev, /scripts\/notes-dev\.mjs/);
-  assert.match(packageJson.scripts['dev:browser'], /scripts\/notes-dev\.mjs/);
+  assert.match(packageJson.dependencies['@sdkwork/app-topology'], /workspace:\*|file:\.\.\/sdkwork-app-topology/);
+  assert.match(packageJson.scripts['dev:browser:postgres:standalone'], /deployment-profile standalone/);
   assert.match(packageJson.scripts['topology:validate'], /sdkwork-topology\.mjs validate/);
 });
 
@@ -101,8 +100,8 @@ test('notes dev orchestrator uses orchestration spec and gateway config', async 
   const devScript = await read('scripts/notes-dev.mjs');
   assert.match(devScript, /listOrchestrationProcesses/);
   assert.match(devScript, /buildProcessesFromOrchestration/);
-  assert.match(devScript, /resolveCloudGatewayConfigPath/);
-  assert.match(devScript, /--config/);
+  assert.match(devScript, /loadProfile/);
+  assert.match(devScript, /resolveDevProfileId/);
 });
 
 test('notes standalone-gateway requires topology bind env without hardcoded fallback', async () => {

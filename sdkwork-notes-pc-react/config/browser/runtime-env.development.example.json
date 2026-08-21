@@ -11,5 +11,5 @@
     "openApiBaseUrl": "http://127.0.0.1:8787",
     "platformApiGatewayBaseUrl": "http://127.0.0.1:3900"
   },
-  "notes": "Safe checked-in browser runtime example aligned with standalone.unified-process.development topology."
+  "notes": "Safe checked-in browser runtime example aligned with standalone.development topology."
 }

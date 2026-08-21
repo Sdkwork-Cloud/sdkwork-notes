@@ -29,7 +29,7 @@ pnpm gateway:package:cloud      # bundle cloud gateway TOML configs
 
 Cloud gateway config bundles live in `configs/sdkwork-api-cloud-gateway.notes.{development,production}.toml`.
 
-## Local URLs (self-hosted split dev)
+## Local URLs (standalone development)
 
 | Surface | URL |
 | --- | --- |
@@ -42,4 +42,4 @@ Client env keys:
 - `VITE_SDKWORK_NOTES_PLATFORM_API_GATEWAY_HTTP_URL` — platform / IAM SDKs
 - `VITE_SDKWORK_APPBASE_APP_API_BASE_URL` — appbase IAM app API
 
-Profile values live in `configs/topology/*.env` only. Do not hardcode ports in feature packages.
+Profile values live in `etc/topology/*.env` only. Do not hardcode ports in feature packages.
