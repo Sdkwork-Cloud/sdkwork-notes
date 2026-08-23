@@ -1,4 +1,5 @@
 import { isBlank, trim } from '@sdkwork/utils';
+import { uuid } from '@sdkwork/utils/id';
 import { createClient as createNotesGeneratedClient } from '@sdkwork-internal/notes-app-sdk-generated';
 import type { Page, PageContent, PageSummary } from '@sdkwork-internal/notes-app-sdk-generated';
 import type {
@@ -299,7 +300,7 @@ export function createNotesProductAppSdkClient(config: AppSdkClientConfig): Note
     async createNote(body: NoteCreateRequest): Promise<AppSdkClientResponse<NoteCreateResultVO>> {
       const context = resolveNotesActorContext(config);
       const workspaceId = await resolveDefaultWorkspaceId(context);
-      const noteId = crypto.randomUUID();
+      const noteId = uuid();
       const page = await generated.notes.pages.create(workspaceId, {
         tenantId: context.tenantId,
         organizationId: context.organizationId,
@@ -419,7 +420,7 @@ export function createNotesProductAppSdkClient(config: AppSdkClientConfig): Note
     async createFolder(body: { name: string; parentId?: string }): Promise<AppSdkClientResponse<NoteFolderVO>> {
       const context = resolveNotesActorContext(config);
       const workspaceId = await resolveDefaultWorkspaceId(context);
-      const folderId = crypto.randomUUID();
+      const folderId = uuid();
       const page = await generated.notes.pages.create(workspaceId, {
         tenantId: context.tenantId,
         organizationId: context.organizationId,
@@ -450,8 +451,8 @@ export function createNotesProductAppSdkClient(config: AppSdkClientConfig): Note
         tenantId: context.tenantId,
         organizationId: context.organizationId,
         operatorId: context.operatorId,
-        idempotencyKey: crypto.randomUUID(),
-        taskId: crypto.randomUUID(),
+        idempotencyKey: uuid(),
+        taskId: uuid(),
         entityType: 'note',
         entityId: folderId,
         operation: 'permanent-delete',
