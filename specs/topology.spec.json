@@ -77,7 +77,15 @@
             "notes-dev.dtupay.com",
             "notes-dev.sdkwork.cn",
             "notes-dev.birdcoder.cn",
-            "notes-dev.dtupay.cn"
+            "notes-dev.dtupay.cn",
+            "notes-dev.skubc.com",
+            "notes-dev.skubc.cn",
+            "notes-dev.zowalk.com",
+            "notes-dev.zowalk.cn",
+            "notes-dev.offer86.com",
+            "notes-dev.offer86.cn",
+            "notes-dev.86offer.com",
+            "notes-dev.86offer.cn"
           ]
         },
         "test": {
@@ -87,7 +95,15 @@
             "notes-test.dtupay.com",
             "notes-test.sdkwork.cn",
             "notes-test.birdcoder.cn",
-            "notes-test.dtupay.cn"
+            "notes-test.dtupay.cn",
+            "notes-test.skubc.com",
+            "notes-test.skubc.cn",
+            "notes-test.zowalk.com",
+            "notes-test.zowalk.cn",
+            "notes-test.offer86.com",
+            "notes-test.offer86.cn",
+            "notes-test.86offer.com",
+            "notes-test.86offer.cn"
           ]
         },
         "staging": {
@@ -97,7 +113,15 @@
             "notes-staging.dtupay.com",
             "notes-staging.sdkwork.cn",
             "notes-staging.birdcoder.cn",
-            "notes-staging.dtupay.cn"
+            "notes-staging.dtupay.cn",
+            "notes-staging.skubc.com",
+            "notes-staging.skubc.cn",
+            "notes-staging.zowalk.com",
+            "notes-staging.zowalk.cn",
+            "notes-staging.offer86.com",
+            "notes-staging.offer86.cn",
+            "notes-staging.86offer.com",
+            "notes-staging.86offer.cn"
           ]
         }
       },
@@ -107,7 +131,15 @@
         "notes.dtupay.com",
         "notes.sdkwork.cn",
         "notes.birdcoder.cn",
-        "notes.dtupay.cn"
+        "notes.dtupay.cn",
+        "notes.skubc.com",
+        "notes.skubc.cn",
+        "notes.zowalk.com",
+        "notes.zowalk.cn",
+        "notes.offer86.com",
+        "notes.offer86.cn",
+        "notes.86offer.com",
+        "notes.86offer.cn"
       ]
     },
     "platform.api-gateway": {
@@ -120,7 +152,15 @@
             "api-dev.dtupay.com",
             "api-dev.sdkwork.cn",
             "api-dev.birdcoder.cn",
-            "api-dev.dtupay.cn"
+            "api-dev.dtupay.cn",
+            "api-dev.skubc.com",
+            "api-dev.skubc.cn",
+            "api-dev.zowalk.com",
+            "api-dev.zowalk.cn",
+            "api-dev.offer86.com",
+            "api-dev.offer86.cn",
+            "api-dev.86offer.com",
+            "api-dev.86offer.cn"
           ]
         },
         "test": {
@@ -130,7 +170,15 @@
             "api-test.dtupay.com",
             "api-test.sdkwork.cn",
             "api-test.birdcoder.cn",
-            "api-test.dtupay.cn"
+            "api-test.dtupay.cn",
+            "api-test.skubc.com",
+            "api-test.skubc.cn",
+            "api-test.zowalk.com",
+            "api-test.zowalk.cn",
+            "api-test.offer86.com",
+            "api-test.offer86.cn",
+            "api-test.86offer.com",
+            "api-test.86offer.cn"
           ]
         },
         "staging": {
@@ -140,7 +188,15 @@
             "api-staging.dtupay.com",
             "api-staging.sdkwork.cn",
             "api-staging.birdcoder.cn",
-            "api-staging.dtupay.cn"
+            "api-staging.dtupay.cn",
+            "api-staging.skubc.com",
+            "api-staging.skubc.cn",
+            "api-staging.zowalk.com",
+            "api-staging.zowalk.cn",
+            "api-staging.offer86.com",
+            "api-staging.offer86.cn",
+            "api-staging.86offer.com",
+            "api-staging.86offer.cn"
           ]
         }
       },
@@ -150,7 +206,15 @@
         "api.dtupay.com",
         "api.sdkwork.cn",
         "api.birdcoder.cn",
-        "api.dtupay.cn"
+        "api.dtupay.cn",
+        "api.skubc.com",
+        "api.skubc.cn",
+        "api.zowalk.com",
+        "api.zowalk.cn",
+        "api.offer86.com",
+        "api.offer86.cn",
+        "api.86offer.com",
+        "api.86offer.cn"
       ]
     }
   },
