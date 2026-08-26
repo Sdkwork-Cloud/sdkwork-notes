@@ -7,16 +7,16 @@ settings:
 catalogs:
   default:
     '@tailwindcss/vite':
-      specifier: ^4.2.2
+      specifier: ^4.1.14
       version: 4.2.2
     '@tanstack/react-query':
       specifier: ^5.96.2
       version: 5.101.2
     '@tauri-apps/api':
-      specifier: ^2.10.1
+      specifier: ~2.11.0
       version: 2.11.1
     '@tauri-apps/cli':
-      specifier: ^2.10.1
+      specifier: ~2.11.0
       version: 2.11.4
     '@testing-library/jest-dom':
       specifier: ^6.9.1
@@ -25,46 +25,46 @@ catalogs:
       specifier: ^16.3.2
       version: 16.3.2
     '@tiptap/core':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-character-count':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-gapcursor':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-highlight':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-image':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-link':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-placeholder':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-task-item':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-task-list':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-typography':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/extension-underline':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/react':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@tiptap/starter-kit':
-      specifier: ^3.22.1
+      specifier: ^3.23.4
       version: 3.28.0
     '@types/node':
-      specifier: ^25.5.2
+      specifier: ^25.9.2
       version: 25.9.5
     '@types/qrcode':
       specifier: ^1.5.6
@@ -82,7 +82,7 @@ catalogs:
       specifier: ^2.1.1
       version: 2.1.1
     i18next:
-      specifier: ^26.0.3
+      specifier: ^26.1.0
       version: 26.3.6
     jsdom:
       specifier: ^29.1.1
@@ -100,10 +100,10 @@ catalogs:
       specifier: ^19.2.4
       version: 19.2.4
     react-i18next:
-      specifier: ^17.0.2
+      specifier: ^17.0.7
       version: 17.0.10
     react-router-dom:
-      specifier: ^7.14.0
+      specifier: ^7.15.0
       version: 7.18.1
     sonner:
       specifier: ^2.0.7
@@ -112,10 +112,10 @@ catalogs:
       specifier: ^3.5.0
       version: 3.6.0
     tailwindcss:
-      specifier: ^4.2.2
+      specifier: ^4.1.14
       version: 4.2.2
     typescript:
-      specifier: ^6.0.2
+      specifier: ~6.0.2
       version: 6.0.3
     vite:
       specifier: ^8.0.3
@@ -132,6 +132,7 @@ catalogs:
 
 overrides:
   markdown-it: 14.1.1
+  '@sdkwork/sdk-common': workspace:*
 
 importers:
 
@@ -290,8 +291,8 @@ importers:
   ../sdkwork-core/sdkwork-core-pc-react:
     dependencies:
       '@sdkwork/sdk-common':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
     devDependencies:
       '@testing-library/react':
         specifier: ^16.3.2
@@ -330,8 +331,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript
       '@sdkwork/sdk-common':
-        specifier: ^1.0.3
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -381,8 +382,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
         specifier: workspace:*
         version: link:../../../../../sdkwork-utils/packages/sdkwork-utils-typescript
@@ -414,8 +415,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../../sdkwork-appbase/packages/common/foundation/sdkwork-runtime-bootstrap
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
     devDependencies:
       typescript:
         specifier: ^6.0.2
@@ -545,8 +546,8 @@ importers:
         specifier: workspace:*
         version: link:../../../sdkwork-iam-common/packages/sdkwork-iam-runtime
       '@sdkwork/sdk-common':
-        specifier: ^1.0.2
-        version: 1.0.3
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/user-center-core-pc-react':
         specifier: workspace:*
         version: link:../sdkwork-user-center-core-pc-react
@@ -591,6 +592,9 @@ importers:
 
   ../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-iam-pc-admin-account-binding:
     dependencies:
+      '@sdkwork/i18n-pc-react':
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-appbase/packages/pc-react/foundation/sdkwork-i18n-pc-react
       '@sdkwork/iam-pc-admin-core':
         specifier: workspace:*
         version: link:../sdkwork-iam-pc-admin-core
@@ -619,6 +623,9 @@ importers:
 
   ../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-iam-pc-admin-audit:
     dependencies:
+      '@sdkwork/i18n-pc-react':
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-appbase/packages/pc-react/foundation/sdkwork-i18n-pc-react
       '@sdkwork/iam-contracts':
         specifier: workspace:*
         version: link:../../../sdkwork-iam-common/packages/sdkwork-iam-contracts
@@ -690,6 +697,9 @@ importers:
 
   ../sdkwork-iam/apps/sdkwork-iam-pc/packages/sdkwork-iam-pc-admin-oauth:
     dependencies:
+      '@sdkwork/i18n-pc-react':
+        specifier: workspace:*
+        version: link:../../../../../sdkwork-appbase/packages/pc-react/foundation/sdkwork-i18n-pc-react
       '@sdkwork/iam-contracts':
         specifier: workspace:*
         version: link:../../../sdkwork-iam-common/packages/sdkwork-iam-contracts
@@ -702,6 +712,12 @@ importers:
       '@sdkwork/ui-pc-react':
         specifier: workspace:*
         version: link:../../../../../sdkwork-ui/sdkwork-ui-pc-react
+      lucide-react:
+        specifier: ^1.7.0
+        version: 1.7.0(react@19.2.4)
+      qrcode:
+        specifier: 'catalog:'
+        version: 1.5.4
       react:
         specifier: '>=18.2.0 <20.0.0'
         version: 19.2.4
@@ -709,6 +725,9 @@ importers:
         specifier: '>=18.2.0 <20.0.0'
         version: 19.2.4(react@19.2.4)
     devDependencies:
+      '@types/qrcode':
+        specifier: 'catalog:'
+        version: 1.5.6
       '@types/react':
         specifier: 'catalog:'
         version: 19.2.14
@@ -1149,12 +1168,18 @@ importers:
       '@sdkwork/sdk-common':
         specifier: workspace:*
         version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
+      '@sdkwork/utils':
+        specifier: ^0.11.0
+        version: 0.11.0
 
   ../sdkwork-iam/sdks/sdkwork-iam-backend-sdk/sdkwork-iam-backend-sdk-typescript:
     dependencies:
       '@sdkwork/sdk-common':
         specifier: workspace:*
         version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
+      '@sdkwork/utils':
+        specifier: ^0.11.0
+        version: 0.11.0
 
   ../sdkwork-iam/sdks/sdkwork-iam-open-sdk/sdkwork-iam-open-sdk-typescript:
     dependencies:
@@ -1163,6 +1188,10 @@ importers:
         version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
 
   ../sdkwork-sdk-commons/sdkwork-sdk-common-typescript:
+    dependencies:
+      '@sdkwork/utils':
+        specifier: ^0.11.0
+        version: 0.11.0
     devDependencies:
       '@types/node':
         specifier: ^25.6.0
@@ -1268,6 +1297,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.13(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@sdkwork/utils':
+        specifier: ^0.11.0
+        version: 0.11.0
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -3681,9 +3713,8 @@ packages:
   '@rushstack/ts-command-line@5.3.12':
     resolution: {integrity: sha512-Vg2n24arSf7JvUNga2DMHYTbxnVq9L5OtVCp4Gfr8YC/kmL/bmdR8FQhGcpMzMYNY9Vdw3+TaimG11Sf+z1Tpw==}
 
-  '@sdkwork/sdk-common@1.0.3':
-    resolution: {integrity: sha512-EGCm742ya1VL9hZ+9SVVArUxieFxIwQ3MMpt8Tv6Vc++U5ug4qG2TBUQ/hKAeJIwhL5Tvbhs6Tzy31P8fBO/cQ==}
-    engines: {node: '>=18.0.0'}
+  '@sdkwork/utils@0.11.0':
+    resolution: {integrity: sha512-GTW9LPBkrNy3jdzbnEGzLd1wRYZly5NNkXt2W0ZZElmsbAfkEIi9oFa1O4+E9lSDwsYRkHjNvzeAb8waacVTow==}
 
   '@shikijs/core@2.5.0':
     resolution: {integrity: sha512-uu/8RExTKtavlpH7XqnVYBrfBkUc20ngXiX9NSrBhOVZYv/7XQRKUyhtkeflY5QsxC0GbJThCerruZfsUaSldg==}
@@ -8266,7 +8297,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@sdkwork/sdk-common@1.0.3': {}
+  '@sdkwork/utils@0.11.0': {}
 
   '@shikijs/core@2.5.0':
     dependencies:
