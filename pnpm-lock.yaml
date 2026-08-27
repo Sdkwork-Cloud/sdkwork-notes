@@ -328,14 +328,14 @@ importers:
   ../sdkwork-drive/sdks/sdkwork-drive-app-sdk/sdkwork-drive-app-sdk-typescript:
     dependencies:
       '@sdkwork/iam-app-sdk':
-        specifier: workspace:*
-        version: link:../../../../sdkwork-iam/sdks/sdkwork-iam-app-sdk/sdkwork-iam-app-sdk-typescript
+        specifier: ^0.1.4
+        version: 0.1.4
       '@sdkwork/sdk-common':
         specifier: workspace:*
         version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
       '@sdkwork/utils':
-        specifier: workspace:*
-        version: link:../../../../sdkwork-utils/packages/sdkwork-utils-typescript
+        specifier: ^0.11.0
+        version: 0.11.0
     devDependencies:
       typescript:
         specifier: ^5.8.2
@@ -1186,6 +1186,9 @@ importers:
       '@sdkwork/sdk-common':
         specifier: workspace:*
         version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
+      '@sdkwork/utils':
+        specifier: ^0.11.0
+        version: 0.11.0
 
   ../sdkwork-sdk-commons/sdkwork-sdk-common-typescript:
     dependencies:
@@ -1424,6 +1427,9 @@ importers:
       '@tiptap/extension-character-count':
         specifier: ^3.26.0
         version: 3.28.0(@tiptap/extensions@3.28.0(@tiptap/core@3.28.0(@tiptap/pm@3.28.0))(@tiptap/pm@3.28.0))
+      '@tiptap/extension-code-block':
+        specifier: ^3.26.0
+        version: 3.28.0(@tiptap/core@3.28.0(@tiptap/pm@3.28.0))(@tiptap/pm@3.28.0)
       '@tiptap/extension-floating-menu':
         specifier: ^3.26.0
         version: 3.28.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.28.0(@tiptap/pm@3.28.0))(@tiptap/pm@3.28.0)
@@ -1599,6 +1605,9 @@ importers:
       '@sdkwork/sdk-common':
         specifier: workspace:*
         version: link:../../../../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
+      '@sdkwork/utils':
+        specifier: ^0.11.0
+        version: 0.11.0
 
   sdkwork-notes-pc-react/packages/sdkwork-notes-pc-auth:
     dependencies:
@@ -3712,6 +3721,9 @@ packages:
 
   '@rushstack/ts-command-line@5.3.12':
     resolution: {integrity: sha512-Vg2n24arSf7JvUNga2DMHYTbxnVq9L5OtVCp4Gfr8YC/kmL/bmdR8FQhGcpMzMYNY9Vdw3+TaimG11Sf+z1Tpw==}
+
+  '@sdkwork/iam-app-sdk@0.1.4':
+    resolution: {integrity: sha512-1JOFZLE4GahQONeu03BP/6hGKyfl6PtSurdApXf4aKmXyBWJiXHyx4jhpqX6m9ab7z1hVb7tS+MDRF4biw+GIw==}
 
   '@sdkwork/utils@0.11.0':
     resolution: {integrity: sha512-GTW9LPBkrNy3jdzbnEGzLd1wRYZly5NNkXt2W0ZZElmsbAfkEIi9oFa1O4+E9lSDwsYRkHjNvzeAb8waacVTow==}
@@ -8296,6 +8308,11 @@ snapshots:
       string-argv: 0.3.2
     transitivePeerDependencies:
       - '@types/node'
+
+  '@sdkwork/iam-app-sdk@0.1.4':
+    dependencies:
+      '@sdkwork/sdk-common': link:../sdkwork-sdk-commons/sdkwork-sdk-common-typescript
+      '@sdkwork/utils': 0.11.0
 
   '@sdkwork/utils@0.11.0': {}
 
