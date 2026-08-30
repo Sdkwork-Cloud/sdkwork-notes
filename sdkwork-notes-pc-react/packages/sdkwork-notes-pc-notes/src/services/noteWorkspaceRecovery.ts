@@ -1,5 +1,5 @@
 import type { LocalDraftSnapshot } from '@sdkwork/notes-pc-local';
-import type { Note, NoteSummary } from '@sdkwork/notes-pc-types';
+import type { Note, NoteSummary } from '@sdkwork/notes-pc-types-commons';
 import { normalizeString } from '@sdkwork/notes-pc-commons';
 
 export interface NotesWorkspaceRecoveredDraft extends LocalDraftSnapshot {

@@ -13,8 +13,8 @@ import {
   type NotesSyncQueueSnapshot,
   type NotesSyncQueueStore,
   type NotesSyncTaskMutation,
-} from '@sdkwork/notes-pc-sync';
-import type { Note, NoteFolder, NoteSummary, PageRequest, ServiceResult } from '@sdkwork/notes-pc-types';
+} from '@sdkwork/notes-pc-sync-commons';
+import type { Note, NoteFolder, NoteSummary, PageRequest, ServiceResult } from '@sdkwork/notes-pc-types-commons';
 import {
   captureNotesWorkspaceExitRecoverySnapshot,
   clearNotesWorkspaceExitRecoverySnapshot,

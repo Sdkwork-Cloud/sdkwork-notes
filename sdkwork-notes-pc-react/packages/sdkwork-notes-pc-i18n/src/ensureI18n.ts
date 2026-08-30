@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import type { LanguagePreference } from '@sdkwork/notes-pc-types';
+import type { LanguagePreference } from '@sdkwork/notes-pc-types-commons';
 import { enUS } from './resources/en-US';
 import { zhCN } from './resources/zh-CN';
 

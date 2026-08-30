@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sdkwork/notes-pc-types": "workspace:*",
+    "@sdkwork/notes-pc-types-commons": "workspace:*",
     "i18next": "catalog:",
     "react": "catalog:",
     "react-i18next": "catalog:"

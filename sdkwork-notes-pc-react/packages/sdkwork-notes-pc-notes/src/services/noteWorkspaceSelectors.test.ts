@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Note } from '@sdkwork/notes-pc-types';
+import type { Note } from '@sdkwork/notes-pc-types-commons';
 import {
   countNoteCharacters,
   countNoteWords,

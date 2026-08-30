@@ -1,5 +1,5 @@
 {
-  "name": "@sdkwork/notes-pc-sync",
+  "name": "@sdkwork/notes-pc-sync-commons",
   "private": true,
   "version": "0.1.0",
   "type": "module",

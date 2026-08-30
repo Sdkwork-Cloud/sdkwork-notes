@@ -6,7 +6,7 @@ import type {
   NotesSyncConflictCode,
   NotesSyncRemoteApplyRequest,
   NotesSyncTaskExecutionResult,
-} from '@sdkwork/notes-pc-sync';
+} from '@sdkwork/notes-pc-sync-commons';
 
 const CONFLICT_CODE_PASSTHROUGH = new Set<NotesSyncConflictCode>([
   'stale-base-version',

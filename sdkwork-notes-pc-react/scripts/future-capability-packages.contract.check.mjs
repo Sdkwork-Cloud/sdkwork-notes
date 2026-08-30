@@ -15,8 +15,8 @@ const expectedPackages = [
     packageName: '@sdkwork/notes-pc-search',
   },
   {
-    directory: 'sdkwork-notes-pc-sync',
-    packageName: '@sdkwork/notes-pc-sync',
+    directory: 'sdkwork-notes-pc-sync-commons',
+    packageName: '@sdkwork/notes-pc-sync-commons',
   },
   {
     directory: 'sdkwork-notes-pc-observability',

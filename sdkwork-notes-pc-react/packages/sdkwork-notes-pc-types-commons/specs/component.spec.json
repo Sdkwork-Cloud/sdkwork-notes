@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "kind": "sdkwork.component.spec",
   "component": {
-    "name": "@sdkwork/notes-pc-sync",
-    "displayName": "SDKWork Notes Sync",
+    "name": "@sdkwork/notes-pc-types-commons",
+    "displayName": "SDKWork Notes Types",
     "version": "0.1.0",
     "type": "node-package",
-    "root": "sdkwork-notes/sdkwork-notes-pc-react/packages/sdkwork-notes-pc-sync",
+    "root": "sdkwork-notes/sdkwork-notes-pc-react/packages/sdkwork-notes-pc-types-commons",
     "domain": "content",
     "declaredDomain": null,
     "capability": "notes",
@@ -124,7 +124,7 @@
   },
   "verification": {
     "commands": [
-      "pnpm --filter @sdkwork/notes-pc-sync typecheck"
+      "pnpm --filter @sdkwork/notes-pc-types-commons typecheck"
     ]
   },
   "metadata": {

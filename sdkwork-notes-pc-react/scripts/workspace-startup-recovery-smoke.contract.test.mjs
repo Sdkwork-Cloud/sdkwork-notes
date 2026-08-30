@@ -56,7 +56,7 @@ async function loadWorkspaceModules() {
   ).outputText;
   const recoveryModuleUrl = createDataModuleUrl(applyContractModuleStubs(recoveryModuleSource));
   const notesSyncModuleSource = (
-    await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
+    await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync-commons/src/index.ts')
   ).outputText;
   const notesSyncModuleUrl = createDataModuleUrl(applyContractModuleStubs(notesSyncModuleSource));
 
@@ -308,7 +308,7 @@ export function resolveNotesWorkspaceSaveSuccessState(currentSaveState) {
   );
   patchedWorkspaceStoreSource = replaceModuleSpecifier(
     patchedWorkspaceStoreSource,
-    '@sdkwork/notes-pc-sync',
+    '@sdkwork/notes-pc-sync-commons',
     notesSyncModuleUrl,
   );
   patchedWorkspaceStoreSource = replaceModuleSpecifier(

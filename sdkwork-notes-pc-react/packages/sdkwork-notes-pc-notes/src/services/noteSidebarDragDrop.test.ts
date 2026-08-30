@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { NoteFolder } from '@sdkwork/notes-pc-types';
+import type { NoteFolder } from '@sdkwork/notes-pc-types-commons';
 import {
   decodeSidebarDragPayload,
   encodeSidebarDragPayload,

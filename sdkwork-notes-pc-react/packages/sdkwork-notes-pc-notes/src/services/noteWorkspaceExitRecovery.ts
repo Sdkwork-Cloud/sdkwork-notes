@@ -1,4 +1,4 @@
-import type { Note } from '@sdkwork/notes-pc-types';
+import type { Note } from '@sdkwork/notes-pc-types-commons';
 import type { LocalDraftSnapshot, NotesLocalDraftSaveState, NotesLocalStore } from '@sdkwork/notes-pc-local';
 import type { NoteSaveState } from '../types/notesWorkspace';
 

@@ -1,4 +1,4 @@
-import type { ServiceResult } from '@sdkwork/notes-pc-types';
+import type { ServiceResult } from '@sdkwork/notes-pc-types-commons';
 
 export const Result = {
   success<T>(data: T): ServiceResult<T> {

@@ -2,7 +2,7 @@ import type {
   UserProfileVO,
   UserSettingsVO,
 } from '../sdk/appSdkPort';
-import type { LanguagePreference, ThemeMode } from '@sdkwork/notes-pc-types';
+import type { LanguagePreference, ThemeMode } from '@sdkwork/notes-pc-types-commons';
 import { getAppSdkClientWithSession } from '../sdk/useAppSdkClient';
 import { unwrapAppSdkResponse } from '../sdk/appSdkResult';
 

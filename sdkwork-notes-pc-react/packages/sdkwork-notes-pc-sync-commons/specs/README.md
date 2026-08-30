@@ -1,6 +1,6 @@
-# SDKWork Notes Types Component Specs
+# SDKWork Notes Sync Component Specs
 
-This directory is the local standards index for `@sdkwork/notes-pc-types`.
+This directory is the local standards index for `@sdkwork/notes-pc-sync-commons`.
 
 Root SDKWork standards remain authoritative. Local component specs can narrow or document this component, but they must not contradict [the root standards](../../../../../../specs/README.md).
 
@@ -8,9 +8,9 @@ Root SDKWork standards remain authoritative. Local component specs can narrow or
 
 | Field | Value |
 | --- | --- |
-| Name | `@sdkwork/notes-pc-types` |
+| Name | `@sdkwork/notes-pc-sync-commons` |
 | Type | `node-package` |
-| Root | `sdkwork-notes/sdkwork-notes-pc-react/packages/sdkwork-notes-pc-types` |
+| Root | `sdkwork-notes/sdkwork-notes-pc-react/packages/sdkwork-notes-pc-sync-commons` |
 | Domain | `content` |
 | Capability | `notes` |
 | Languages | `typescript` |
@@ -52,4 +52,4 @@ Root SDKWork standards remain authoritative. Local component specs can narrow or
 
 ## Verification
 
-- `pnpm --filter @sdkwork/notes-pc-types typecheck`
+- `pnpm --filter @sdkwork/notes-pc-sync-commons typecheck`

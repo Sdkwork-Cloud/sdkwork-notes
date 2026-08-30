@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@sdkwork/utils": "workspace:*",
-    "@sdkwork/notes-pc-types": "workspace:*",
+    "@sdkwork/notes-pc-types-commons": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

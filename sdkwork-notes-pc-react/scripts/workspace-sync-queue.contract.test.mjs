@@ -54,7 +54,7 @@ function createMemoryStorage() {
   };
 }
 
-const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts');
+const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-pc-sync-commons/src/index.ts');
 
 test('notes sync queue store persists a versioned queue snapshot for queued and retrying tasks', async () => {
   assert.equal(syncModule.NOTES_SYNC_QUEUE_STORAGE_KEY, 'sdkwork-notes-sync-queue');

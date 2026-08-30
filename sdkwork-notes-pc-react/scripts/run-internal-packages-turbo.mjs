@@ -16,8 +16,8 @@ export const INTERNAL_WORKSPACE_PACKAGES = [
   '@sdkwork/notes-pc-observability',
   '@sdkwork/notes-pc-search',
   '@sdkwork/notes-pc-shell',
-  '@sdkwork/notes-pc-sync',
-  '@sdkwork/notes-pc-types',
+  '@sdkwork/notes-pc-sync-commons',
+  '@sdkwork/notes-pc-types-commons',
   '@sdkwork/notes-pc-updater',
   '@sdkwork/notes-pc-user',
 ];

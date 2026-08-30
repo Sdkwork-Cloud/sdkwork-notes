@@ -1,4 +1,4 @@
-import type { Note, NoteSummary } from '@sdkwork/notes-pc-types';
+import type { Note, NoteSummary } from '@sdkwork/notes-pc-types-commons';
 import type { NoteSaveState } from '../types/notesWorkspace';
 
 export interface NotesWorkspaceSaveQueue {

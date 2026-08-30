@@ -1,7 +1,7 @@
 import type {
   NotesSyncRemoteApplyRequest,
   NotesSyncTaskExecutionResult,
-} from '@sdkwork/notes-pc-sync';
+} from '@sdkwork/notes-pc-sync-commons';
 import { getAppSdkClientWithSession } from '../sdk/useAppSdkClient';
 import { unwrapAppSdkResponse } from '../sdk/appSdkResult';
 import type { NoteRemoteApplyResultVO } from '../sdk/appSdkPort';

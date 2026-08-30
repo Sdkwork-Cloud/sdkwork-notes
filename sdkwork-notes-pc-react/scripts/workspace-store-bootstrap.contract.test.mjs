@@ -48,7 +48,7 @@ async function loadWorkspaceStoreModule() {
   const notesSyncModuleUrl = createDataModuleUrl(
     applyContractModuleStubs(
       (
-        await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts')
+        await transpileTypeScriptModule('packages/sdkwork-notes-pc-sync-commons/src/index.ts')
       ).outputText,
     ),
   );
@@ -393,7 +393,7 @@ export function restoreNotesWorkspaceRecoveredDraft(note, draft, restoredAt) {
           '@sdkwork/notes-pc-local',
           notesLocalStubUrl,
         ),
-        '@sdkwork/notes-pc-sync',
+        '@sdkwork/notes-pc-sync-commons',
         notesSyncModuleUrl,
       ),
       '../services',
@@ -462,7 +462,7 @@ export function createNotesWorkspaceSyncRuntime(options) {
   ).outputText;
   const patchedSource = replaceModuleSpecifier(
     replaceModuleSpecifier(
-      replaceModuleSpecifier(source, '@sdkwork/notes-pc-sync', notesSyncStubUrl),
+      replaceModuleSpecifier(source, '@sdkwork/notes-pc-sync-commons', notesSyncStubUrl),
       '../services',
       servicesStubUrl,
     ),

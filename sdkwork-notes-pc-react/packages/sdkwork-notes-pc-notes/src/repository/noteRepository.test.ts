@@ -1,4 +1,4 @@
-import type { NoteSummary } from '@sdkwork/notes-pc-types';
+import type { NoteSummary } from '@sdkwork/notes-pc-types-commons';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearAppSdkSessionTokens,

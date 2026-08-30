@@ -1,4 +1,4 @@
-import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-pc-types';
+import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-pc-types-commons';
 import { normalizeString } from '@sdkwork/notes-pc-commons';
 import { buildNotesSearchDocuments, searchNotesSearchDocuments } from '@sdkwork/notes-pc-search';
 import type { NotesCollectionView } from '../types/notesWorkspace';

@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@sdkwork/notes-pc-commons';
 import { useNotesTranslation } from '@sdkwork/notes-pc-i18n';
-import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-pc-types';
+import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-pc-types-commons';
 import {
   buildFlatFolderTree,
   decodeSidebarDragPayload,

@@ -1,4 +1,4 @@
-import type { Note } from '@sdkwork/notes-pc-types';
+import type { Note } from '@sdkwork/notes-pc-types-commons';
 import type { NoteWorkspacePendingDialog } from './noteWorkspacePageActions';
 
 type DialogNoteSummary = Pick<Note, 'id' | 'title'>;

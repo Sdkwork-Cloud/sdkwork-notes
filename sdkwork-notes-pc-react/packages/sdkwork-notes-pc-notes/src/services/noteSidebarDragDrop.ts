@@ -1,4 +1,4 @@
-import type { NoteFolder } from '@sdkwork/notes-pc-types';
+import type { NoteFolder } from '@sdkwork/notes-pc-types-commons';
 import { normalizeString } from '@sdkwork/notes-pc-commons';
 
 export const SIDEBAR_DRAG_MIME_TYPE = 'application/x-sdkwork-notes-sidebar-item';

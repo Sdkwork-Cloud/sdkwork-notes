@@ -1,7 +1,7 @@
 import { BookOpenText, CalendarClock, Clock3, FolderTree, Hash, Layers3, RefreshCcw, ShieldAlert, Text, Trash2 } from 'lucide-react';
 import { Button, SurfaceCard } from '@sdkwork/notes-pc-commons';
 import { useNotesTranslation } from '@sdkwork/notes-pc-i18n';
-import type { Note, NoteFolder } from '@sdkwork/notes-pc-types';
+import type { Note, NoteFolder } from '@sdkwork/notes-pc-types-commons';
 import {
   countNoteCharacters,
   countNoteWords,

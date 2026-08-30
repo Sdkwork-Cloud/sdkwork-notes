@@ -4,7 +4,7 @@ import {
   type NotesSyncRemoteApplyRequest,
   type NotesSyncTask,
   type NotesSyncTaskExecutionResult,
-} from '@sdkwork/notes-pc-sync';
+} from '@sdkwork/notes-pc-sync-commons';
 import {
   createNotesWorkspaceSyncRuntime,
   type NotesWorkspaceSyncRuntime,

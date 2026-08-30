@@ -1,4 +1,4 @@
-import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-pc-types';
+import type { Note, NoteFolder, NoteSummary } from '@sdkwork/notes-pc-types-commons';
 
 export type NotesCollectionView = 'all' | 'favorites' | 'recent' | 'trash';
 export type NoteSaveState =

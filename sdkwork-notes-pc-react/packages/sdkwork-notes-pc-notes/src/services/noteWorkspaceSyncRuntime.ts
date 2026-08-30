@@ -7,7 +7,7 @@ import {
   type NotesSyncTask,
   type NotesSyncTaskExecutionResult,
   type NotesSyncWorkerScheduler,
-} from '@sdkwork/notes-pc-sync';
+} from '@sdkwork/notes-pc-sync-commons';
 
 export interface NotesWorkspaceSyncRuntime {
   requestDrain(): Promise<void>;

@@ -1,4 +1,4 @@
-import type { Note, NoteFolder, NoteSummary, ServiceResult } from '@sdkwork/notes-pc-types';
+import type { Note, NoteFolder, NoteSummary, ServiceResult } from '@sdkwork/notes-pc-types-commons';
 import { normalizeString } from '@sdkwork/notes-pc-commons';
 
 export interface NoteWorkspaceCreatedNotePlan {

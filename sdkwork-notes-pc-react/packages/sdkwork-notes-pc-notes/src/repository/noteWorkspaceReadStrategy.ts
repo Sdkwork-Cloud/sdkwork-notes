@@ -3,7 +3,7 @@ import type {
   NoteSummary,
   PageRequest,
   ServiceResult,
-} from '@sdkwork/notes-pc-types';
+} from '@sdkwork/notes-pc-types-commons';
 import { normalizeString, toErrorMessage } from '@sdkwork/notes-pc-commons';
 import type {
   NoteWorkspaceDataSource,

@@ -91,7 +91,7 @@ test('future notes remote apply shared wrapper service contract stays aligned wi
   const spec = readServiceContractSpec();
   const targetSpec = readTargetContractSpec();
   const resultAdapterSpec = readResultAdapterContractSpec();
-  const syncSource = readFromWorkspace('packages', 'sdkwork-notes-pc-sync', 'src', 'index.ts');
+  const syncSource = readFromWorkspace('packages', 'sdkwork-notes-pc-sync-commons', 'src', 'index.ts');
   const sdkSource = readFromWorkspace(
     'packages',
     'sdkwork-notes-pc-core',

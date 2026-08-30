@@ -23,7 +23,7 @@
     "@sdkwork/notes-pc-commons": "workspace:*",
     "@sdkwork/notes-pc-core": "workspace:*",
     "@sdkwork/notes-pc-i18n": "workspace:*",
-    "@sdkwork/notes-pc-types": "workspace:*",
+    "@sdkwork/notes-pc-types-commons": "workspace:*",
     "lucide-react": "catalog:",
     "react": "catalog:",
     "sonner": "catalog:"

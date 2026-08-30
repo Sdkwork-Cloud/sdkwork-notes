@@ -26,7 +26,7 @@ import type {
   Page,
   PageRequest,
   ServiceResult,
-} from '@sdkwork/notes-pc-types';
+} from '@sdkwork/notes-pc-types-commons';
 import {
   createRemoteAppSdkNoteWorkspaceDataSource,
   type NoteWorkspaceReadStrategyKey,

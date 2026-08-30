@@ -1,7 +1,7 @@
 import { Code2, FileText, Newspaper } from 'lucide-react';
 import { Button, EmptyState } from '@sdkwork/notes-pc-commons';
 import { useNotesTranslation } from '@sdkwork/notes-pc-i18n';
-import type { Note } from '@sdkwork/notes-pc-types';
+import type { Note } from '@sdkwork/notes-pc-types-commons';
 
 interface NotesEmptyStateProps {
   onCreateNote: (type: Note['type']) => void;

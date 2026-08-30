@@ -247,7 +247,7 @@ async fn installs_phase1_workspace_and_page_schema() {
 
 #[test]
 fn sql_repository_uses_positive_lifecycle_predicates_for_indexed_queries() {
-    let source = include_str!("../../../crates/sdkwork-notes-pages-repository-sqlx/src/notes_store.rs");
+    let source = include_str!("../src/notes_store.rs");
 
     assert!(
         !source.contains("lifecycle_status != 'deleted'"),

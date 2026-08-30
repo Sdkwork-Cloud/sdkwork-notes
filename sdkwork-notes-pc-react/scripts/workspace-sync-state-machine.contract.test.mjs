@@ -38,10 +38,10 @@ function createIntentMutation(intent) {
   return { intent };
 }
 
-const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts');
+const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-pc-sync-commons/src/index.ts');
 
 test('notes sync package exports a frozen task/status/conflict contract for Step 08', () => {
-  assert.equal(syncModule.NOTES_SYNC_PACKAGE, '@sdkwork/notes-pc-sync');
+  assert.equal(syncModule.NOTES_SYNC_PACKAGE, '@sdkwork/notes-pc-sync-commons');
   assert.deepEqual(syncModule.NOTES_SYNC_TASK_STATUSES, [
     'queued',
     'running',

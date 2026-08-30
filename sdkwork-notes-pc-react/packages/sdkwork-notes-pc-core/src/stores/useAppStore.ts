@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { LanguagePreference, ThemeColor, ThemeMode } from '@sdkwork/notes-pc-types';
+import type { LanguagePreference, ThemeColor, ThemeMode } from '@sdkwork/notes-pc-types-commons';
 
 export const APP_STORE_STORAGE_KEY = 'sdkwork-notes-app-storage';
 const fallbackAppStoreStorage = createMemoryStorage();

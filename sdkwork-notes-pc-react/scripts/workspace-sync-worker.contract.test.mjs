@@ -89,7 +89,7 @@ function createRunningRetryingTask(syncModule, overrides = {}) {
   );
 }
 
-const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-pc-sync/src/index.ts');
+const syncModule = await loadTypeScriptModule('packages/sdkwork-notes-pc-sync-commons/src/index.ts');
 
 test('notes sync worker executes the oldest queued task and persists a completed ack with remote cursor', async () => {
   const firstTask = syncModule.createNotesSyncTask({

@@ -84,7 +84,7 @@ test('future notes remote apply target contract freezes the semantic SDK and con
 
 test('future notes remote apply target contract stays aligned with the local notes sync request boundary', () => {
   const spec = readTargetContractSpec();
-  const syncSource = readFromWorkspace('packages', 'sdkwork-notes-pc-sync', 'src', 'index.ts');
+  const syncSource = readFromWorkspace('packages', 'sdkwork-notes-pc-sync-commons', 'src', 'index.ts');
 
   [
     'idempotencyKey',

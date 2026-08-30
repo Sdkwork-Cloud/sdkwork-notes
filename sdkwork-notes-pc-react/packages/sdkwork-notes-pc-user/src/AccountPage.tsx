@@ -15,7 +15,7 @@ import { useAuthStore } from '@sdkwork/notes-pc-auth';
 import { Button, SurfaceCard } from '@sdkwork/notes-pc-commons';
 import { useNotesTranslation } from '@sdkwork/notes-pc-i18n';
 import { appUserService, useAppStore } from '@sdkwork/notes-pc-core';
-import type { LanguagePreference, ThemeColor, ThemeMode } from '@sdkwork/notes-pc-types';
+import type { LanguagePreference, ThemeColor, ThemeMode } from '@sdkwork/notes-pc-types-commons';
 
 const themeModes: Array<{ value: ThemeMode; icon: typeof SunMedium }> = [
   { value: 'light', icon: SunMedium },

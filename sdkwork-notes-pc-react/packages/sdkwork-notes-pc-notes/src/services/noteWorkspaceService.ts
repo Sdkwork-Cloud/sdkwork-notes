@@ -1,5 +1,5 @@
 import { createServiceAdapterController } from '@sdkwork/notes-pc-commons';
-import type { Note, NoteSummary, PageRequest, ServiceResult } from '@sdkwork/notes-pc-types';
+import type { Note, NoteSummary, PageRequest, ServiceResult } from '@sdkwork/notes-pc-types-commons';
 import {
   noteRepository,
   type NoteRepository,

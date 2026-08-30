@@ -5,7 +5,7 @@ import {
   toErrorMessage,
 } from '@sdkwork/notes-pc-commons';
 
-export const NOTES_SYNC_PACKAGE = '@sdkwork/notes-pc-sync';
+export const NOTES_SYNC_PACKAGE = '@sdkwork/notes-pc-sync-commons';
 export const NOTES_SYNC_QUEUE_STORAGE_KEY = 'sdkwork-notes-sync-queue';
 export const NOTES_SYNC_QUEUE_SCHEMA_VERSION = 2;
 export const DEFAULT_NOTES_SYNC_RETRY_DELAYS_MS = [1000, 5000, 15000] as const;

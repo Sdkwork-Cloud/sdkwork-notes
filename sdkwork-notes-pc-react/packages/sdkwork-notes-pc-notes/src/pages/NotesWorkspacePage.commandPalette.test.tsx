@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import { createEmptyNotesSyncQueueSnapshot } from '@sdkwork/notes-pc-sync';
+import { createEmptyNotesSyncQueueSnapshot } from '@sdkwork/notes-pc-sync-commons';
 import { NotesWorkspacePage } from './NotesWorkspacePage';
 
 const { mockAppStore, mockWorkspaceStore } = vi.hoisted(() => ({

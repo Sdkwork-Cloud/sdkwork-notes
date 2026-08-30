@@ -1,11 +1,11 @@
-# @sdkwork/notes-pc-sync
+# @sdkwork/notes-pc-sync-commons
 
 Domain: content
 Capability: notes
 Package type: node-package
 Status: standardizing
 
-This README is the SDKWork module entrypoint for `@sdkwork/notes-pc-sync`. The machine-readable component contract is `specs/component.spec.json`; canonical standards are under `../../../../sdkwork-specs/`.
+This README is the SDKWork module entrypoint for `@sdkwork/notes-pc-sync-commons`. The machine-readable component contract is `specs/component.spec.json`; canonical standards are under `../../../../sdkwork-specs/`.
 
 ## Public API
 
@@ -33,7 +33,7 @@ Extension points are limited to public exports, runtime entrypoints, SDK clients
 
 ## Verification
 
-- `pnpm --filter @sdkwork/notes-pc-sync typecheck`
+- `pnpm --filter @sdkwork/notes-pc-sync-commons typecheck`
 
 ## Owner And Status
 

@@ -34,7 +34,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { Button, Dialog } from '@sdkwork/notes-pc-commons';
 import { useNotesTranslation } from '@sdkwork/notes-pc-i18n';
-import type { Note } from '@sdkwork/notes-pc-types';
+import type { Note } from '@sdkwork/notes-pc-types-commons';
 import {
   buildNotesWorkspaceSaveFeedbackModel,
   countNoteWords,

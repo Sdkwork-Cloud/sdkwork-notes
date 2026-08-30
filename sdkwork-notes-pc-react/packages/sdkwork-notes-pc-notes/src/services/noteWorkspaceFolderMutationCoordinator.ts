@@ -1,4 +1,4 @@
-import type { NoteFolder } from '@sdkwork/notes-pc-types';
+import type { NoteFolder } from '@sdkwork/notes-pc-types-commons';
 import { normalizeString } from '@sdkwork/notes-pc-commons';
 
 export const INVALID_FOLDER_MOVE_MESSAGE = 'Cannot move a folder into itself or one of its descendants';

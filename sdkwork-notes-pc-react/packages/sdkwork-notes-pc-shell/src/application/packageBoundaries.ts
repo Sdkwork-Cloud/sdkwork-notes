@@ -8,13 +8,13 @@ export const SHELL_FOUNDATION_PACKAGES = [
   '@sdkwork/notes-pc-core',
   '@sdkwork/notes-pc-commons',
   '@sdkwork/notes-pc-i18n',
-  '@sdkwork/notes-pc-types',
+  '@sdkwork/notes-pc-types-commons',
 ] as const;
 
 export const FUTURE_CAPABILITY_PACKAGES = [
   '@sdkwork/notes-pc-local',
   '@sdkwork/notes-pc-search',
-  '@sdkwork/notes-pc-sync',
+  '@sdkwork/notes-pc-sync-commons',
   '@sdkwork/notes-pc-observability',
   '@sdkwork/notes-pc-updater',
 ] as const;

@@ -1,4 +1,4 @@
-import type { Note } from '@sdkwork/notes-pc-types';
+import type { Note } from '@sdkwork/notes-pc-types-commons';
 import type {
   NoteSaveState,
   NotesCollectionView,
