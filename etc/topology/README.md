@@ -12,5 +12,7 @@ Platform standard: `../../sdkwork-specs/APP_RUNTIME_TOPOLOGY_ADOPTION.md`
 | `cloud.development` | `pnpm dev:browser:cloud`, `pnpm dev:desktop:cloud` |
 | `standalone.production` | self-hosted production build |
 | `cloud.production` | cloud production deploy |
+| `standalone.demo` | independent standalone demonstration deploy |
+| `cloud.demo` | independent cloud demonstration deploy |
 
 Loader: `scripts/lib/notes-topology.mjs` → `@sdkwork/app-topology`.
