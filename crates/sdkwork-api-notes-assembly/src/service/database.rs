@@ -10,8 +10,18 @@ use super::drive_port::NotesApiDrivePort;
 pub async fn assemble_notes_service_from_env(
 ) -> Result<NotesService<SqlNotesStore, NotesApiDrivePort>, String> {
     sqlx::any::install_default_drivers();
-    let config = DatabaseConfig::from_env("notes")
-        .map_err(|error| format!("resolve notes database config failed: {error}"))?;
+    // Notes pages persist to client-local SQLite (ENVIRONMENT_SPEC §7.2): the
+    // SqlNotesStore and schema installer are SQLite-only. When the deployment
+    // declares SDKWORK_DATABASE_SQLITE_URL it takes precedence over the
+    // workspace PostgreSQL profile so embedded gateway deployments can run
+    // notes against the client-local store while every other module uses
+    // PostgreSQL; the legacy workspace resolution keeps standalone behavior.
+    let config = if sdkwork_database_config::client_local_sqlite_url_configured() {
+        DatabaseConfig::load_client_local_from_env("notes")
+    } else {
+        DatabaseConfig::from_env("notes")
+    }
+    .map_err(|error| format!("resolve notes database config failed: {error}"))?;
     let pool = AnyPoolOptions::new()
         .max_connections(config.max_connections)
         .min_connections(config.min_connections)
