@@ -213,7 +213,19 @@ function resolveRuntimeEnv(...values: Array<string | undefined>): AppRuntimeEnv 
   return 'development';
 }
 
-function resolveDefaultBaseUrl(env: AppRuntimeEnv): string {
+function resolveDefaultBaseUrl(
+  env: AppRuntimeEnv,
+  envSource: Record<string, string | undefined> = {},
+): string {
+  // APP_RUNTIME_TOPOLOGY_SPEC section 4.2 / SDK_SPEC section 5.1 step 2:
+  // dev:cloud binds the local platform gateway (ip:port). Environment domain
+  // families (api-dev., api-test., api.) remain build/deploy defaults.
+  const localGateway = normalizeUrl(
+    firstNonEmptyValue(
+      envSource.VITE_SDKWORK_LOCAL_PLATFORM_API_GATEWAY_HTTP_URL,
+      envSource.SDKWORK_LOCAL_PLATFORM_API_GATEWAY_HTTP_URL,
+    ),
+  );
   switch (env) {
     case 'production':
       return 'https://notes.sdkwork.com';
@@ -223,7 +235,7 @@ function resolveDefaultBaseUrl(env: AppRuntimeEnv): string {
       return 'https://staging-api.sdkwork.com';
     case 'development':
     default:
-      return 'https://api-dev.sdkwork.com';
+      return localGateway || 'https://api-dev.sdkwork.com';
   }
 }
 
@@ -609,7 +621,7 @@ export function createAppSdkClientConfig(
       envSource.VITE_SDKWORK_NOTES_APPLICATION_PUBLIC_HTTP_URL,
       envSource.VITE_APP_BASE_URL,
       envSource.SDKWORK_API_BASE_URL,
-      resolveDefaultBaseUrl(env),
+      resolveDefaultBaseUrl(env, envSource),
     ),
   );
   const baseUrl = normalizeUrl(
@@ -622,7 +634,7 @@ export function createAppSdkClientConfig(
         envSource.VITE_APP_ORGANIZATION_API_BASE_URL,
         defaultBaseUrl,
       ),
-    }) || resolveDefaultBaseUrl(env),
+    }) || resolveDefaultBaseUrl(env, envSource),
   );
   const accessToken = normalizeBearerToken(
     resolveSdkworkAccessTokenFromEnv(envSource) || undefined,

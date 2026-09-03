@@ -136,6 +136,17 @@ describe('createAppSdkClientConfig', () => {
     expect(developmentConfig.accessToken).toBeUndefined();
 
     globalThis.__SDKWORK_NOTES_ENV__ = {
+      VITE_APP_ENV: 'development',
+      VITE_APP_PLATFORM: 'desktop',
+      VITE_SDKWORK_LOCAL_PLATFORM_API_GATEWAY_HTTP_URL: 'http://127.0.0.1:3900',
+    };
+
+    const localGatewayConfig = createAppSdkClientConfig();
+
+    expect(localGatewayConfig.env).toBe('development');
+    expect(localGatewayConfig.baseUrl).toBe('http://127.0.0.1:3900');
+
+    globalThis.__SDKWORK_NOTES_ENV__ = {
       VITE_APP_ENV: 'production',
       VITE_APP_PLATFORM: 'desktop',
     };
