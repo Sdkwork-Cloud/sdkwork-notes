@@ -28,6 +28,10 @@ profiles:
         tls: dtupay.com
         mode: web+api
         web: pc
+      - domain: notes-test.noaper.com
+        tls: noaper.com
+        mode: web+api
+        web: pc
       - domain: notes-test.sdkwork.cn
         tls: sdkwork.cn
         mode: web+api
@@ -38,6 +42,10 @@ profiles:
         web: pc
       - domain: notes-test.dtupay.cn
         tls: dtupay.cn
+        mode: web+api
+        web: pc
+      - domain: notes-test.noaper.cn
+        tls: noaper.cn
         mode: web+api
         web: pc
       - domain: notes-test.skubc.com
@@ -107,6 +115,10 @@ profiles:
         tls: dtupay.com
         mode: web+api
         web: pc
+      - domain: notes-staging.noaper.com
+        tls: noaper.com
+        mode: web+api
+        web: pc
       - domain: notes-staging.sdkwork.cn
         tls: sdkwork.cn
         mode: web+api
@@ -117,6 +129,10 @@ profiles:
         web: pc
       - domain: notes-staging.dtupay.cn
         tls: dtupay.cn
+        mode: web+api
+        web: pc
+      - domain: notes-staging.noaper.cn
+        tls: noaper.cn
         mode: web+api
         web: pc
       - domain: notes-staging.skubc.com
@@ -186,6 +202,10 @@ profiles:
         tls: dtupay.com
         mode: web+api
         web: pc
+      - domain: notes.noaper.com
+        tls: noaper.com
+        mode: web+api
+        web: pc
       - domain: notes.sdkwork.cn
         tls: sdkwork.cn
         mode: web+api
@@ -196,6 +216,10 @@ profiles:
         web: pc
       - domain: notes.dtupay.cn
         tls: dtupay.cn
+        mode: web+api
+        web: pc
+      - domain: notes.noaper.cn
+        tls: noaper.cn
         mode: web+api
         web: pc
       - domain: notes.skubc.com
@@ -268,6 +292,11 @@ profiles:
         mode: web+api
         web: pc
         apiPathStyle: full-prefix
+      - domain: notes.noaper.com
+        tls: noaper.com
+        mode: web+api
+        web: pc
+        apiPathStyle: full-prefix
       - domain: notes.sdkwork.cn
         tls: sdkwork.cn
         mode: web+api
@@ -280,6 +309,11 @@ profiles:
         apiPathStyle: full-prefix
       - domain: notes.dtupay.cn
         tls: dtupay.cn
+        mode: web+api
+        web: pc
+        apiPathStyle: full-prefix
+      - domain: notes.noaper.cn
+        tls: noaper.cn
         mode: web+api
         web: pc
         apiPathStyle: full-prefix
